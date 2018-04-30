@@ -3,7 +3,7 @@ from OpenSSL import crypto
 from webca.crypto import *
 from webca.crypto.utils import *
 from webca.certstore import *
-store = CertStore.stores[0][2]()
+store = CertStore.get_store('9a16e500-cc97-48e4-9b62-4e41d91c2607')
 
 # Create Root CA
 root_name = {

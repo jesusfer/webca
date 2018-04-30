@@ -12,12 +12,22 @@ class CertStore(metaclass=abc.ABCMeta):
     implementations of a certificate store."""
     CLASS_ID = 'cfb28a77-eed7-4c91-9061-2ba0d3d2bea9'
 
-    stores = []
+    _stores = {}
 
     @staticmethod
-    def register_store(cls):
-        if issubclass(cls, CertStore):
-            CertStore.stores.append((cls.__name__, cls.STORE_ID, cls))
+    def register_store(store_class):
+        """Register a store implementation."""
+        if issubclass(store_class, CertStore):
+            CertStore._stores[store_class.STORE_ID] = (
+                store_class.__name__,
+                store_class,
+            )
+
+    @staticmethod
+    def get_store(store_id):
+        """Return an instance of the selected store."""
+        store = CertStore._stores[store_id]
+        return store[1]()
 
     @abc.abstractmethod
     def add_certificate(self, private_key, certificate):
@@ -53,9 +63,9 @@ class CertStore(metaclass=abc.ABCMeta):
         return
 
     def get_ca_certificates(self):
-        """Return the CA certificates of a store."""
+        """Return the certificates that can sign other certificates."""
         return self.get_certificates(key_usage=[KU_KEYCERTSIGN])
 
     def get_crl_certificates(self):
-        """Return the CA certificates of a store."""
+        """Return the  certificates that can sign CRLs."""
         return self.get_certificates(key_usage=[KU_CRLSIGN])
