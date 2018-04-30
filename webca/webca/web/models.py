@@ -11,6 +11,7 @@ from webca.crypto.constants import REV_REASON, REV_UNSPECIFIED, SUBJECT_DN, SUBJ
 from webca.crypto.utils import name_to_components, components_to_name
 from webca.utils import dict_as_tuples, tuples_as_dict, subject_display
 from webca.web import validators
+from webca.web.fields import SubjectAltNameField
 
 # TODO: consider the action to take when a FK is deleted.
 # We should not delete anything so that we can keep track of everyting, probably
@@ -189,6 +190,12 @@ class Template(models.Model):
         (SUBJECT_DN, 'Full Distinguished Name'),
         (SUBJECT_DN_PARTIAL, 'Partial Distinguished Name'),
     ]
+    SAN_HIDDEN = 1
+    SAN_SHOWN = 2
+    SAN_TYPE = [
+        (SAN_HIDDEN, 'Hidden'),
+        (SAN_SHOWN, 'Shown'),
+    ]
     name = models.CharField(
         max_length=100,
         help_text='Name for this certificate template',
@@ -216,6 +223,16 @@ class Template(models.Model):
         choices=SUBJECT_TYPE,
         default=SUBJECT_CN,
         help_text='Type of subject required: Full or partial DN, CN or emailAddress'
+    )
+    san_type = models.SmallIntegerField(
+        choices=SAN_TYPE,
+        default=SAN_HIDDEN,
+        verbose_name='SAN Type',
+        help_text='Require Subject Alternative Name',
+    )
+    allowed_san = SubjectAltNameField(
+        help_text='Allowed SAN keywords',
+        verbose_name='Allowed SAN',
     )
     basic_constraints = models.CharField(
         max_length=50,
