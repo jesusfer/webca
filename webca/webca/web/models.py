@@ -297,7 +297,7 @@ class Revoked(models.Model):
     certificate = models.OneToOneField(
         'Certificate',
         # A revoked cert should always be kept
-        on_delete=models.DO_NOTHING
+        on_delete=models.CASCADE
     )
     date = models.DateTimeField(
         auto_now_add=True,
@@ -317,7 +317,6 @@ class Revoked(models.Model):
 
     def __repr__(self):
         return '<Revoked %s' % str(self.certificate)
-
 
     class Meta:
         verbose_name = 'Revoked certificate'
