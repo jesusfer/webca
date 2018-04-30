@@ -73,7 +73,7 @@ def datetime_to_asn1(when=datetime.utcnow()):
 
 
 def asn1_to_datetime(when):
-    """Convert a ASN.1 datetime to datetime object."""
+    """Convert a ASN.1 datetime to datetime offset-aware object."""
     when = when[0:-1] + '+0000'
     datetime_object = datetime.strptime(when, ASN1_FMT + '%z')
     return datetime_object

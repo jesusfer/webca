@@ -135,9 +135,9 @@ class Template(models.Model):
         max_length=100,
         help_text='Name for this certificate template',
     )
-    days = models.SmallIntegerField(
+    days = models.PositiveSmallIntegerField(
         help_text='Number of days that this certificate will be valid for',
-    )
+    )  # TODO: add a validator for a sensible value
     enabled = models.BooleanField(
         help_text='Whether this template will be available for end users',
     )

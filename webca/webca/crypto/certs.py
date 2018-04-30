@@ -1,11 +1,14 @@
 """
 Functions used for certificate operations
 """
+from datetime import datetime, timedelta
 
+import pytz
 from OpenSSL import crypto
 
 from webca.crypto.constants import CERT_DURATION
-from webca.crypto.utils import new_serial
+from webca.crypto.exceptions import CryptoException
+from webca.crypto.utils import asn1_to_datetime, new_serial
 
 # Creation functions
 
@@ -62,48 +65,60 @@ def create_cert_request(pkey, name, extensions=None, digest='sha256', signing_ke
     return request
 
 
-def create_certificate(request, issuerCertKey, serial, validityPeriod, digest="sha256"):
+def create_certificate(request, issuer_cert_key, serial, validity_period, digest="sha256"):
     """
     Generate a certificate given a certificate request.
 
     Arguments:
         request - Certificate request to use
-        issuerCert - The certificate of the issuer
-        issuerKey  - The private key of the issuer
+        issuer_cert - The certificate of the issuer
+        issuer_key  - The private key of the issuer
         serial     - Serial number for the certificate
-        notBefore  - Timestamp (relative to now) when the certificate
+        not_before  - Timestamp (relative to now) when the certificate
                     starts being valid
         notAfter   - Timestamp (relative to now) when the certificate
                     stops being valid
         digest     - Digest method to use for signing, default is sha256
     Returns: The signed certificate in an X509 object
     """
-    # TODO: Check signing cert validity period against the new cert validity period
-    issuerCert, issuerKey = issuerCertKey
-    notBefore, notAfter = validityPeriod
+    # Check signing cert validity period against the new cert validity period
+    issuer_cert, issuer_key = issuer_cert_key
+    not_before, not_after = validity_period
+    new_valid_from = datetime.now(pytz.utc) + timedelta(seconds=not_before)
+    new_valid_to = datetime.now(pytz.utc) + timedelta(seconds=not_after)
+    signing_valid_from = asn1_to_datetime(
+        issuer_cert.get_notBefore().decode('utf-8'))
+    signing_valid_to = asn1_to_datetime(
+        issuer_cert.get_notAfter().decode('utf-8'))
+    if signing_valid_from > new_valid_from:
+        raise CryptoException(
+            "The new certificate validity spans beyond the CA certificate's")
+    if signing_valid_to < new_valid_to:
+        raise CryptoException(
+            "The new certificate validity spans beyond the CA certificate's")
 
     cert = crypto.X509()
     cert.set_version(2)  # 2 for v3
     cert.set_serial_number(serial)
-    cert.gmtime_adj_notBefore(notBefore)
-    cert.gmtime_adj_notAfter(notAfter)
-    cert.set_issuer(issuerCert.get_subject())
+    cert.gmtime_adj_notBefore(not_before)
+    cert.gmtime_adj_notAfter(not_after)
+    cert.set_issuer(issuer_cert.get_subject())
     cert.set_subject(request.get_subject())
     cert.set_pubkey(request.get_pubkey())
 
     cert.add_extensions(request.get_extensions())
     ski = crypto.X509Extension(b'subjectKeyIdentifier', False, b'hash', cert)
     cert.add_extensions([ski])
-    if isinstance(issuerCert, crypto.X509):
-        # issuerCert could be a X509Req if this is a self-signed cert
+    if isinstance(issuer_cert, crypto.X509):
+        # issuer_cert could be a X509Req if this is a self-signed cert
         aki = crypto.X509Extension(
-            b'authorityKeyIdentifier', False, b'keyid,issuer', issuer=issuerCert)
+            b'authorityKeyIdentifier', False, b'keyid,issuer', issuer=issuer_cert)
     else:
         aki = crypto.X509Extension(
             b'authorityKeyIdentifier', False, b'keyid,issuer', issuer=cert)
     cert.add_extensions([aki])
 
-    cert.sign(issuerKey, digest)
+    cert.sign(issuer_key, digest)
     return cert
 
 
