@@ -2,6 +2,7 @@ import json
 import re
 
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.db import models
 from OpenSSL import crypto
 
@@ -33,7 +34,7 @@ class Request(models.Model):
         max_length=255,
         help_text='Subject of this certificate request',
     )
-    csr = models.TextField(  # TODO: validate CSR key size against template
+    csr = models.TextField(
         help_text='CSR for this request in PEM format',
         validators=[validators.valid_pem_csr],
     )
@@ -61,6 +62,19 @@ class Request(models.Model):
 
     def __repr__(self):
         return '<Certificate %s' % str(self)
+
+    def save(self, *args, **kwargs):
+        # We have to do some validations here as Django validators
+        # can't access other stuff than the value to validate
+        # Validate key size minimum
+        req_size = self.get_csr().get_pubkey().bits()
+        if req_size < self.template.min_bits:
+            raise ValidationError(
+                'Key size must be %(min)d or more',
+                code='minBits',
+                params={'min':self.template.min_bits}
+                )
+        super().save(*args, **kwargs)
 
     def get_csr(self):
         """Return the request as a OpenSSL.crypto.X509Req object."""
