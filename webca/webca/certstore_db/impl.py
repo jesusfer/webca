@@ -1,14 +1,13 @@
 from django.db import transaction
-from OpenSSL import crypto
 
 from webca.certstore import CertStore
 from webca.certstore_db import DATABASE_LABEL
 from webca.certstore_db.models import Certificate, KeyPair
-from webca.crypto import CryptoException
 from webca.crypto.constants import EXT_KEY_USAGE, KEY_USAGE
 
 
 class DatabaseStore(CertStore):
+    """Certificate store with Django models as backend."""
     STORE_ID = '9a16e500-cc97-48e4-9b62-4e41d91c2607'
 
     def get_private_key(self, serial):
@@ -33,12 +32,14 @@ class DatabaseStore(CertStore):
         certs = Certificate.objects.filter(serial__exact=serial)
         if len(certs) == 1:
             return certs[0]
+        return None
 
     def get_certificate(self, serial):
         """Return a OpenSSL.crypto.X509 certificate with this serial number."""
         cert = self._get_certificate(serial)
         if cert:
             return cert.get_certificate()
+        return None
 
     def get_certificates(self, keyUsage=[], extendedKeyUsage=[]):
         """Return a list of OpenSSL.crypto.X509 that match the list of keyUsage
