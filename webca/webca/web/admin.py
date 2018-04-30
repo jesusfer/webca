@@ -4,8 +4,9 @@ from webca.web.models import *
 
 
 class RequestAdmin(admin.ModelAdmin):
-    list_display = ['id', '__str__']
+    list_display = ['__str__', 'user', 'status', 'approved', 'id']
 
+    list_filter = ['status']
 
 def cert_readonly_fields():
     if settings.DEBUG == True:

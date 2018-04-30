@@ -3,6 +3,7 @@ import re
 
 from django.conf import settings
 from django.db import models
+from OpenSSL import crypto
 
 from webca.crypto.constants import REV_REASON, REV_UNSPECIFIED
 from webca.utils import dict_as_tuples
@@ -13,6 +14,15 @@ from webca.web import validators
 
 
 class Request(models.Model):
+    STATUS_PROCESSING = 1
+    STATUS_ISSUED = 2
+    STATUS_REJECTED = 3
+    STATUS = [
+        (STATUS_PROCESSING, 'Processing'),
+        (STATUS_ISSUED, 'Issued'),
+        (STATUS_REJECTED, 'Rejected'),
+    ]
+
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.DO_NOTHING,
@@ -28,6 +38,20 @@ class Request(models.Model):
     template = models.ForeignKey(
         'Template',
         on_delete=models.DO_NOTHING,
+    )
+    status = models.SmallIntegerField(
+        choices=STATUS,
+        default=STATUS_PROCESSING,
+        help_text='Status of this request'
+    )
+    reject_reason = models.CharField(
+        max_length=250,
+        blank=True,
+        help_text='Why this request has been rejected'
+    )
+    approved = models.NullBooleanField(
+        default=None,
+        help_text='Has this request been (auto)approved?'
     )
 
     def __str__(self):
