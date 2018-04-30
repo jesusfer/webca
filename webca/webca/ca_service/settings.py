@@ -5,7 +5,7 @@ SECRET_KEY = '*F_MQCMw.,+RmYaux\J3kB7apGfrw%LI$)v$yt6@ErSw4;{2i5|0!}Ouxv*Y%T'
 
 INSTALLED_APPS.append('webca.certstore_db')
 
-ROOT_URLCONF = 'webca.ca_admin.urls'
+ROOT_URLCONF = ''
 
 DATABASES['certstore_db'] = {
     'ENGINE': 'django.db.backends.sqlite3',

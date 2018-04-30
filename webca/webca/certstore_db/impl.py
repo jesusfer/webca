@@ -2,7 +2,7 @@ from django.db import transaction
 from OpenSSL import crypto
 
 from webca.certstore import CertStore
-from webca.certstore_db import DATABASE
+from webca.certstore_db import DATABASE_LABEL
 from webca.certstore_db.models import Certificate, KeyPair
 from webca.crypto import CryptoException
 from webca.crypto.constants import EXT_KEY_USAGE, KEY_USAGE
@@ -67,7 +67,7 @@ class DatabaseStore(CertStore):
     def add_certificate(self, private_key, certificate):
         """Add an OpenSSL.crypto.X509 certificate and
         its OpenSSL.crypto.PKey private key."""
-        with transaction.atomic(using=DATABASE):
+        with transaction.atomic(using=DATABASE_LABEL):
             keys = KeyPair.from_keypair(private_key)
             if keys is None:
                 raise ValueError('private_key')

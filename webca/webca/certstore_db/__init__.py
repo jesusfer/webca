@@ -4,7 +4,7 @@ A CertStore implementation that uses Djando models to store the CA certificates.
 default_app_config = 'webca.certstore_db.apps.CertstoreDbConfig'
 
 # This is the name of the databas configuration for the app in Django's settings.py
-DATABASE = 'certstore_db'
+DATABASE_LABEL = 'certstore_db'
 
 class CertStoreDBRouter:
     """
@@ -16,7 +16,7 @@ class CertStoreDBRouter:
         Attempts to read certstore_db models go to DATABASE.
         """
         if model._meta.app_label == 'certstore_db':
-            return DATABASE
+            return DATABASE_LABEL
         return None
 
     def db_for_write(self, model, **hints):
@@ -24,7 +24,7 @@ class CertStoreDBRouter:
         Attempts to write certstore_db models go to DATABASE.
         """
         if model._meta.app_label == 'certstore_db':
-            return DATABASE
+            return DATABASE_LABEL
         return None
 
     def allow_relation(self, obj1, obj2, **hints):
@@ -42,5 +42,5 @@ class CertStoreDBRouter:
         database.
         """
         if app_label == 'certstore_db':
-            return db == DATABASE
+            return db == DATABASE_LABEL
         return None
