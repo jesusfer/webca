@@ -110,11 +110,11 @@ class Certificate(models.Model):
     )
     key_usage = models.TextField(
         blank=True,
-        verbose_name="KeyUsage"
+        verbose_name='Key Usage'
     )
     ext_key_usage = models.TextField(
         blank=True,
-        verbose_name="ExtendedKeyUsage"
+        verbose_name='Extended Key Usage'
     )
     certificate = models.TextField(
         help_text='Certificate in PEM format'

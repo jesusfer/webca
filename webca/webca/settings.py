@@ -39,7 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'webca.config',
-    'webca.web'
+    'webca.web.apps.WebConfig',
 ]
 
 MIDDLEWARE = [

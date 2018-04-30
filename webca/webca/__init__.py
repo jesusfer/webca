@@ -21,4 +21,4 @@ except:
 # TODO: We could probably do this somewhere else
 from django.contrib import admin
 admin.site.site_header = 'WebCA'
-admin.site.index_title = 'CA administration'
+admin.site.index_title = 'WebCA administration'
