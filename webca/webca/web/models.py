@@ -1,5 +1,5 @@
+"""Models for the public web."""
 import json
-import re
 
 from django.conf import settings
 from django.core.exceptions import ValidationError
@@ -72,8 +72,8 @@ class Request(models.Model):
             raise ValidationError(
                 'Key size must be %(min)d or more',
                 code='minBits',
-                params={'min':self.template.min_bits}
-                )
+                params={'min': self.template.min_bits}
+            )
         super().save(*args, **kwargs)
 
     def get_csr(self):
@@ -143,7 +143,7 @@ class Template(models.Model):
     )
     version = models.IntegerField(
         default=1,
-        help_text='Version of this certificate',
+        help_text='Version of this template',
     )
     auto_sign = models.BooleanField(
         default=True,

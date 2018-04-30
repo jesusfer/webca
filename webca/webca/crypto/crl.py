@@ -8,8 +8,8 @@ from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes
 from OpenSSL import crypto
 
-from webca.crypto.extensions import *
-from webca.crypto.utils import *
+from webca.crypto.extensions import get_certificate_extension
+from webca.crypto.utils import datetime_to_asn1, int_to_hex
 
 REASON_UNSPECIFIED = crypto.Revoked().all_reasons()[0]
 
@@ -45,7 +45,7 @@ def create_crl(revoked_list, next_update_days, issuer):
 
 def create_crl2(serial_list, days, issuer):
     """Create a CRL using cryptography's API and then convert it to pyopenssl.
-    
+
     There is a mix of APIs here.
     Parameters
     ----------
@@ -58,7 +58,8 @@ def create_crl2(serial_list, days, issuer):
     builder = x509.CertificateRevocationListBuilder()
     # FIXME: use the rest of the name attributes here
     builder = builder.issuer_name(x509.Name([
-        x509.NameAttribute(x509.oid.NameOID.COMMON_NAME, issuer_cert.get_subject().CN)
+        x509.NameAttribute(x509.oid.NameOID.COMMON_NAME,
+                           issuer_cert.get_subject().CN)
     ]))
     builder = builder.last_update(datetime.utcnow())
     builder = builder.next_update(datetime.utcnow() + timedelta(days=days))
@@ -75,12 +76,12 @@ def create_crl2(serial_list, days, issuer):
     # signing certificate
     ski = get_certificate_extension(issuer_cert, b'subjectKeyIdentifier')
     if ski:
-        ski = bytes.fromhex(str(ski).replace(':','').lower())
+        ski = bytes.fromhex(str(ski).replace(':', '').lower())
         ext = x509.AuthorityKeyIdentifier(ski, None, None)
         builder = builder.add_extension(ext, False)
 
     crl = builder.sign(issuer_key.to_cryptography_key(),
                        hashes.SHA256(), default_backend())
-    
+
     openssl_crl = crypto.CRL.from_cryptography(crl)
     return openssl_crl

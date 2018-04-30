@@ -27,7 +27,7 @@ def int_to_hex(number):
 
 
 def name_to_components(name):
-    """Converts a name to a dict of components.
+    """Converts a name to a list of components.
 
     Arguments:
         name - Name in the format /name1=value1/name2=value2/../
