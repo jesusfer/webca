@@ -67,8 +67,9 @@ class Request(models.Model):
         # We have to do some validations here as Django validators
         # can't access other stuff than the value to validate
         # Validate key size minimum
+        # We don't need to check that if the request is being rejected
         req_size = self.get_csr().get_pubkey().bits()
-        if req_size < self.template.min_bits:
+        if req_size < self.template.min_bits and self.status != Request.STATUS_REJECTED:
             raise ValidationError(
                 'Key size must be %(min)d or more',
                 code='minBits',
@@ -220,6 +221,7 @@ class Template(models.Model):
         # Since we shouldn't except much concurrency when editing templates,
         # it should be fine to just check current values with previous
         # FUTURE: this may be better done in some other way
+        # FUTURE: if there are pending requests and the key is increased, we may want to automatically reject those pending requests
         if (self.__days != self.days or
                 self.__auto_sign != self.auto_sign or
                 self.__min_bits != self.min_bits or

@@ -10,6 +10,7 @@ from webca.config import constants as parameters
 from webca.config.models import ConfigurationObject as Config
 from webca.crypto import utils as cert_utils
 from webca.crypto import certs
+from webca.crypto.exceptions import CryptoException
 from webca.web.models import Certificate, Request
 
 
@@ -93,6 +94,15 @@ class CAService:
         subject = cert_utils.name_to_components(request.subject)
         extensions = request.template.get_extensions()
         # Validate stuff
+        # Key size. Template requirements might have changed since the request was done
+        if pub_key.bits() < request.template.min_bits:
+            # The request at this point will never meet the template minimum
+            # so it should be rejected
+            request.status = Request.STATUS_REJECTED
+            request.reject_reason = 'The key does not meet the required minimum size: size={} required={}'.format(
+                pub_key.bits(),
+                request.template.min_bits)
+            request.save()
 
         # New stuff
         serial = cert_utils.new_serial()
