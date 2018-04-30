@@ -6,5 +6,6 @@ if ($v)
     python manage.py migrate auth
     python manage.py migrate contenttypes
     python manage.py migrate sessions
+    python manage.py migrate web
     python manage.py migrate certstore_db --database certstore_db
 }

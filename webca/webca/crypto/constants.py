@@ -52,3 +52,21 @@ EXT_KEY_USAGE = {
     EKU_MSCTLSIGN       : 'msCTLSign',
     EKU_MSEFS           : 'msEFS'
 }
+
+REV_UNSPECIFIED             = 1
+REV_KEYCOMPROMISE           = 2
+REV_CACOMPROMISE            = 3
+REV_AFFILIATIONCHANGED      = 4
+REV_SUPERSEDED              = 5
+REV_CESSATIONOFOPERATION    = 6
+REV_CERTIFICATEHOLD         = 7
+
+REV_REASON = {
+    REV_UNSPECIFIED              : 'unspecified',
+    REV_KEYCOMPROMISE            : 'keyCompromise',
+    REV_CACOMPROMISE             : 'CACompromise',
+    REV_AFFILIATIONCHANGED       : 'affiliationChanged',
+    REV_SUPERSEDED               : 'superseded',
+    REV_CESSATIONOFOPERATION     : 'cessationOfOperation',
+    REV_CERTIFICATEHOLD          : 'certificateHold',
+}
