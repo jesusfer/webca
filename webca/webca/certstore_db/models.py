@@ -1,10 +1,10 @@
-import re
+""""""
 from django.db import models
 from OpenSSL import crypto
 
-from webca.utils import dict_as_tuples
+from webca.utils import dict_as_tuples, subject_display
 from webca.crypto.constants import EXT_KEY_USAGE, KEY_USAGE
-from webca.crypto.utils import asn1_to_datetime
+from webca.crypto import utils as cert_utils
 from webca.crypto.extensions import get_extension, KeyUsage, ExtendedKeyUsage
 
 # Create your models here.
@@ -121,9 +121,7 @@ class Certificate(models.Model):
     )
 
     def __str__(self):
-        if 'CN=' in self.subject:
-            return re.search('CN=([^/]+)', self.subject).groups()[0]
-        return self.subject
+        return subject_display(self.subject)
 
     def __repr__(self):
         return "<Certificate %s>" % self.__str__()
@@ -146,24 +144,25 @@ class Certificate(models.Model):
 
         The new object is not saved by default."""
         cert = Certificate()
-        for k, v in certificate.get_subject().get_components():
-            cert.subject += "/%s=%s" % (k.decode('utf-8'), v.decode('utf-8'))
-        cert.serial = '%x' % certificate.get_serial_number()
-        cert.valid_from = asn1_to_datetime(
+        cert.subject = cert_utils.components_to_name(
+            certificate.get_subject().get_components())
+        cert.serial = cert_utils.int_to_hex(
+            certificate.get_serial_number())
+        cert.valid_from = cert_utils.asn1_to_datetime(
             certificate.get_notBefore().decode('utf-8'))
-        cert.valid_to = asn1_to_datetime(
+        cert.valid_to = cert_utils.asn1_to_datetime(
             certificate.get_notAfter().decode('utf-8'))
-        e = get_extension(certificate, 'basicConstraints')
-        if e:
-            s = "CA=" + str(e.value.ca)
-            s += ', pathlen=' + str(e.value.path_length)
-            cert.basic_constraints = s
-        e = get_extension(certificate, 'keyUsage')
-        if e:
-            cert.key_usage = KeyUsage.from_extension(e).value()
-        e = get_extension(certificate, 'extendedKeyUsage')
-        if e:
-            cert.ext_key_usage = ExtendedKeyUsage.from_extension(e).value()
+        ext = get_extension(certificate, 'basicConstraints')
+        if ext:
+            value = "CA=" + str(ext.value.ca)
+            value += ', pathlen=' + str(ext.value.path_length)
+            cert.basic_constraints = value
+        ext = get_extension(certificate, 'keyUsage')
+        if ext:
+            cert.key_usage = KeyUsage.from_extension(ext).value()
+        ext = get_extension(certificate, 'extendedKeyUsage')
+        if ext:
+            cert.ext_key_usage = ExtendedKeyUsage.from_extension(ext).value()
         cert.certificate = crypto.dump_certificate(
             crypto.FILETYPE_PEM, certificate).decode('utf-8')
 

@@ -1,3 +1,4 @@
+import json
 import re
 
 from django.conf import settings
@@ -5,7 +6,7 @@ from django.db import models
 from OpenSSL import crypto
 
 from webca.crypto.constants import REV_REASON, REV_UNSPECIFIED
-from webca.utils import dict_as_tuples
+from webca.utils import dict_as_tuples, subject_display
 from webca.web import validators
 
 # TODO: consider the action to take when a FK is deleted.
@@ -17,6 +18,7 @@ class Request(models.Model):
     STATUS_PROCESSING = 1
     STATUS_ISSUED = 2
     STATUS_REJECTED = 3
+    # TODO: Add a status for error during issuance?
     STATUS = [
         (STATUS_PROCESSING, 'Processing'),
         (STATUS_ISSUED, 'Issued'),
@@ -31,7 +33,7 @@ class Request(models.Model):
         max_length=255,
         help_text='Subject of this certificate request',
     )
-    csr = models.TextField(
+    csr = models.TextField(  # TODO: validate CSR key size against template
         help_text='CSR for this request in PEM format',
         validators=[validators.valid_pem_csr],
     )
@@ -55,11 +57,7 @@ class Request(models.Model):
     )
 
     def __str__(self):
-        if 'CN=' in self.subject:
-            return re.search('CN=([^/]+)', self.subject).groups()[0]
-        if 'emailAddress=' in self.subject:
-            return re.search('emailAddress=([^/]+)', self.subject).groups()[0]
-        return self.subject
+        return subject_display(self.subject)
 
     def __repr__(self):
         return '<Certificate %s' % str(self)
@@ -102,7 +100,7 @@ class Certificate(models.Model):
         verbose_name = 'Issued certificate'
 
     def __str__(self):
-        return self.subject
+        return subject_display(self.subject)
 
     def __repr__(self):
         return '<Certificate %s' % str(self)
@@ -139,7 +137,7 @@ class Template(models.Model):
     )
     basic_constraints = models.CharField(
         max_length=50,
-        default="{'ca':0, 'pathlen':0}",
+        default='{"ca":0, "pathlen":0}',
         help_text='CA cert indication and pathlen',
     )
     key_usage = models.TextField(
@@ -175,6 +173,54 @@ class Template(models.Model):
     def _save(self):
         pass
         # TODO: autobump the version number on updates
+
+    def get_basic_constraints(self):
+        """Return the OpenSSL formated basicConstraints value."""
+        const = json.loads(self.basic_constraints)
+        value = 'CA:{}'.format(const['ca']).upper()
+        if const['pathlen'] >= 0:
+            value += ', pathlen:%d' % const['pathlen']
+        return value
+
+    def get_extensions(self):
+        """Return a list of OpenSSL.crypto.X509Extension with the extensions
+        enabled in this template."""
+        extensions = []
+        # 1. Minimum:
+        # basic constranints
+        extensions.append(crypto.X509Extension(
+            b'basicConstraints',
+            True,
+            self.get_basic_constraints().encode('ascii')
+        ))
+        # key usage
+        extensions.append(crypto.X509Extension(
+            b'keyUsage',
+            True,
+            self.key_usage.encode('ascii')
+        ))
+        # 3. Validation
+        # TODO: CRL
+        extensions.append(crypto.X509Extension(
+            b'crlDistributionPoints',
+            False,
+            b'URI:http://test.net/test.crl'
+        ))
+
+        # TODO: OCSP
+        # 2. Extras
+        # extended key usage
+        if self.ext_key_usage:
+            extensions.append(crypto.X509Extension(
+                b'extendedKeyUsage',
+                False,
+                self.ext_key_usage.encode('ascii')
+            ))
+        # TODO: SAN
+        # crypto.X509Extension(b'subjectAltName', False, b'DNS:www.test.net')
+        # 3. Custom
+        # crypto.X509Extension(b'1.6.6', False, b'DER:31:32:33')
+        return extensions
 
     @staticmethod
     def get_enabled():

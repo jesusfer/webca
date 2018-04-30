@@ -7,7 +7,7 @@ from datetime import datetime
 import pytz
 from OpenSSL import crypto
 
-SERIAL_BYTES = 19  # Max allowed serial number is < 20
+from webca.crypto.constants import SERIAL_BYTES
 
 #################
 # ASN.1 helpers #
@@ -19,11 +19,44 @@ def new_serial():
     return abs(secrets.randbits(SERIAL_BYTES * 8))
 
 
-def serial_int_to_bytes(x):
-    """Convert an int into a hex-byte-string."""
-    # x.to_bytes((x.bit_length() + 7) // 8, byteorder='big')
-    s = '%x' % x
-    return s.encode('ascii')
+def int_to_hex(number):
+    """Convert an int into a hex string."""
+    # number.to_bytes((number.bit_length() + 7) // 8, byteorder='big')
+    hex_string = '%x' % number
+    return hex_string
+
+
+def name_to_components(name):
+    """Converts a name to a dict of components.
+
+    Arguments:
+        name - Name in the format /name1=value1/name2=value2/../
+    Returns: list of (name, value) tuples
+    """
+    ret = []
+    components = name.split('/')[1:-1]
+    components = [x.split('=') for x in components]
+    for key, value in components:
+        ret.append(
+            (key,value)
+        )
+    return ret
+
+
+def components_to_name(components):
+    """Builds an OpenSSL subject name.
+
+    Arguments:
+        components - list of (b'name', b'value') or ('name', 'value')
+    """
+    subject = ''
+    decode = getattr(components[0][0], 'decode', None)
+    for name, value in components:
+        if decode:
+            subject += "/%s=%s" % (name.decode('utf-8'), value.decode('utf-8'))
+        else:
+            subject += "/%s=%s" % (name, value)
+    return subject
 
 
 ASN1_FMT = '%Y%m%d%H%M%S'

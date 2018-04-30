@@ -18,7 +18,7 @@ def revoke_certificate(certificate,
                        reason=REASON_UNSPECIFIED, rev_date=datetime.utcnow()):
     """Revoke a X509 certificate."""
     rev = crypto.Revoked()
-    rev.set_serial(serial_int_to_bytes(certificate.get_serial_number()))
+    rev.set_serial(int_to_hex(certificate.get_serial_number()).encode('ascii'))
     rev.set_reason(reason)
     rev.set_rev_date(datetime_to_asn1(rev_date))
     return rev

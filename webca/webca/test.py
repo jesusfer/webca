@@ -6,6 +6,17 @@ from webca.crypto.utils import *
 from webca.certstore import *
 store = CertStore.get_store('9a16e500-cc97-48e4-9b62-4e41d91c2607')
 
+# Create CSR Sign
+root_name = [
+    ('CN', 'CSR Sign'),
+]
+root_key, root_cert = create_ca_certificate(root_name, 512)
+issuer_root = (root_cert, root_key)
+
+store.add_certificate(root_key, root_cert)
+
+exit()
+
 # Create Root CA
 root_name = {
     'CN': 'CA Test',
