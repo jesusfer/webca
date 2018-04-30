@@ -2,6 +2,7 @@
 import json
 
 from django.conf import settings
+from django.contrib.auth.models import Group
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_email
 from django.db import models
@@ -260,6 +261,10 @@ class Template(models.Model):
     extensions = models.TextField(
         blank=True,
         help_text='Other extensions for this certificate',
+    )
+    allowed_groups = models.ManyToManyField(
+        Group,
+        help_text='User groups allowed to use this Template',
     )
     # policies = models.ForeignKey('PolicyInformation')
 

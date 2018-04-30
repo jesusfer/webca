@@ -6,8 +6,6 @@ import webca.web.fields
 
 class Migration(migrations.Migration):
 
-    # replaces = [('web', '0011_template_allowed_san'), ('web', '0012_auto_20180503_2043')]
-
     dependencies = [
         ('web', '0010_auto_20180502_2302'),
     ]
