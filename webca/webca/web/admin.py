@@ -49,6 +49,7 @@ class TemplateAdmin(admin.ModelAdmin):
     list_display = [
         '__str__', 'enabled', 'version'
     ]
+    readonly_fields = ['version']
     actions = ['toggle_template']
 
     def toggle_template(self, request, queryset):

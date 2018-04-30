@@ -178,15 +178,54 @@ class Template(models.Model):
     )
     # policies = models.ForeignKey('PolicyInformation')
 
+    __days = None
+    __enabled = None
+    __auto_sign = None
+    __min_bits = None
+    __basic_constraints = None
+    __key_usage = None
+    __ext_key_usage = None
+    __crl_points = None
+    __aia = None
+    __extensions = None
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Save the original values
+        self.__days = self.days
+        self.__enabled = self.enabled
+        self.__auto_sign = self.auto_sign
+        self.__min_bits = self.min_bits
+        self.__basic_constraints = self.basic_constraints
+        self.__key_usage = self.key_usage
+        self.__ext_key_usage = self.ext_key_usage
+        self.__crl_points = self.crl_points
+        self.__aia = self.aia
+        self.__extensions = self.extensions
+
     def __str__(self):
         return self.name
 
     def __repr__(self):
         return '<Template %s' % str(self)
 
-    def _save(self):
-        pass
-        # TODO: autobump the version number on updates
+    def save(self, *args, **kwargs):
+        # We want to increment the version only when the admin has made changes
+        # Enabling/disabling should not count
+        # Since we shouldn't except much concurrency when editing templates,
+        # it should be fine to just check current values with previous
+        # FUTURE: this may be better done in some other way
+        if (self.__days != self.days or
+                self.__auto_sign != self.auto_sign or
+                self.__min_bits != self.min_bits or
+                self.__basic_constraints != self.basic_constraints or
+                self.__key_usage != self.key_usage or
+                self.__ext_key_usage != self.ext_key_usage or
+                self.__crl_points != self.crl_points or
+                self.__aia != self.aia or
+                self.__extensions != self.extensions):
+            self.version += 1
+        super().save(*args, **kwargs)
 
     def get_basic_constraints(self):
         """Return the OpenSSL formated basicConstraints value."""
