@@ -72,6 +72,10 @@ class Template(models.Model):
     version = models.IntegerField(
         help_text='Version of this certificate'
     )
+    auto_sign = models.BooleanField(
+        default=True,
+        help_text='Certificates using this template will automatically be signed by the CA'
+    )
     min_bits = models.PositiveSmallIntegerField(
         default=2048,
         help_text='Minimum key size'
