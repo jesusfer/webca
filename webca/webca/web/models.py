@@ -3,11 +3,13 @@ import json
 
 from django.conf import settings
 from django.core.exceptions import ValidationError
+from django.core.validators import validate_email
 from django.db import models
 from OpenSSL import crypto
 
-from webca.crypto.constants import REV_REASON, REV_UNSPECIFIED
-from webca.utils import dict_as_tuples, subject_display
+from webca.crypto.constants import REV_REASON, REV_UNSPECIFIED, SUBJECT_DN, SUBJECT_PARTS
+from webca.crypto.utils import name_to_components, components_to_name
+from webca.utils import dict_as_tuples, tuples_as_dict, subject_display
 from webca.web import validators
 
 # TODO: consider the action to take when a FK is deleted.
@@ -75,6 +77,51 @@ class Request(models.Model):
                 code='minBits',
                 params={'min': self.template.min_bits}
             )
+        # Clean up the subject
+        subject = tuples_as_dict(name_to_components(self.subject))
+        new_subject = {}
+        for name, value in subject.items():
+            if name in SUBJECT_PARTS:
+                new_subject[name] = value
+        # Validate the subject requirements against the template
+        if self.template.required_subject == Template.SUBJECT_CN:
+            if 'CN' not in new_subject.keys():
+                raise ValidationError(
+                    'A Common Name is required for this request',
+                    code='cn-required',
+                )
+            self.subject = '/CN={}'.format(new_subject['CN'])
+        elif self.template.required_subject == Template.SUBJECT_EMAIL:
+            if 'emailAddress' not in new_subject.keys():
+                raise ValidationError(
+                    'An E-Mail is required for this request',
+                    code='email-required',
+                )
+            else:
+                validate_email(new_subject['emailAddress'])
+            self.subject = '/emailAddress=%s' % new_subject['emailAddress']
+        elif self.template.required_subject == Template.SUBJECT_DN:
+            valid = True
+            for name in SUBJECT_DN:
+                if name not in new_subject.keys():
+                    print(name)
+                    valid = False
+                    break
+            if not valid:
+                raise ValidationError(
+                    'A full Distinguished Name is required for this request',
+                    code='dn-required',
+                )
+            self.subject = components_to_name(dict_as_tuples(new_subject))
+        else:
+            # A partial DN means at least CN or email and then whatever else
+            if 'CN' not in new_subject.keys() and 'emailAddres' not in new_subject.keys():
+                raise ValidationError(
+                    'At least one of Common Name or E-Mail are required for this request',
+                    code='partial-required',
+                )
+            self.subject = components_to_name(dict_as_tuples(new_subject))
+
         super().save(*args, **kwargs)
 
     def get_csr(self):
@@ -132,6 +179,16 @@ class Certificate(models.Model):
 
 class Template(models.Model):
     """A template for a certificate request."""
+    SUBJECT_DN = 1
+    SUBJECT_CN = 2
+    SUBJECT_EMAIL = 3
+    SUBJECT_DN_PARTIAL = 4
+    SUBJECT_TYPE = [
+        (SUBJECT_CN, 'Common Name'),
+        (SUBJECT_EMAIL, 'E-Mail address'),
+        (SUBJECT_DN, 'Full Distinguished Name'),
+        (SUBJECT_DN_PARTIAL, 'Partial Distinguished Name'),
+    ]
     name = models.CharField(
         max_length=100,
         help_text='Name for this certificate template',
@@ -155,11 +212,16 @@ class Template(models.Model):
         help_text='Minimum key size',
         validators=[validators.power_two],
     )
+    required_subject = models.SmallIntegerField(
+        choices=SUBJECT_TYPE,
+        default=SUBJECT_CN,
+        help_text='Type of subject required: Full or partial DN, CN or emailAddress'
+    )
     basic_constraints = models.CharField(
         max_length=50,
         default='{"ca":0, "pathlen":0}',
         help_text='CA cert indication and pathlen',
-    )
+    )  # TODO: separate this to a couple of fields or something better than changing a json dict
     key_usage = models.TextField(
         blank=True,
         verbose_name='KeyUsage',

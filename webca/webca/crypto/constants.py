@@ -7,6 +7,15 @@ SERIAL_BYTES = 16
 # Default duration of a certificate in seconds (5 years)
 CERT_DURATION = 60*60*24*365*5
 
+# Subject components
+
+SUBJECT_DN = [
+    'C', 'ST', 'L', 'O', 'OU', 'CN'
+]
+
+SUBJECT_PARTS = list(SUBJECT_DN)
+SUBJECT_PARTS.append('emailAddress')
+
 # KeyUsage enumeration
 
 KU_DIGITALSIGNATURE = 1
@@ -20,15 +29,15 @@ KU_ENCIPHERONLY = 8
 KU_DECIPHERONLY = 9
 
 KEY_USAGE = {
-    KU_DIGITALSIGNATURE : 'digitalSignature',
-    KU_NONREPUDIATION   : 'nonRepudiation',
-    KU_KEYENCIPHERMENT  : 'keyEncipherment',
-    KU_DATAENCIPHERMENT : 'dataEncipherment',
-    KU_KEYAGREEMENT     : 'keyAgreement',
-    KU_KEYCERTSIGN      : 'keyCertSign',
-    KU_CRLSIGN          : 'cRLSign',
-    KU_ENCIPHERONLY     : 'encipherOnly',
-    KU_DECIPHERONLY     : 'decipherOnly'
+    KU_DIGITALSIGNATURE: 'digitalSignature',
+    KU_NONREPUDIATION: 'nonRepudiation',
+    KU_KEYENCIPHERMENT: 'keyEncipherment',
+    KU_DATAENCIPHERMENT: 'dataEncipherment',
+    KU_KEYAGREEMENT: 'keyAgreement',
+    KU_KEYCERTSIGN: 'keyCertSign',
+    KU_CRLSIGN: 'cRLSign',
+    KU_ENCIPHERONLY: 'encipherOnly',
+    KU_DECIPHERONLY: 'decipherOnly'
 }
 
 # ExtendedKeyUsage enumeration
@@ -46,33 +55,35 @@ EKU_MSCTLSIGN = 10
 EKU_MSEFS = 11
 
 EXT_KEY_USAGE = {
-    EKU_SERVERAUTH      : 'serverAuth',
-    EKU_CLIENTAUTH      : 'clientAuth',
-    EKU_CODESIGNING     : 'codeSigning',
-    EKU_EMAILPROTECTION : 'emailProtection',
-    EKU_TIMESTAMPING    : 'timeStamping',
-    EKU_OCSPSIGNING     : 'OCSPSigning',
-    EKU_IPSECIKE        : 'ipsecIKE',
-    EKU_MSCODEIND       : 'msCodeInd',
-    EKU_MSCODECOM       : 'msCodeCom',
-    EKU_MSCTLSIGN       : 'msCTLSign',
-    EKU_MSEFS           : 'msEFS'
+    EKU_SERVERAUTH: 'serverAuth',
+    EKU_CLIENTAUTH: 'clientAuth',
+    EKU_CODESIGNING: 'codeSigning',
+    EKU_EMAILPROTECTION: 'emailProtection',
+    EKU_TIMESTAMPING: 'timeStamping',
+    EKU_OCSPSIGNING: 'OCSPSigning',
+    EKU_IPSECIKE: 'ipsecIKE',
+    EKU_MSCODEIND: 'msCodeInd',
+    EKU_MSCODECOM: 'msCodeCom',
+    EKU_MSCTLSIGN: 'msCTLSign',
+    EKU_MSEFS: 'msEFS'
 }
 
-REV_UNSPECIFIED             = 1
-REV_KEYCOMPROMISE           = 2
-REV_CACOMPROMISE            = 3
-REV_AFFILIATIONCHANGED      = 4
-REV_SUPERSEDED              = 5
-REV_CESSATIONOFOPERATION    = 6
-REV_CERTIFICATEHOLD         = 7
+# Revocation reasons
+
+REV_UNSPECIFIED = 1
+REV_KEYCOMPROMISE = 2
+REV_CACOMPROMISE = 3
+REV_AFFILIATIONCHANGED = 4
+REV_SUPERSEDED = 5
+REV_CESSATIONOFOPERATION = 6
+REV_CERTIFICATEHOLD = 7
 
 REV_REASON = {
-    REV_UNSPECIFIED              : 'unspecified',
-    REV_KEYCOMPROMISE            : 'keyCompromise',
-    REV_CACOMPROMISE             : 'CACompromise',
-    REV_AFFILIATIONCHANGED       : 'affiliationChanged',
-    REV_SUPERSEDED               : 'superseded',
-    REV_CESSATIONOFOPERATION     : 'cessationOfOperation',
-    REV_CERTIFICATEHOLD          : 'certificateHold',
+    REV_UNSPECIFIED: 'unspecified',
+    REV_KEYCOMPROMISE: 'keyCompromise',
+    REV_CACOMPROMISE: 'CACompromise',
+    REV_AFFILIATIONCHANGED: 'affiliationChanged',
+    REV_SUPERSEDED: 'superseded',
+    REV_CESSATIONOFOPERATION: 'cessationOfOperation',
+    REV_CERTIFICATEHOLD: 'certificateHold',
 }

@@ -30,15 +30,16 @@ def name_to_components(name):
     """Converts a name to a list of components.
 
     Arguments:
-        name - Name in the format /name1=value1/name2=value2/../
+        name - Name in the format /name1=value1/name2=value2/..
     Returns: list of (name, value) tuples
     """
     ret = []
-    components = name.split('/')[1:-1]
+    components = [x for x in name.split('/') if x]
     components = [x.split('=') for x in components]
+    components = [x for x in components if len(x) == 2]
     for key, value in components:
         ret.append(
-            (key,value)
+            (key, value)
         )
     return ret
 
