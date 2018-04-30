@@ -94,11 +94,10 @@ class CAService:
         extensions = request.template.get_extensions()
         # Validate stuff
 
-
         # New stuff
         serial = cert_utils.new_serial()
         valid_from = 0
-        valid_to = timedelta(days=request.template.days).seconds
+        valid_to = int(timedelta(days=request.template.days).total_seconds())
         # Generate CSR and then the certificate
         new_csr = certs.create_cert_request(
             pub_key,
@@ -121,7 +120,8 @@ class CAService:
         certificate.serial = serial
         certificate.subject = cert_utils.components_to_name(subject)
         certificate.valid_from = datetime.now(pytz.utc)
-        certificate.valid_to = datetime.now(pytz.utc) + timedelta(days=request.template.days)
+        certificate.valid_to = datetime.now(
+            pytz.utc) + timedelta(days=request.template.days)
         certificate.save()
         # Update the request
         request.status = Request.STATUS_ISSUED
