@@ -4,6 +4,8 @@ have to inherit so that can provide the same features.
 """
 import abc
 
+from webca.crypto.constants import KU_KEYCERTSIGN, KU_CRLSIGN
+
 
 class CertStore(metaclass=abc.ABCMeta):
     """"This class is to be used to track the different
@@ -16,6 +18,12 @@ class CertStore(metaclass=abc.ABCMeta):
     def register_store(cls):
         if issubclass(cls, CertStore):
             CertStore.stores.append((cls.__name__, cls.STORE_ID, cls))
+
+    @abc.abstractmethod
+    def add_certificate(self, private_key, certificate):
+        """Add an OpenSSL.crypto.X509 certificate and
+        its OpenSSL.crypto.PKey private key."""
+        return
 
     @abc.abstractmethod
     def get_private_key(self, serial):
@@ -35,17 +43,19 @@ class CertStore(metaclass=abc.ABCMeta):
         return
 
     @abc.abstractmethod
-    def get_certificates(self, keyUsage, extendedKeyUsage):
+    def get_certificates(self, key_usage=None, ext_key_usage=None):
         """Return a list of OpenSSL.crypto.X509 that match the list of keyUsage
         and/or extendedKeyUsage.
 
-        keyUsage is a list of webca.crypto.constants.KEY_USAGE
-        extendedKeyUsage is a list of webca.crypto.constants.EXT_KEY_USAGE
+        key_usage is a list of webca.crypto.constants.KU_*
+        ext_key_usage is a list of webca.crypto.constants.EKU_*
         """
         return
 
-    @abc.abstractmethod
-    def add_certificate(self, private_key, certificate):
-        """Add an OpenSSL.crypto.X509 certificate and
-        its OpenSSL.crypto.PKey private key."""
-        return
+    def get_ca_certificates(self):
+        """Return the CA certificates of a store."""
+        return self.get_certificates(key_usage=[KU_KEYCERTSIGN])
+
+    def get_crl_certificates(self):
+        """Return the CA certificates of a store."""
+        return self.get_certificates(key_usage=[KU_CRLSIGN])
