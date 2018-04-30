@@ -1,4 +1,6 @@
 
+import re
+
 from django.conf import settings
 from django.db import models
 
@@ -21,15 +23,25 @@ class Request(models.Model):
     csr = models.TextField(
         help_text='CSR for this request in PEM format'
     )
+    template = models.ForeignKey(
+        'Template',
+        on_delete=models.DO_NOTHING
+    )
+
+    def __str__(self):
+        if 'CN=' in self.subject:
+            return re.search('CN=([^/]+)', self.subject).groups()[0]
+        if 'emailAddress=' in self.subject:
+            return re.search('emailAddress=([^/]+)', self.subject).groups()[0]
+        return self.subject
+
+    def __repr__(self):
+        return '<Certificate %s' % str(self)
 
 
 class Certificate(models.Model):
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
-        on_delete=models.DO_NOTHING
-    )
-    template = models.ForeignKey(
-        'Template',
         on_delete=models.DO_NOTHING
     )
     csr = models.OneToOneField(
@@ -54,6 +66,12 @@ class Certificate(models.Model):
         help_text='The certificate is valid until this date'
     )
 
+    def __str__(self):
+        return self.subject
+
+    def __repr__(self):
+        return '<Certificate %s' % str(self)
+
     class Meta:
         verbose_name = 'Issued certificates'
 
@@ -70,6 +88,7 @@ class Template(models.Model):
         help_text='Whether this template will be available for end users'
     )
     version = models.IntegerField(
+        default=1,
         help_text='Version of this certificate'
     )
     auto_sign = models.BooleanField(
@@ -77,6 +96,7 @@ class Template(models.Model):
         help_text='Certificates using this template will automatically be signed by the CA'
     )
     min_bits = models.PositiveSmallIntegerField(
+        # TODO: Needs a validator that checks it's a power of 2 number
         default=2048,
         help_text='Minimum key size'
     )
@@ -104,13 +124,28 @@ class Template(models.Model):
         help_text='Inherited from the signing certificate/system configuration'
     )
     extensions = models.TextField(
+        blank=True,
         help_text='Other extensions for this certificate'
     )
     # policies = models.ForeignKey('PolicyInformation')
 
+    def __str__(self):
+        return self.name
+
+    def __repr__(self):
+        return '<Template %s' % str(self)
+
     def _save(self):
         pass
         # TODO: autobump the version number on updates
+
+    @staticmethod
+    def get_enabled():
+        return list(Template.objects.filter(enabled=True))
+
+    @staticmethod
+    def get_form_choices():
+        return [(t.id, t.name) for t in Template.get_enabled()]
 
 
 class Revoked(models.Model):

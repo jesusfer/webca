@@ -3,6 +3,10 @@ from django.conf import settings
 from webca.web.models import *
 
 
+class RequestAdmin(admin.ModelAdmin):
+    list_display = ['id', '__str__']
+
+
 def cert_readonly_fields():
     if settings.DEBUG == True:
         return []
@@ -20,9 +24,21 @@ class CertificateAdmin(admin.ModelAdmin):
 
 class TemplateAdmin(admin.ModelAdmin):
     save_as = True
+    save_on_top = True
+
+    list_display = [
+        '__str__', 'enabled', 'version'
+    ]
+    actions = ['toggle_template']
+
+    def toggle_template(self, request, queryset):
+        for template in queryset:
+            template.enabled = not template.enabled
+            template.save()
+        self.message_user(request, 'Toggled %s template(s)' % len(queryset))
 
 
-admin.site.register(Request)
+admin.site.register(Request, RequestAdmin)
 admin.site.register(Certificate, CertificateAdmin)
 admin.site.register(Revoked)
 admin.site.register(Template, TemplateAdmin)

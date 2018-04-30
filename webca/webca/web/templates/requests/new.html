@@ -1,0 +1,13 @@
+<h3>New Request</h3>
+{% if form %}
+{{ form.non_field_errors }}
+<form action="{% url 'req:request_new' %}" method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <input type="submit" value="Submit" />
+</form>
+{% else %}
+<p>There are no templates available.</p>
+{% endif %}
+
+<p><a href="{% url 'req:request_index' %}">Back</a></p>

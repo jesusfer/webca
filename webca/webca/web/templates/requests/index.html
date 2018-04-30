@@ -1,0 +1,14 @@
+{% if request_list %}
+<h3>Your requests</h3>
+<ul>
+    {% for req in request_list %}
+    <li>{{ req }}</li>
+    {% endfor %}
+</ul>
+{% else %}
+<p>You haven't made any requests yet</p>
+{% endif %}
+
+<p>
+    <a href="{% url 'req:request_new' %}">New request</a>
+</p>
