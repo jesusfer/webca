@@ -36,7 +36,7 @@ class RequestNewView(View):
             new_req = Request()
             new_req.user = request.user
             new_req.subject = form.get_subject()
-            new_req.csr = ''  # TODO: build a CSR from the form and the template
+            new_req.csr = data['csr']
             new_req.template = Template.objects.get(pk=data['template'])
             new_req.save()
             return HttpResponseRedirect('/req/')

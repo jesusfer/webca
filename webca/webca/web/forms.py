@@ -1,5 +1,7 @@
 from django import forms
+
 from webca.web.models import Template
+from webca.web.validators import valid_pem_csr
 
 NAME_DICT = {
     'country': 'C',
@@ -16,45 +18,46 @@ class RequestNewForm(forms.Form):
     country = forms.CharField(
         max_length=2,
         required=False,
-        label='Country'
+        label='Country',
     )
     state = forms.CharField(
         max_length=50,
         required=False,
-        label='State or province'
+        label='State or province',
     )
     locality = forms.CharField(
         max_length=50,
         required=False,
-        label='Locality'
+        label='Locality',
     )
     org = forms.CharField(
         max_length=50,
         required=False,
-        label='Organization'
+        label='Organization',
     )
     ou = forms.CharField(
         max_length=50,
         required=False,
-        label='Organizational Unit'
+        label='Organizational Unit',
     )
     cn = forms.CharField(
         max_length=50,
         required=False,
-        label='Common Name'
+        label='Common Name',
     )
     email = forms.EmailField(
         max_length=50,
         required=False,
-        label='Email Address'
+        label='Email Address',
     )
     csr = forms.CharField(
         widget=forms.Textarea,
-        label='Your CSR in PEM format'
+        label='Your CSR in PEM format',
+        validators=[valid_pem_csr]
     )
     template = forms.ChoiceField(
         choices=Template.get_form_choices,
-        label='Choose a template'
+        label='Choose a template',
     )
 
     def get_subject(self):

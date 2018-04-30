@@ -6,6 +6,7 @@ from django.db import models
 
 from webca.crypto.constants import REV_REASON, REV_UNSPECIFIED
 from webca.utils import dict_as_tuples
+from webca.web import validators
 
 # TODO: consider the action to take when a FK is deleted.
 # We should not delete anything so that we can keep track of everyting, probably
@@ -14,18 +15,19 @@ from webca.utils import dict_as_tuples
 class Request(models.Model):
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
-        on_delete=models.DO_NOTHING
+        on_delete=models.DO_NOTHING,
     )
     subject = models.CharField(
         max_length=255,
-        help_text='Subject of this certificate request'
+        help_text='Subject of this certificate request',
     )
     csr = models.TextField(
-        help_text='CSR for this request in PEM format'
+        help_text='CSR for this request in PEM format',
+        validators=[validators.valid_pem_csr],
     )
     template = models.ForeignKey(
         'Template',
-        on_delete=models.DO_NOTHING
+        on_delete=models.DO_NOTHING,
     )
 
     def __str__(self):
@@ -38,33 +40,41 @@ class Request(models.Model):
     def __repr__(self):
         return '<Certificate %s' % str(self)
 
+    def get_csr(self):
+        """Return the request as a OpenSSL.crypto.X509Req object."""
+        return crypto.load_certificate_request(crypto.FILETYPE_PEM, self.csr)
+
 
 class Certificate(models.Model):
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
-        on_delete=models.DO_NOTHING
+        on_delete=models.DO_NOTHING,
     )
     csr = models.OneToOneField(
         'Request',
-        on_delete=models.CASCADE
+        on_delete=models.CASCADE,
     )
     x509 = models.TextField(
-        help_text='PEM of the signed certificate'
+        help_text='PEM of the signed certificate',
+        validators=[validators.valid_pem_cer],
     )
     serial = models.CharField(
         max_length=100,
-        help_text='Serial number of the certificate as an hex string'
+        help_text='Serial number of the certificate as an hex string',
     )
     subject = models.CharField(
         max_length=255,
-        help_text='Subject of this certificate'
+        help_text='Subject of this certificate',
     )
     valid_from = models.DateTimeField(
-        help_text='The certificate is valid from this date'
+        help_text='The certificate is valid from this date',
     )
     valid_to = models.DateTimeField(
-        help_text='The certificate is valid until this date'
+        help_text='The certificate is valid until this date',
     )
+
+    class Meta:
+        verbose_name = 'Issued certificates'
 
     def __str__(self):
         return self.subject
@@ -72,60 +82,61 @@ class Certificate(models.Model):
     def __repr__(self):
         return '<Certificate %s' % str(self)
 
-    class Meta:
-        verbose_name = 'Issued certificates'
+    def get_certificate(self):
+        """Return the certificate as a OpenSSL.crypto.X509 object."""
+        return crypto.load_certificate(crypto.FILETYPE_PEM, self.x509)
 
 
 class Template(models.Model):
     name = models.CharField(
         max_length=100,
-        help_text='Name for this certificate template'
+        help_text='Name for this certificate template',
     )
     days = models.SmallIntegerField(
-        help_text='Number of days that this certificate will be valid for'
+        help_text='Number of days that this certificate will be valid for',
     )
     enabled = models.BooleanField(
-        help_text='Whether this template will be available for end users'
+        help_text='Whether this template will be available for end users',
     )
     version = models.IntegerField(
         default=1,
-        help_text='Version of this certificate'
+        help_text='Version of this certificate',
     )
     auto_sign = models.BooleanField(
         default=True,
-        help_text='Certificates using this template will automatically be signed by the CA'
+        help_text='Certificates using this template will automatically be signed by the CA',
     )
     min_bits = models.PositiveSmallIntegerField(
-        # TODO: Needs a validator that checks it's a power of 2 number
         default=2048,
-        help_text='Minimum key size'
+        help_text='Minimum key size',
+        validators=[validators.power_two],
     )
     basic_constraints = models.CharField(
         max_length=50,
         default="{'ca':0, 'pathlen':0}",
-        help_text='CA cert indication and pathlen'
+        help_text='CA cert indication and pathlen',
     )
     key_usage = models.TextField(
         blank=True,
-        verbose_name='KeyUsage'
+        verbose_name='KeyUsage',
     )
     ext_key_usage = models.TextField(
         blank=True,
-        verbose_name='ExtendedKeyUsage'
+        verbose_name='ExtendedKeyUsage',
     )
     crl_points = models.TextField(
         blank=True,
         verbose_name='CRL Distribution Points',
-        help_text='Inherited from the signing certificate/system configuration'
+        help_text='Inherited from the signing certificate/system configuration',
     )
     aia = models.TextField(
         blank=True,
         verbose_name='Authority Info Access',
-        help_text='Inherited from the signing certificate/system configuration'
+        help_text='Inherited from the signing certificate/system configuration',
     )
     extensions = models.TextField(
         blank=True,
-        help_text='Other extensions for this certificate'
+        help_text='Other extensions for this certificate',
     )
     # policies = models.ForeignKey('PolicyInformation')
 

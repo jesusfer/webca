@@ -72,6 +72,7 @@ class KeyPair(models.Model):
                 crypto.FILETYPE_PEM, keys).decode('utf-8')
             keyPair.public_key = crypto.dump_publickey(
                 crypto.FILETYPE_PEM, keys).decode('utf-8')
+            # TODO: check if the key has a passphrase and do something
         except TypeError:
             # check() will raise a TypeError if the key pair
             # only contains the public key and we need a private key
