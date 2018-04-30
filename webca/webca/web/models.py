@@ -299,9 +299,20 @@ class Revoked(models.Model):
         help_text='When the certificate was revoked'
     )
     reason = models.SmallIntegerField(
+        # TODO: end users should not have access to all reasons
         choices=dict_as_tuples(REV_REASON),
         default=REV_UNSPECIFIED
     )
+
+    def __str__(self):
+        return '{} ({})'.format(
+            str(self.certificate),
+            REV_REASON[self.reason]
+        )
+
+    def __repr__(self):
+        return '<Revoked %s' % str(self.certificate)
+
 
     class Meta:
         verbose_name = 'Revoked certificate'

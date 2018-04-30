@@ -59,7 +59,12 @@ class TemplateAdmin(admin.ModelAdmin):
         self.message_user(request, 'Toggled %s template(s)' % len(queryset))
 
 
+class RevokedAdmin(admin.ModelAdmin):
+    """Admin model for Revoked certificates."""
+    list_display = ['certificate', 'reason', 'date']
+
+
 admin.site.register(Request, RequestAdmin)
 admin.site.register(Certificate, CertificateAdmin)
-admin.site.register(Revoked)
+admin.site.register(Revoked, RevokedAdmin)
 admin.site.register(Template, TemplateAdmin)
