@@ -51,6 +51,7 @@ class CertificateAdmin(admin.ModelAdmin):
 class TemplateAdmin(admin.ModelAdmin):
     """Admin model for templates."""
     save_as = True
+    save_as_continue = False
     save_on_top = True
     list_display = [
         '__str__', 'enabled', 'version'

@@ -246,6 +246,7 @@ class Template(models.Model):
     )
     # policies = models.ForeignKey('PolicyInformation')
 
+    __id = None
     __days = None
     __enabled = None
     __auto_sign = None
@@ -260,6 +261,7 @@ class Template(models.Model):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # Save the original values
+        self.__id = self.id
         self.__days = self.days
         self.__enabled = self.enabled
         self.__auto_sign = self.auto_sign
@@ -292,7 +294,7 @@ class Template(models.Model):
                 self.__ext_key_usage != self.ext_key_usage or
                 self.__crl_points != self.crl_points or
                 self.__aia != self.aia or
-                self.__extensions != self.extensions):
+                self.__extensions != self.extensions) and self.id is not None:
             self.version += 1
         super().save(*args, **kwargs)
 
