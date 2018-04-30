@@ -2,7 +2,7 @@ import re
 from django.db import models
 from OpenSSL import crypto
 
-from webca.certstore_db.utils import dict_as_tuples
+from webca.utils import dict_as_tuples
 from webca.crypto.constants import EXT_KEY_USAGE, KEY_USAGE
 from webca.crypto.utils import asn1_to_datetime
 from webca.crypto.extensions import get_extension, KeyUsage, ExtendedKeyUsage
