@@ -1,3 +1,6 @@
+"""
+A CertStore implementation that uses Djando models to store the CA certificates.
+"""
 from django.db import transaction
 
 from webca.certstore import CertStore
@@ -12,14 +15,15 @@ class DatabaseStore(CertStore):
 
     def get_private_key(self, serial):
         """Return the private OpenSSL.crypto.PKey associated
-        with the certificate serial number"""
+        with the certificate serial number."""
         cert = self._get_certificate(serial)
         if cert:
             return cert.keys.get_private_key()
+        return None
 
     def get_public_key(self, serial):
         """Return the public OpenSSL.crypto.PKey associated
-        with the certificate serial number"""
+        with the certificate serial number."""
         cert = self._get_certificate(serial)
         if cert:
             return cert.keys.get_public_key()

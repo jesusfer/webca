@@ -87,38 +87,37 @@ class Certificate(models.Model):
     keys = models.ForeignKey(
         'KeyPair',
         on_delete=models.CASCADE,
-        help_text='Key pair associated with this certificate'
+        help_text='Key pair associated with this certificate',
     )
     subject = models.TextField(
         help_text='Subject as a distinguished name',
-
     )
     # The serial will be a large integer, represented in a hex string -> '%x' % n
     serial = models.CharField(
         max_length=100,
-        help_text='Serial number of the certificate as an hex string'
+        help_text='Serial number of the certificate as an hex string',
     )
     valid_from = models.DateTimeField(
-        help_text='The certificate is valid from this date'
+        help_text='The certificate is valid from this date',
     )
     valid_to = models.DateTimeField(
-        help_text='The certificate is valid until this date'
+        help_text='The certificate is valid until this date',
     )
     basic_constraints = models.CharField(
         max_length=50,
         default='',
-        help_text='CA cert indication and pathlen'
+        help_text='CA cert indication and pathlen',
     )
     key_usage = models.TextField(
         blank=True,
-        verbose_name='Key Usage'
+        verbose_name='Key Usage',
     )
     ext_key_usage = models.TextField(
         blank=True,
-        verbose_name='Extended Key Usage'
+        verbose_name='Extended Key Usage',
     )
     certificate = models.TextField(
-        help_text='Certificate in PEM format'
+        help_text='Certificate in PEM format',
     )
 
     def __str__(self):
@@ -130,6 +129,7 @@ class Certificate(models.Model):
         return "<Certificate %s>" % self.__str__()
 
     def is_ca(self):
+        """Is this a CA certificate?"""
         return 'CA=True' in self.basic_constraints
 
     is_ca.boolean = True

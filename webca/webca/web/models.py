@@ -13,6 +13,7 @@ from webca.web import validators
 
 
 class Request(models.Model):
+    """A certificate request from an end user."""
     STATUS_PROCESSING = 1
     STATUS_ISSUED = 2
     STATUS_REJECTED = 3
@@ -26,7 +27,7 @@ class Request(models.Model):
         settings.AUTH_USER_MODEL,
         on_delete=models.DO_NOTHING,
     )
-    subject = models.CharField(
+    subject = models.CharField(  # OpenSSL format
         max_length=255,
         help_text='Subject of this certificate request',
     )
@@ -41,16 +42,16 @@ class Request(models.Model):
     status = models.SmallIntegerField(
         choices=STATUS,
         default=STATUS_PROCESSING,
-        help_text='Status of this request'
+        help_text='Status of this request',
     )
     reject_reason = models.CharField(
         max_length=250,
         blank=True,
-        help_text='Why this request has been rejected'
+        help_text='Why this request has been rejected',
     )
     approved = models.NullBooleanField(
         default=None,
-        help_text='Has this request been (auto)approved?'
+        help_text='Has this request been (auto)approved?',
     )
 
     def __str__(self):
@@ -69,6 +70,7 @@ class Request(models.Model):
 
 
 class Certificate(models.Model):
+    """An issued certificate."""
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.DO_NOTHING,
@@ -97,7 +99,7 @@ class Certificate(models.Model):
     )
 
     class Meta:
-        verbose_name = 'Issued certificates'
+        verbose_name = 'Issued certificate'
 
     def __str__(self):
         return self.subject
@@ -111,6 +113,7 @@ class Certificate(models.Model):
 
 
 class Template(models.Model):
+    """A template for a certificate request."""
     name = models.CharField(
         max_length=100,
         help_text='Name for this certificate template',
@@ -175,14 +178,18 @@ class Template(models.Model):
 
     @staticmethod
     def get_enabled():
+        """Return all enabled templates."""
         return list(Template.objects.filter(enabled=True))
 
     @staticmethod
     def get_form_choices():
+        """Return all enlabed templates in a list of tuples
+        to be used as field choices."""
         return [(t.id, t.name) for t in Template.get_enabled()]
 
 
 class Revoked(models.Model):
+    """A revoked certificate."""
     certificate = models.OneToOneField(
         'Certificate',
         # A revoked cert should always be kept
@@ -198,7 +205,7 @@ class Revoked(models.Model):
     )
 
     class Meta:
-        verbose_name = 'Revoked certificates'
+        verbose_name = 'Revoked certificate'
 
 # TODO: is it really needed to store the CRL?
 # maybe like a configuration object?

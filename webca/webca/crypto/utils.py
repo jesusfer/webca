@@ -32,7 +32,7 @@ ASN1_FMT = '%Y%m%d%H%M%S'
 def datetime_to_asn1(when=datetime.utcnow()):
     """Convert a datetime into a byte string ASN.1 format YYYYMMDDhhmmssZ."""
     fmt = ASN1_FMT
-    if when.tzinfo == pytz.utc or when.tzname() == None:
+    if when.tzinfo == pytz.utc or when.tzname() is None:
         fmt += 'Z'
     else:
         fmt += '%z'

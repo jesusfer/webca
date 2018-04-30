@@ -1,3 +1,6 @@
+"""
+Constants used in the webca.crypto module.
+"""
 # Default duration of a certificate in seconds (5 years)
 CERT_DURATION = 60*60*24*365*5
 

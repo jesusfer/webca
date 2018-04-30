@@ -9,7 +9,8 @@ class RequestAdmin(admin.ModelAdmin):
     list_filter = ['status']
 
 def cert_readonly_fields():
-    if settings.DEBUG == True:
+    """Make fields read only if not in DEBUG mode."""
+    if settings.DEBUG:
         return []
     return [
         'user', 'template', 'csr', 'x509',

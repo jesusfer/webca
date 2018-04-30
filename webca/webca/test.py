@@ -1,3 +1,4 @@
+#pylint: disable=C0103
 from OpenSSL import crypto
 
 from webca.crypto import *

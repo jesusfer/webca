@@ -21,55 +21,81 @@ def _extend_class(cls, lst):
 
 
 class MultiValueExtension(object):
+    """A X509 extension that can have several values."""
+
     def __init__(self, *args, **kwargs):
         self._value = ''
 
     def _add(self, usage):
-        if len(self._value) == 0:
+        if not self._value:
             self._value = usage
         else:
             self._value += ',' + usage
 
     def value(self):
+        """Return the value as a comma separated string."""
         return self._value
 
     def values(self):
+        """Return the value a a list of values."""
         return self._value.split(',')
+
+    def from_list(self, values):
+        """Build from a comma separated string."""
+        for value in values.split(','):
+            self._add(value)
 
 
 class KeyUsage(MultiValueExtension):
+    """The keyUsage extension.
+
+    Build the object by calling KeyUsage().<usage>().<usage>().
+
+    methods - digitalSignature, nonRepudiation, keyEncipherment, dataEncipherment,
+    keyAgreement, keyCertSign, cRLSign, encipherOnly, decipherOnly
+    """
+
+    #pylint: disable=e1101
     @staticmethod
     def from_extension(extension):
         """Build an object from a cryptography.x509.Extension."""
         if extension.oid.dotted_string != '2.5.29.15':
             raise ValueError('extension')
-        e = extension.value
-        ku = KeyUsage()
-        if e.digital_signature:
-            ku = ku.digitalSignature()
-        if e.content_commitment:
-            ku = ku.nonRepudiation()
-        if e.key_encipherment:
-            ku = ku.keyEncipherment()
-        if e.data_encipherment:
-            ku = ku.dataEncipherment()
-        if e.key_agreement:
-            ku = ku.keyAgreement()
+        usage = KeyUsage()
+        if extension.value.digital_signature:
+            usage = usage.digitalSignature()
+        if extension.value.content_commitment:
+            usage = usage.nonRepudiation()
+        if extension.value.key_encipherment:
+            usage = usage.keyEncipherment()
+        if extension.value.data_encipherment:
+            usage = usage.dataEncipherment()
+        if extension.value.key_agreement:
+            usage = usage.keyAgreement()
             # For these to work, key_agreement must be True
-            if e.encipher_only:
-                ku = ku.encipherOnly()
-            if e.decipher_only:
-                ku = ku.decipherOnly()
-        if e.key_cert_sign:
-            ku = ku.keyCertSign()
-        if e.crl_sign:
-            ku = ku.cRLSign()
-        return ku
+            if extension.value.encipher_only:
+                usage = usage.encipherOnly()
+            if extension.value.decipher_only:
+                usage = usage.decipherOnly()
+        if extension.value.key_cert_sign:
+            usage = usage.keyCertSign()
+        if extension.value.crl_sign:
+            usage = usage.cRLSign()
+        return usage
+
 
 _extend_class(KeyUsage, KEY_USAGE.values())
 
 
 class ExtendedKeyUsage(MultiValueExtension):
+    """The extendedKeyUsage extension.
+
+    Build the object by calling ExtendedKeyUsage().<usage>().<usage>().
+
+    methods - serverAuth, clientAuth, codeSigning, emailProtection,
+    timeStamping, OCSPSigning, ipsecIKE,
+    msCodeInd, msCodeCom, msCTLSign, msEFS
+    """
     @staticmethod
     def from_extension(extension):
         """Build an object from a cryptography.x509.Extension."""
