@@ -6,6 +6,7 @@ if ($v) {
     python manage.py migrate contenttypes
     python manage.py migrate sessions
     python manage.py migrate web
+    python manage.py migrate config
 }
 
 python manage.py makemigrations --settings webca.ca_admin.settings
