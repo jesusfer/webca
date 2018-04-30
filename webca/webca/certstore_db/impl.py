@@ -41,26 +41,31 @@ class DatabaseStore(CertStore):
             return cert.get_certificate()
         return None
 
-    def get_certificates(self, keyUsage=[], extendedKeyUsage=[]):
-        """Return a list of OpenSSL.crypto.X509 that match the list of keyUsage
-        and/or extendedKeyUsage.
+    def get_certificates(self, key_usage=None, ext_key_usage=None):
+        """Return a list of OpenSSL.crypto.X509 that match the list of key_usage
+        and/or ext_key_usage.
 
-        keyUsage is a list of webca.crypto.constants.KEY_USAGE
-        extendedKeyUsage is a list of webca.crypto.constants.EXT_KEY_USAGE
+        key_usage is a list of webca.crypto.constants.KU_*
+        ext_key_usage is a list of webca.crypto.constants.EKU_*
         """
         certs = {}
+        key_usage = key_usage or []
+        ext_key_usage = ext_key_usage or []
 
-        for ku in keyUsage:
-            matches = Certificate.objects.filter(key_usage__icontains=ku)
-            for c in matches:
-                certs[c.serial] = c
-        for eku in extendedKeyUsage:
-            matches = Certificate.objects.filter(ext_key_usage__icontains=eku)
-            for c in matches:
-                certs[c.serial] = c
+        for usage in key_usage:
+            value = KEY_USAGE[usage]
+            matches = Certificate.objects.filter(key_usage__icontains=value)
+            for cert in matches:
+                certs[cert.serial] = cert
+        for usage in ext_key_usage:
+            value = EXT_KEY_USAGE[usage]
+            matches = Certificate.objects.filter(
+                ext_key_usage__icontains=value)
+            for cert in matches:
+                certs[cert.serial] = cert
 
         certs = certs.values()
-        if len(certs) == 0 and len(keyUsage) == 0 and len(extendedKeyUsage) == 0:
+        if not certs and not key_usage and not ext_key_usage:
             certs = Certificate.objects.all()
 
         return [x.get_certificate() for x in certs]
