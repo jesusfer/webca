@@ -102,3 +102,6 @@ ENV/
 
 # SQLite databases
 *.sqlite3
+
+# VS Code
+.vscode
