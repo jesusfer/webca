@@ -123,6 +123,11 @@ class Certificate(models.Model):
         """Return the certificate as a OpenSSL.crypto.X509 object."""
         return crypto.load_certificate(crypto.FILETYPE_PEM, self.x509)
 
+    def get_template(self):
+        """Return the template used to sign this certificate."""
+        return self.csr.template
+    get_template.short_description = 'Template'
+
 
 class Template(models.Model):
     """A template for a certificate request."""

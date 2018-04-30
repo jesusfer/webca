@@ -17,8 +17,8 @@ def cert_readonly_fields():
     if settings.DEBUG:
         return []
     return [
-        'user', 'template', 'csr', 'x509',
-        'serial', 'subject', 'valid_from', 'valid_to'
+        'user', 'get_template', 'csr', 'serial', 'subject',
+        'valid_from', 'valid_to', 'x509',
     ]
 
 
