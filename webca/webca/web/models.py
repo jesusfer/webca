@@ -8,9 +8,10 @@ from django.core.validators import validate_email
 from django.db import models
 from OpenSSL import crypto
 
-from webca.crypto.constants import REV_REASON, REV_UNSPECIFIED, SUBJECT_DN, SUBJECT_PARTS
-from webca.crypto.utils import name_to_components, components_to_name
-from webca.utils import dict_as_tuples, tuples_as_dict, subject_display
+from webca.crypto.constants import (REV_REASON, REV_UNSPECIFIED, SUBJECT_DN,
+                                    SUBJECT_PARTS)
+from webca.crypto.utils import components_to_name, name_to_components
+from webca.utils import dict_as_tuples, subject_display, tuples_as_dict
 from webca.web import validators
 from webca.web.fields import SubjectAltNameField
 
@@ -203,6 +204,7 @@ class Template(models.Model):
     )
     days = models.PositiveSmallIntegerField(
         help_text='Number of days that this certificate will be valid for',
+        validators=[validators.max_days]
     )  # TODO: add a validator for a sensible value
     enabled = models.BooleanField(
         help_text='Whether this template will be available for end users',
@@ -234,7 +236,7 @@ class Template(models.Model):
     allowed_san = SubjectAltNameField(
         help_text='Allowed SAN keywords',
         verbose_name='Allowed SAN',
-    ) # TODO: if san_type is shown, then allowed_san should not be None
+    )  # TODO: if san_type is shown, then allowed_san should not be None
     basic_constraints = models.CharField(
         max_length=50,
         default='{"ca":0, "pathlen":0}',
