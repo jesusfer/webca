@@ -266,6 +266,7 @@ class Template(models.Model):
     )
     allowed_groups = models.ManyToManyField(
         Group,
+        blank=True,
         help_text='User groups allowed to use this Template',
     )
     # policies = models.ForeignKey('PolicyInformation')

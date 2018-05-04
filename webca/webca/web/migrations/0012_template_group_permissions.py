@@ -14,6 +14,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='template',
             name='allowed_groups',
-            field=models.ManyToManyField(help_text='User groups allowed to use this Template', to='auth.Group'),
+            field=models.ManyToManyField(blank=True, help_text='User groups allowed to use this Template', to='auth.Group'),
         ),
     ]
