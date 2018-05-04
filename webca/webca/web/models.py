@@ -13,7 +13,7 @@ from webca.crypto.constants import (REV_REASON, REV_UNSPECIFIED, SUBJECT_DN,
 from webca.crypto.utils import components_to_name, name_to_components
 from webca.utils import dict_as_tuples, subject_display, tuples_as_dict
 from webca.web import validators
-from webca.web.fields import KeyUsageField, SubjectAltNameField
+from webca.web.fields import KeyUsageField, SubjectAltNameField, ExtendedKeyUsageField
 
 # TODO: consider the action to take when a FK is deleted.
 # We should not delete anything so that we can keep track of everyting, probably
@@ -258,8 +258,13 @@ class Template(models.Model):
         verbose_name='KeyUsage',
         help_text='',
     )
-    ext_key_usage = models.TextField(
+    ext_key_usage_critical = models.BooleanField(
+        default=False,
+        verbose_name='Make the ExtendendedKeyUsage extension critical',
+    )
+    ext_key_usage = ExtendedKeyUsageField(
         blank=True,
+        null=True,
         verbose_name='ExtendedKeyUsage',
     )
     crl_points = models.TextField(
@@ -294,6 +299,7 @@ class Template(models.Model):
     __basic_constraints = None
     __pathlen = None
     __key_usage = None
+    __ext_key_usage_critical = None
     __ext_key_usage = None
     __crl_points = None
     __aia = None
@@ -313,6 +319,7 @@ class Template(models.Model):
         self.__basic_constraints = self.basic_constraints
         self.__pathlen = self.pathlen
         self.__key_usage = self.key_usage
+        self.__ext_key_usage_critical = self.ext_key_usage_critical
         self.__ext_key_usage = self.ext_key_usage
         self.__crl_points = self.crl_points
         self.__aia = self.aia
@@ -342,6 +349,7 @@ class Template(models.Model):
                 self.__basic_constraints != self.basic_constraints or
                 self.__pathlen != self.pathlen or
                 self.__key_usage != self.key_usage or
+                self.__ext_key_usage_critical != self.ext_key_usage_critical or
                 self.__ext_key_usage != self.ext_key_usage or
                 self.__crl_points != self.crl_points or
                 self.__aia != self.aia or
@@ -389,8 +397,8 @@ class Template(models.Model):
         if self.ext_key_usage:
             extensions.append(crypto.X509Extension(
                 b'extendedKeyUsage',
-                False,
-                self.ext_key_usage.encode('ascii')
+                self.ext_key_usage_critical,
+                ','.join(self.ext_key_usage).encode('ascii')
             ))
         # TODO: SAN
         # crypto.X509Extension(b'subjectAltName', False, b'DNS:www.test.net')

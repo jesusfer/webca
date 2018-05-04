@@ -149,3 +149,13 @@ class KeyUsageField(MultiSelectField):
                     'encipherOnly or decipherOnly must be set with keyAgreement',
                     code='invalid-keyagreement',
                 )
+
+class ExtendedKeyUsageField(MultiSelectField):
+    """
+    Extended Key Usage Field.
+    """
+    def __init__(self, *args, **kwargs):
+        choices = [(x, x) for x in constants.EXT_KEY_USAGE.values()]
+        kwargs['max_length'] = 250
+        kwargs['choices'] = choices
+        super().__init__(*args, **kwargs)
