@@ -373,7 +373,7 @@ class Template(models.Model):
         extensions.append(crypto.X509Extension(
             b'keyUsage',
             True,
-            self.key_usage.encode('ascii')
+            ','.join(self.key_usage).encode('ascii')
         ))
         # 3. Validation
         # TODO: CRL
