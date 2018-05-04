@@ -1,7 +1,8 @@
 """
 Middleware for the web app.
 """
-from webca.web.models import Template, PERM_USE_TEMPLATE
+from webca.web.models import Template
+from webca.web.rules import PERM_USE_TEMPLATE
 
 class TemplatePermissionsMiddleware:
     """Adds the templates property to the User object in the request."""
