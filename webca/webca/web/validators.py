@@ -49,3 +49,12 @@ def max_days(value):
             'The validity is beyond 70 years',
             code='invalid-days',
         )
+
+
+def valid_pathlen(value):
+    """Make sure `value` is in the range -1 <= `value` < 32767. """
+    if value < -1 or value > 32767:
+        raise ValidationError(
+            'The value must be -1 <= pathlen < 32767',
+            code='invalid-pathlen',
+        )

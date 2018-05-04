@@ -182,6 +182,12 @@ class Certificate(models.Model):
 
 class Template(models.Model):
     """A template for a certificate request."""
+    BC_CA = 1
+    BC_ENTITY = 2
+    BC_TYPE = [
+        (BC_CA, 'Certification Authority'),
+        (BC_ENTITY, 'End Entity'),
+    ]
     SUBJECT_DN = 1
     SUBJECT_CN = 2
     SUBJECT_EMAIL = 3
@@ -236,12 +242,18 @@ class Template(models.Model):
     allowed_san = SubjectAltNameField(
         help_text='Allowed SAN keywords',
         verbose_name='Allowed SAN',
-    )  # TODO: if san_type is shown, then allowed_san should not be None
-    basic_constraints = models.CharField(
-        max_length=50,
-        default='{"ca":0, "pathlen":0}',
-        help_text='CA cert indication and pathlen',
-    )  # TODO: separate this to a couple of fields or something better than changing a json dict
+    )
+    basic_constraints = models.PositiveSmallIntegerField(
+        choices=BC_TYPE,
+        default=BC_ENTITY,
+        help_text='Type of certificate',
+    )
+    pathlen = models.SmallIntegerField(
+        default=-1,
+        help_text="""Max path validation length. Only makes sense if Basic Constraints is CA.
+        If value is -1, it won't be included in the certfiicate.""",
+        validators=[validators.valid_pathlen],
+    )
     key_usage = models.TextField(
         blank=True,
         verbose_name='KeyUsage',
@@ -276,7 +288,11 @@ class Template(models.Model):
     __enabled = None
     __auto_sign = None
     __min_bits = None
+    __required_subject = None
+    __san_type = None
+    __allowed_san = None
     __basic_constraints = None
+    __pathlen = None
     __key_usage = None
     __ext_key_usage = None
     __crl_points = None
@@ -291,7 +307,11 @@ class Template(models.Model):
         self.__enabled = self.enabled
         self.__auto_sign = self.auto_sign
         self.__min_bits = self.min_bits
+        self.__required_subject = self.required_subject
+        self.__san_type = self.san_type
+        self.__allowed_san = self.allowed_san
         self.__basic_constraints = self.basic_constraints
+        self.__pathlen = self.pathlen
         self.__key_usage = self.key_usage
         self.__ext_key_usage = self.ext_key_usage
         self.__crl_points = self.crl_points
@@ -311,10 +331,16 @@ class Template(models.Model):
         # it should be fine to just check current values with previous
         # FUTURE: this may be better done in some other way
         # FUTURE: if there are pending requests and the key is increased, we may want to automatically reject those pending requests
+        # TODO: if the Template did not have auto_sign before and it does when saving, approve automatically all requests?
+        # TODO: if san_type is shown, then allowed_san should not be None
         if (self.__days != self.days or
                 self.__auto_sign != self.auto_sign or
                 self.__min_bits != self.min_bits or
+                self.__required_subject != self.required_subject or
+                self.__san_type != self.san_type or
+                self.__allowed_san != self.allowed_san or
                 self.__basic_constraints != self.basic_constraints or
+                self.__pathlen != self.pathlen or
                 self.__key_usage != self.key_usage or
                 self.__ext_key_usage != self.ext_key_usage or
                 self.__crl_points != self.crl_points or
@@ -325,10 +351,11 @@ class Template(models.Model):
 
     def get_basic_constraints(self):
         """Return the OpenSSL formated basicConstraints value."""
-        const = json.loads(self.basic_constraints)
-        value = 'CA:{}'.format(const['ca']).upper()
-        if const['pathlen'] >= 0:
-            value += ', pathlen:%d' % const['pathlen']
+        value = 'CA:FALSE'
+        if self.basic_constraints == Template.BC_CA:
+            value = 'CA:TRUE'
+            if self.pathlen >= 0:
+                value += ',pathlen:%d' % self.pathlen
         return value
 
     def get_extensions(self):
