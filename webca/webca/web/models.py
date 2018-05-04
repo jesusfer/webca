@@ -1,6 +1,4 @@
 """Models for the public web."""
-import json
-
 from django.conf import settings
 from django.contrib.auth.models import Group
 from django.core.exceptions import ValidationError

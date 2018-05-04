@@ -57,6 +57,31 @@ class TemplateAdmin(admin.ModelAdmin):
         '__str__', 'enabled', 'version'
     ]
     readonly_fields = ['version']
+    fieldsets = (
+        (None, {
+            'fields': ('name', 'version', 'enabled', 'days', )
+        }),
+        ('Certificate name', {
+            'classes': ('',),
+            'fields': ('required_subject', 'san_type', 'allowed_san'),
+        }),
+        ('Basic Constraints', {
+            'classes': ('',),
+            'fields': ('basic_constraints', 'pathlen'),
+        }),
+        ('Validation', {
+            'classes': ('collapse',),
+            'fields': ('crl_points', 'aia'),
+        }),
+        ('Extensions', {
+            'classes': ('',),
+            'fields': ('key_usage', 'ext_key_usage_critical', 'ext_key_usage', 'extensions'),
+        }),
+        ('Permissions', {
+            'classes': ('',),
+            'fields': ('allowed_groups',),
+        }),
+    )
     actions = ['toggle_template']
 
     def toggle_template(self, request, queryset):
