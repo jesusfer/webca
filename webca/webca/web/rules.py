@@ -5,6 +5,9 @@ Rules: https://github.com/dfunckt/django-rules
 """
 import rules
 
+# Permission names
+PERM_USE_TEMPLATE = 'web.use_template'
+
 # Predicates
 @rules.Predicate
 def use_template(user, template):
@@ -17,4 +20,4 @@ def use_template(user, template):
     return False
 
 # Rules
-rules.add_perm('web.use_template', use_template)
+rules.add_perm(PERM_USE_TEMPLATE, use_template)

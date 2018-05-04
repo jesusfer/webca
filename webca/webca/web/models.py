@@ -204,8 +204,8 @@ class Template(models.Model):
     )
     days = models.PositiveSmallIntegerField(
         help_text='Number of days that this certificate will be valid for',
-        validators=[validators.max_days]
-    )  # TODO: add a validator for a sensible value
+        validators=[validators.max_days],
+    )
     enabled = models.BooleanField(
         help_text='Whether this template will be available for end users',
     )
@@ -225,7 +225,7 @@ class Template(models.Model):
     required_subject = models.SmallIntegerField(
         choices=SUBJECT_TYPE,
         default=SUBJECT_CN,
-        help_text='Type of subject required: Full or partial DN, CN or emailAddress'
+        help_text='Type of subject required: Full or partial DN, CN or emailAddress',
     )
     san_type = models.SmallIntegerField(
         choices=SAN_TYPE,
@@ -376,10 +376,14 @@ class Template(models.Model):
         return list(Template.objects.filter(enabled=True))
 
     @staticmethod
-    def get_form_choices():
-        """Return all enlabed templates in a list of tuples
-        to be used as field choices."""
-        return [(t.id, t.name) for t in Template.get_enabled()]
+    def get_form_choices(selected=None):
+        """Return a list of templates in a list of tuples to be used as field choices.
+        If `selected` is None, then return all enabled templates."""
+        if selected:
+            templates = selected
+        else:
+            templates = Template.get_enabled()
+        return [(t.id, t.name) for t in templates]
 
 
 class Revoked(models.Model):

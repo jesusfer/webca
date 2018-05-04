@@ -53,18 +53,31 @@ class RequestNewForm(forms.Form):
     csr = forms.CharField(
         widget=forms.Textarea,
         label='Your CSR in PEM format',
-        validators=[valid_pem_csr]
-    )
-    template = forms.ChoiceField(
-        choices=Template.get_form_choices,
-        label='Choose a template',
+        validators=[valid_pem_csr],
     )
 
+    def __init__(self, *args, **kwargs):
+        """Pass template_choices to limit the choices in the template selector."""
+        template_choices = kwargs.pop('template_choices', None)
+        super().__init__(*args, **kwargs)
+        # if the form is built with some templates, we only show those
+        if template_choices:
+            templates = Template.get_form_choices(template_choices)
+        else:
+            templates = Template.get_form_choices()
+        # Add it here so that we can use dynamic choices
+        self.fields['template'] = forms.ChoiceField(
+            choices=templates,
+            label='Choose a template',
+        )
+
     def get_subject(self):
+        """Return the subject in OpenSSL string format."""
         if self.is_valid():
-            f = self.cleaned_data
-            s = '/'
-            for c in ['cn', 'email', 'country', 'state', 'locality', 'org', 'ou']:
-                if len(f[c]) > 0:
-                    s += '%s=%s/' % (NAME_DICT[c], f[c])
-            return s
+            data = self.cleaned_data
+            value = '/'
+            for component in ['cn', 'email', 'country', 'state', 'locality', 'org', 'ou']:
+                if data[component]:
+                    value += '%s=%s/' % (NAME_DICT[component], data[component])
+            return value
+        return ''
