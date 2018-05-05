@@ -14,7 +14,7 @@ class RequestView(View):
         context = {
             'request_list': request_list,
         }
-        return render(request, 'requests/index.html', context)
+        return render(request, 'webca/web/requests/index.html', context)
 
 
 class RequestNewView(View):
@@ -31,7 +31,7 @@ class RequestNewView(View):
             )
             context['form'] = form
 
-        return render(request, 'requests/new.html', context)
+        return render(request, 'webca/web/requests/new.html', context)
 
     def post(self, request, *args, **kwargs):
         """POST method."""
@@ -55,6 +55,6 @@ class RequestNewView(View):
             context = {
                 'form': form
             }
-            return render(request, 'requests/new.html', context)
+            return render(request, 'webca/web/requests/new.html', context)
         return HttpResponseRedirect('/req/')
         # return render(request, self.template_name, {'form': form})
