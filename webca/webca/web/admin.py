@@ -2,7 +2,7 @@
 from django.conf import settings
 from django.contrib import admin, messages
 from django.http import HttpResponse
-
+from OpenSSL import crypto
 from webca.web.models import Certificate, Request, Revoked, Template
 
 
@@ -29,7 +29,20 @@ class CertificateAdmin(admin.ModelAdmin):
     list_display = ['id', '__str__', 'valid_from', 'valid_to']
     list_display_links = ['__str__']
     readonly_fields = cert_readonly_fields()
-    actions = ['download_certificate']
+    actions = ['view_certificate', 'download_certificate']
+
+    def view_certificate(self, request, queryset):
+        """View a text version of the certificate."""
+        if len(queryset) > 1:
+            self.message_user(
+                request,
+                'You can only choose one certificate.',
+                level=messages.ERROR)
+            return None
+        response = HttpResponse(content_type="text/plain")
+        cert = queryset.first()
+        response.write(crypto.dump_certificate(crypto.FILETYPE_TEXT, cert.get_certificate()))
+        return response
 
     def download_certificate(self, request, queryset):
         """Download a certificate."""
