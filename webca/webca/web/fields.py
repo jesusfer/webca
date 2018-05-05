@@ -1,7 +1,9 @@
 """
 Custom model fields for web.
 """
+from django import forms
 from django.core.exceptions import ValidationError
+from django.core.validators import validate_email, validate_ipv46_address
 
 from webca.crypto import constants
 from webca.utils.fields import MultiSelectField
@@ -18,7 +20,7 @@ SAN_ALLOWED = [
 
 
 class SubjectAltNameField(MultiSelectField):
-    """Subject Alternative Name model field."""
+    """Subject Alternative Name model field for Template objects."""
 
     def __init__(self, *args, **kwargs):
         kwargs['max_length'] = 250
@@ -150,12 +152,81 @@ class KeyUsageField(MultiSelectField):
                     code='invalid-keyagreement',
                 )
 
+
 class ExtendedKeyUsageField(MultiSelectField):
     """
     Extended Key Usage Field.
     """
+
     def __init__(self, *args, **kwargs):
         choices = [(x, x) for x in constants.EXT_KEY_USAGE.values()]
         kwargs['max_length'] = 250
         kwargs['choices'] = choices
         super().__init__(*args, **kwargs)
+
+
+class SubjectAltNameCertificateInput(forms.Widget):
+    """
+    Widget to build the Subject Alternative Names list.
+    """
+    template_name = 'webca/web/widgets/san.html'
+
+    def __init__(self, attrs=None):
+        if attrs is not None:
+            attrs = attrs.copy()
+        super().__init__(attrs)
+
+    def get_context(self, name, value, attrs):
+        context = super().get_context(name, value, attrs)
+        return context
+
+    def value_from_datadict(self, data, files, name):
+        value = data.getlist(name)
+        return value
+
+
+class SubjectAltNameCertificateField(forms.MultipleChoiceField):
+    """
+    Form field to build the Subject Alternative Names list.
+    """
+    widget = SubjectAltNameCertificateInput
+
+    def __init__(self, *args, **kwargs):
+        self.san_prefixes = kwargs.pop('san_prefixes', [])
+        self.san_current = kwargs.pop('san_current', [])
+        super().__init__(*args, **kwargs)
+
+    def widget_attrs(self, widget):
+        """
+        Given a Widget instance (*not* a Widget class), return a dictionary of
+        any HTML attributes that should be added to the Widget, based on this
+        Field.
+        """
+        return {
+            'san_prefixes': self.san_prefixes,
+            'san_current': self.san_current,
+        }
+
+    def clean(self, value):
+        if not value and self.required:
+            raise forms.ValidationError(self.error_messages['required'])
+        for san_name in value:
+            split = san_name.split(':')
+            if len(split) != 2:
+                raise forms.ValidationError(
+                    'Invalid value for SAN: %(san)s',
+                    code='invalid-san',
+                    params={'san': san_name}
+                )
+            prefix,name = split
+            if prefix not in self.san_prefixes:
+                raise forms.ValidationError(
+                    'Invalid prefix: %(prefix)s',
+                    code='invalid-san-prefix',
+                    params={'prefix': prefix}
+                )
+            if prefix == 'email':
+                validate_email(name)
+            if prefix == 'IP':
+                validate_ipv46_address(name)
+        return value

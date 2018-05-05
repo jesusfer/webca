@@ -1,0 +1,60 @@
+<table id="id_san">
+    <tr style="height:1em">
+        <td>
+            <input id="san_f_value" type="text" style="width:15em" />
+        </td>
+        <td>
+        </td>
+        <td rowspan="2">
+            <select id="san_f_list" name="san" size="10" style="width:15em;height:12em">
+                {% for san in widget.attrs.san_current %}
+                <option>{{ san }}</option>
+                {% endfor %}
+            </select>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <select id="san_f_prefix" size="10" style="width:15em;height:10em">
+                {% for prefix in widget.attrs.san_prefixes %}
+                <option {% if forloop.first %}selected{% endif %}>{{ prefix }}</option>
+                {% endfor %}
+            </select>
+        </td>
+        <td>
+            <input type="button" style="width:2em;height:2em" onclick="javascript:san_f_remove()" value="-" />
+            <br/>
+            <input type="button" style="width:2em;height:2em" onclick="javascript:san_f_add()" value="+" />
+        </td>
+    </tr>
+</table>
+<script type="application/javascript">
+    function san_f_add() {
+        var value = document.getElementById("san_f_value").value;
+        if (value.length == 0)
+            return;
+        var prefixes = document.getElementById("san_f_prefix").selectedOptions;
+        var list = document.getElementById("san_f_list");
+        var prefix = prefixes[0].value;
+        var option = prefix + ':' + value;
+        var newOption = new Option(option, option, false, false);
+        list.options.add(newOption);
+        document.getElementById("san_f_value").value = "";
+    }
+    function san_f_remove() {
+        var list = document.getElementById("san_f_list");
+        if (list.selectedOptions.length > 0) {
+            var selected = list.selectedOptions[0];
+            list.options.remove(selected);
+        }
+    }
+    function san_submit() {
+        var list = document.getElementById("san_f_list");
+        list.multiple = true;
+        for (i = 0; i < list.options.length; i++) {
+            list.options[i].selected = true;
+        }
+    }
+    var form = document.getElementById("san_f_value").form;
+    form.addEventListener("submit", san_submit);
+</script>

@@ -1,5 +1,6 @@
 from django import forms
 
+from webca.web.fields import SubjectAltNameCertificateField
 from webca.web.models import Template
 from webca.web.validators import valid_pem_csr
 
@@ -59,6 +60,9 @@ class RequestNewForm(forms.Form):
     def __init__(self, *args, **kwargs):
         """Pass template_choices to limit the choices in the template selector."""
         template_choices = kwargs.pop('template_choices', None)
+        san_type = kwargs.pop('san_type', None)
+        san_prefixes = kwargs.pop('san_prefixes', None)
+        san_current = kwargs.pop('san_current', None)
         super().__init__(*args, **kwargs)
         # if the form is built with some templates, we only show those
         if template_choices:
@@ -70,6 +74,11 @@ class RequestNewForm(forms.Form):
             choices=templates,
             label='Choose a template',
         )
+        if san_type == Template.SAN_SHOWN:
+            self.fields['san'] = SubjectAltNameCertificateField(
+                san_prefixes=san_prefixes,
+                san_current=san_current,
+            )
 
     def get_subject(self):
         """Return the subject in OpenSSL string format."""

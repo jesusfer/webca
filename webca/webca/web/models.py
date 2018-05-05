@@ -11,7 +11,8 @@ from webca.crypto.constants import (REV_REASON, REV_UNSPECIFIED, SUBJECT_DN,
 from webca.crypto.utils import components_to_name, name_to_components
 from webca.utils import dict_as_tuples, subject_display, tuples_as_dict
 from webca.web import validators
-from webca.web.fields import KeyUsageField, SubjectAltNameField, ExtendedKeyUsageField
+from webca.web.fields import (ExtendedKeyUsageField, KeyUsageField,
+                              SubjectAltNameField)
 
 # TODO: consider the action to take when a FK is deleted.
 # We should not delete anything so that we can keep track of everyting, probably

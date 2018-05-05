@@ -25,9 +25,13 @@ class RequestNewView(View):
         """GET method."""
         context = {}
         if request.user.templates:
+            san_prefixes = request.user.templates[0].allowed_san
+            san_type = request.user.templates[0].san_type
             form = self.form_class(
                 template_choices=request.user.templates,
-                initial=self.initial
+                initial=self.initial,
+                san_type=san_type,
+                san_prefixes=san_prefixes,
             )
             context['form'] = form
 
@@ -35,7 +39,18 @@ class RequestNewView(View):
 
     def post(self, request, *args, **kwargs):
         """POST method."""
-        form = self.form_class(request.POST)
+        # TODO: change this when the time comes
+        san_prefixes = request.user.templates[0].allowed_san
+        san_type = request.user.templates[0].san_type
+        san_current = []
+        if request.POST.getlist('san'):
+            san_current = request.POST.getlist('san')
+        form = self.form_class(
+            request.POST,
+            san_type=san_type,
+            san_prefixes=san_prefixes,
+            san_current=san_current,
+        )
         if form.is_valid():
             data = form.cleaned_data
             new_req = Request()
@@ -47,7 +62,7 @@ class RequestNewView(View):
                 raise ValidationError(
                     'Not a valid template',
                     code='invalid-template',
-                    )
+                )
             new_req.template = template
             new_req.save()
             return HttpResponseRedirect('/req/')
