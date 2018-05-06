@@ -64,6 +64,8 @@ class RequestNewView(View):
                     code='invalid-template',
                 )
             new_req.template = template
+            if template.auto_sign:
+                new_req.approved = True
             new_req.save()
             return HttpResponseRedirect('/req/')
         else:
