@@ -214,11 +214,11 @@ class SubjectAltNameCertificateField(forms.MultipleChoiceField):
             split = san_name.split(':')
             if len(split) != 2:
                 raise forms.ValidationError(
-                    'Invalid value for SAN: %(san)s',
+                    'Invalid value: %(san)s',
                     code='invalid-san',
                     params={'san': san_name}
                 )
-            prefix,name = split
+            prefix, name = split
             if prefix not in self.san_prefixes:
                 raise forms.ValidationError(
                     'Invalid prefix: %(prefix)s',

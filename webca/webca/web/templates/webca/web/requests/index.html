@@ -1,14 +1,37 @@
+<h2>Request a certificate</h2>
+<p>In this section you can start the process to request a certificate.</p>
+<p>To begin, choose a type of certificate below:</p>
+{% if templates_form %}
+<form action="{% url 'req:new' %}" method="post">
+    {% csrf_token %} {{ templates_form.as_p }}
+    <input type="submit" value="Start" />
+</form>
+{% else %}
+<p>Sorry, you cannot request any certificate yet.</p>
+{% endif %}
 {% if request_list %}
 <h3>Your requests</h3>
-<ul>
+<p>These are the {{ request_list|length }} requests that you have made already.</p>
+<table>
+    <tr>
+        <th>Request</th>
+        <th>Type</th>
+        <th>Approval</th>
+        <th>Status</th>
+        <th>Notes</th>
+    </tr>
     {% for req in request_list %}
-    <li>{{ req }}</li>
+    <tr>
+        <td>
+            <a target="blank" href="{% url 'req:view_cert' req.id %}">{{ req }}</a>
+        </td>
+        <td>{{ req.template.name }}</td>
+        <td>{{ req.approved }}</td>
+        <td>{{ req.status_text }}</td>
+        <td>{{ req.reject_reason }}</td>
+    </tr>
     {% endfor %}
-</ul>
+</table>
 {% else %}
 <p>You haven't made any requests yet</p>
 {% endif %}
-
-<p>
-    <a href="{% url 'req:request_new' %}">New request</a>
-</p>

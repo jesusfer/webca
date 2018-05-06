@@ -130,6 +130,10 @@ class Request(models.Model):
         """Return the request as a OpenSSL.crypto.X509Req object."""
         return crypto.load_certificate_request(crypto.FILETYPE_PEM, self.csr)
 
+    @property
+    def status_text(self):
+        return [y for x, y in Request.STATUS if x == self.status][0]
+
 
 class Certificate(models.Model):
     """An issued certificate."""

@@ -1,9 +1,12 @@
 from django.urls import path
 
-from webca.web.views import *
+from webca.web.views import requests
 
 app_name = 'req'
 urlpatterns = [
-    path('', RequestView.as_view(), name='request_index'),
-    path('new/', RequestNewView.as_view(), name='request_new'),
+    path('', requests.IndexView.as_view(), name='index'),
+    path('view/<int:request_id>/', requests.view_certificate, name='view_cert'),
+    path('new/', requests.NewView.as_view(), name='new'),
+    path('submit/', requests.SubmitView.as_view(), name='submit'),
+    path('ok/', requests.request_confirmation, name='ok'),
 ]

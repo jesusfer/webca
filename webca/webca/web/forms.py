@@ -2,7 +2,7 @@ from django import forms
 
 from webca.web.fields import SubjectAltNameCertificateField
 from webca.web.models import Template
-from webca.web.validators import valid_pem_csr
+from webca.web.validators import valid_pem_csr, validate_csr_bits
 
 NAME_DICT = {
     'country': 'C',
@@ -15,11 +15,39 @@ NAME_DICT = {
 }
 
 
+class TemplateSelectorForm(forms.Form):
+    template = forms.ChoiceField(
+        label='Choose a template',
+    )
+
+    def __init__(self, *args, **kwargs):
+        """Pass template_choices to limit the choices in the template selector."""
+        template_choices = kwargs.pop('template_choices', None)
+        super().__init__(*args, **kwargs)
+        self.fields['template'].choices = Template.get_form_choices(
+            template_choices)
+        # self.fields['template'] = forms.ChoiceField(
+        #     choices=templates,
+        #     label='Choose a template',
+        # )
+
+
 class RequestNewForm(forms.Form):
+    """
+    Form used to create a certificate request.
+
+    Arguments:
+        template_choices: list of Template
+        template: Template chosen by the user
+        san_current: filled in SAN names
+    """
+    template = forms.ChoiceField(
+        label='Template',
+    )
     country = forms.CharField(
         max_length=2,
         required=False,
-        label='Country',
+        label='Country (2 letters)',
     )
     state = forms.CharField(
         max_length=50,
@@ -57,28 +85,36 @@ class RequestNewForm(forms.Form):
         validators=[valid_pem_csr],
     )
 
-    def __init__(self, *args, **kwargs):
-        """Pass template_choices to limit the choices in the template selector."""
-        template_choices = kwargs.pop('template_choices', None)
-        san_type = kwargs.pop('san_type', None)
-        san_prefixes = kwargs.pop('san_prefixes', None)
-        san_current = kwargs.pop('san_current', None)
+    def __init__(self, template, template_choices=None, san_current=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.template_obj = template
+
         # if the form is built with some templates, we only show those
         if template_choices:
             templates = Template.get_form_choices(template_choices)
         else:
             templates = Template.get_form_choices()
-        # Add it here so that we can use dynamic choices
-        self.fields['template'] = forms.ChoiceField(
-            choices=templates,
-            label='Choose a template',
-        )
-        if san_type == Template.SAN_SHOWN:
+        self.fields['template'].choices = templates
+
+        if self.template_obj.san_type == Template.SAN_SHOWN:
             self.fields['san'] = SubjectAltNameCertificateField(
-                san_prefixes=san_prefixes,
+                san_prefixes=self.template_obj.allowed_san,
                 san_current=san_current,
+                label='Subject Alternative Names',
+                required=False,
             )
+
+        if self.template_obj.required_subject == Template.SUBJECT_CN:
+            self.fields['cn'].required = True
+        elif self.template_obj.required_subject == Template.SUBJECT_EMAIL:
+            self.fields['email'].required = True
+        elif self.template_obj.required_subject == Template.SUBJECT_DN:
+            self.fields['country'].required = True
+            self.fields['state'].required = True
+            self.fields['locality'].required = True
+            self.fields['org'].required = True
+            self.fields['ou'].required = True
+            self.fields['cn'].required = True
 
     def get_subject(self):
         """Return the subject in OpenSSL string format."""
@@ -90,3 +126,23 @@ class RequestNewForm(forms.Form):
                     value += '%s=%s/' % (NAME_DICT[component], data[component])
             return value
         return ''
+
+    def clean(self):
+        cleaned_data = super().clean()
+        # TODO: logic for subject names missing
+        if self.template_obj.required_subject == Template.SUBJECT_DN_PARTIAL:
+            # At least common name or e-mail should be set
+            print(cleaned_data.keys())
+            if not cleaned_data['cn'] and not cleaned_data['email']:
+                # self.add_error('cn', 'This field is required')
+                # self.add_error('email', 'This field is required')
+                raise forms.ValidationError(
+                    'Either Common Name or E-Mail are required',
+                    code='invalid-dn',
+                )
+        return cleaned_data
+
+    def clean_csr(self):
+        text = self.cleaned_data['csr']
+        validate_csr_bits(text, self.template_obj.min_bits)
+        return text

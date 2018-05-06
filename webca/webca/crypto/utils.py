@@ -89,8 +89,10 @@ def asn1_to_datetime(when):
 ##################
 
 
-def export_certificate(certificate):
+def export_certificate(certificate, text=False):
     """Exports a X509 certificate in PEM format."""
+    if text:
+        return crypto.dump_certificate(crypto.FILETYPE_TEXT, certificate).decode('utf-8')
     return crypto.dump_certificate(crypto.FILETYPE_PEM, certificate).decode('utf-8')
 
 
@@ -104,9 +106,17 @@ def export_public_key(key):
     return crypto.dump_publickey(crypto.FILETYPE_PEM, key).decode('utf-8')
 
 
-def export_crl(crl):
+def export_crl(crl, text=False):
     """Exports a CRL in PEM format."""
-    return crypto.dump_crl(crypto.FILETYPE_TEXT, crl).decode('utf-8')
+    if text:
+        return crypto.dump_crl(crypto.FILETYPE_TEXT, crl).decode('utf-8')
+    return crypto.dump_crl(crypto.FILETYPE_PEM, crl).decode('utf-8')
+
+def export_csr(csr, text=False):
+    """Export a CSR as text."""
+    if text:
+        return crypto.dump_certificate_request(crypto.FILETYPE_TEXT, csr).decode('utf-8')
+    return crypto.dump_certificate_request(crypto.FILETYPE_PEM, csr).decode('utf-8')
 
 
 def print_certificate(certificate):

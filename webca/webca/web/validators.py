@@ -42,6 +42,19 @@ def valid_pem_cer(value):
         )
 
 
+def validate_csr_bits(value, min_bits):
+    """Validate the PEM CSR has at least `min_bits`."""
+    valid_pem_csr(value)
+    csr = crypto.load_certificate_request(crypto.FILETYPE_PEM, value)
+    req_size = csr.get_pubkey().bits()
+    if req_size < min_bits:
+        raise ValidationError(
+            'The public key size is not valid: %(size)s (min required:%(min)s)',
+            code='invalid-key-size',
+            params={'size': req_size, 'min': min_bits}
+        )
+
+
 def max_days(value):
     """Maximum certificate validity (70y)."""
     if value > MAX_DAYS:

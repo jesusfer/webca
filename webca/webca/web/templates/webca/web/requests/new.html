@@ -1,13 +1,73 @@
+{% load webca %}
 <h3>New Request</h3>
 {% if form %}
-{{ form.non_field_errors }}
-<form action="{% url 'req:request_new' %}" method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
+<p>Here you need to fill in the required details for your new certificate.</p>
+<form action="{% url 'req:submit' %}" method="post">
+    {% csrf_token %} {{ form.template.as_hidden }}
+    <h4>Certificate type</h4>
+    <p>Name: {{ form.template_obj.name }}</p>
+    <h4>Certificate name</h4>
+    {{ form.non_field_errors }}
+    <p>Your certificate needs a name.
+    {% if form.template_obj.required_subject == DN %}
+    Please fill <b>all</b> of the following fields:</p>
+    <p>{{ form.cn.errors }}</p>
+    <p>{{ form.cn.label_tag }}{{ form.cn }}</p>
+    <p>{{ form.country.errors }}</p>
+    <p>{{ form.country.label_tag }}{{ form.country }}</p>
+    <p>{{ form.state.errors }}</p>
+    <p>{{ form.state.label_tag }}{{ form.state }}</p>
+    <p>{{ form.locality.errors }}</p>
+    <p>{{ form.locality.label_tag }}{{ form.locality }}</p>
+    <p>{{ form.org.errors }}</p>
+    <p>{{ form.org.label_tag }}{{ form.org }}</p>
+    <p>{{ form.ou.errors }}</p>
+    <p>{{ form.ou.label_tag }}{{ form.ou }}</p>
+    {% elif form.template_obj.required_subject == DN_PARTIAL %}
+    You must fill in Common Name or E-Mail. The rest may be left blank:</p>
+    <p>{{ form.cn.errors }}</p>
+    <p>{{ form.cn.label_tag }}{{ form.cn }}</p>
+    <p>{{ form.email.errors }}</p>
+    <p>{{ form.email.label_tag }}{{ form.email }}</p>
+    <p>{{ form.country.errors }}</p>
+    <p>{{ form.country.label_tag }}{{ form.country }}</p>
+    <p>{{ form.state.errors }}</p>
+    <p>{{ form.state.label_tag }}{{ form.state }}</p>
+    <p>{{ form.locality.errors }}</p>
+    <p>{{ form.locality.label_tag }}{{ form.locality }}</p>
+    <p>{{ form.org.errors }}</p>
+    <p>{{ form.org.label_tag }}{{ form.org }}</p>
+    <p>{{ form.ou.errors }}</p>
+    <p>{{ form.ou.label_tag }}{{ form.ou }}</p>
+    {% elif form.template_obj.required_subject == EMAIL %}
+    Please fill in the following field:
+    <p>{{ form.email.errors }}</p>
+    <p>{{ form.email.label_tag }}{{ form.email }}</p>
+    {% elif form.template_obj.required_subject == CN %}
+    Please fill in the following field:
+    <p>{{ form.cn.errors }}</p>
+    <p>{{ form.cn.label_tag }}{{ form.cn }}</p>
+    {% endif %}
+    {% if form.san %}
+    With this type of certificate you can add Subject Alternative Names if needed.
+    This allows the certificate to be valid for other names.
+    The common name will be included automatically.
+    {{ form.san.errors }}
+    {{ form.san }}
+    {% endif %}
+    <p>To request a certificate you need to generate a private and public key
+        and then send us the public key.<br/>You need to paste here a Base64 encoded PEM certificate request.
+        <br/><a href="">How do I get one?</a>
+    </p>
+    <p>For this type of certificate the minimum size of the public key is: <span>{{ form.template_obj.min_bits }}</span></p>
+    <p>{{ form.csr.errors }}</p>
+    <p>{{ form.csr }}</p>
     <input type="submit" value="Submit" />
 </form>
 {% else %}
 <p>There are no templates available.</p>
 {% endif %}
 
-<p><a href="{% url 'req:request_index' %}">Back</a></p>
+<p>
+    <a href="{% url 'req:index' %}">Back</a>
+</p>
