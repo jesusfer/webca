@@ -90,6 +90,13 @@ class CAService:
         7. Save the certificate
         8. Update the request
         """
+        try:
+            request.certificate
+            request.status = Request.STATUS_ISSUED
+            request.save()
+            return
+        except Certificate.DoesNotExist:
+            print('Issuing...')
         pub_key = request.get_csr().get_pubkey()
         subject = cert_utils.name_to_components(request.subject)
         extensions = request.template.get_extensions()
