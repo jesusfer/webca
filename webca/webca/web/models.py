@@ -397,11 +397,12 @@ class Template(models.Model):
         # TODO: OCSP
         # 2. Extras
         # extended key usage
-        if self.ext_key_usage:
+        eku = [x for x in self.ext_key_usage if x]
+        if eku:
             extensions.append(crypto.X509Extension(
                 b'extendedKeyUsage',
                 self.ext_key_usage_critical,
-                ','.join(self.ext_key_usage).encode('ascii')
+                ','.join(eku).encode('ascii')
             ))
         # TODO: SAN
         # crypto.X509Extension(b'subjectAltName', False, b'DNS:www.test.net')
