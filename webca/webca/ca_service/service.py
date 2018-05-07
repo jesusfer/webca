@@ -110,6 +110,7 @@ class CAService:
                 pub_key.bits(),
                 request.template.min_bits)
             request.save()
+            return
 
         # New stuff
         serial = cert_utils.new_serial()
