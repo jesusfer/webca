@@ -32,22 +32,22 @@ def create_cert_request(pkey, name, extensions=None, digest='sha256', signing_ke
     Create a certificate request.
 
     Arguments:
-        pkey       - The key to associate with the request
-        digest     - Digestion method to use for signing, default is sha256
-        extensions - List of X509Extensions to add to the request
-        name     - The name of the subject of the request, possible
-                    arguments are:
-                    C     - Country name
-                    ST    - State or province name
-                    L     - Locality name
-                    O     - Organization name
-                    OU    - Organizational unit name
-                    CN    - Common name
-                    emailAddress - E-mail address
-                    For example:
-                        name = [
-                            ('CN', 'Certificate Authority')
-                        ]
+        pkey: The key to associate with the request
+        extensions: List of X509Extensions to add to the request
+        name: The name of the subject of the request, possible arguments are:
+                C     - Country name
+                ST    - State or province name
+                L     - Locality name
+                O     - Organization name
+                OU    - Organizational unit name
+                CN    - Common name
+                emailAddress - E-mail address
+                For example:
+                    name = [
+                        ('CN', 'Certificate Authority')
+                    ]
+        digest: Digestion method to use for signing, default is sha256
+        signing_key: Key used to sign the request
     Returns:   The certificate request in an X509Req object
     """
     extensions = extensions or []

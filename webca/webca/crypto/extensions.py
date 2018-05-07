@@ -2,7 +2,7 @@ import json
 
 from OpenSSL import crypto
 
-from webca.crypto.constants import KEY_USAGE, EXT_KEY_USAGE
+from webca.crypto.constants import EXT_KEY_USAGE, KEY_USAGE
 
 # Classes
 
@@ -132,10 +132,8 @@ def get_extension(certificate, name):
 
 
 def _as_extension(dct):
-    """
-    [
-        {"name":"basicConstraints", "critical":true, "value":"CA:FALSE"}
-    ]
+    """Build an extension from a dictionary.
+    {"name":"basicConstraints", "critical":true, "value":"CA:FALSE"}
     """
     name = dct['name'].encode('ascii')
     crit = dct['critical']
@@ -143,6 +141,15 @@ def _as_extension(dct):
     return crypto.X509Extension(name, crit, value)
 
 
-def json_to_extension(input):
-    obj = json.loads(input, encoding='utf-8', object_hook=_as_extension)
+def json_to_extension(json_input):
+    obj = json.loads(json_input, encoding='utf-8', object_hook=_as_extension)
     return obj
+
+def build_san(names, critical=False):
+    """Return a SubjectAlternativeName OpenSSL.crypto.X509Extension."""
+    san = {
+        'name':'subjectAltName',
+        'critical':critical,
+        'value':names,
+    }
+    return _as_extension(san)

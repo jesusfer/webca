@@ -118,6 +118,9 @@ def export_csr(csr, text=False):
         return crypto.dump_certificate_request(crypto.FILETYPE_TEXT, csr).decode('utf-8')
     return crypto.dump_certificate_request(crypto.FILETYPE_PEM, csr).decode('utf-8')
 
+def import_csr(csr):
+    """Import a PEM CSR to a OpenSSL.crypto.X509Req."""
+    return crypto.load_certificate_request(crypto.FILETYPE_PEM, csr)
 
 def print_certificate(certificate):
     print(crypto.dump_certificate(

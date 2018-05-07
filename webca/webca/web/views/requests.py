@@ -1,10 +1,12 @@
+"""
+Views related to the certificate request process.
+"""
 from urllib.parse import urlparse
 
 from django import http
 from django.core.exceptions import ValidationError
 from django.db.models import Q
 from django.shortcuts import render
-from django.template import loader
 from django.urls import reverse
 from django.views import View
 
@@ -39,7 +41,6 @@ def view_certificate(request, request_id):
             request.certificate.get_certificate(), text=True)
     except Certificate.DoesNotExist:
         content = export_csr(request.get_csr(), text=True)
-
     return http.HttpResponse(content, content_type='text/plain')
 
 
@@ -127,6 +128,9 @@ class SubmitView(View):
             new_req.user = request.user
             new_req.subject = form.get_subject()
             new_req.csr = data['csr']
+            san = ','.join(data['san'])
+            if san:
+                new_req.san = san
             template = Template.objects.get(pk=data['template'])
             if template not in request.user.templates:
                 raise ValidationError(

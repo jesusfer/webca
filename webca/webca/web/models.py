@@ -60,6 +60,11 @@ class Request(models.Model):
         default=None,
         help_text='Has this request been (auto)approved?',
     )
+    san = models.TextField(
+        blank=True,
+        help_text='Alternative Names requested',
+        verbose_name='SAN names',
+    )
 
     def __str__(self):
         return subject_display(self.subject)
@@ -404,8 +409,6 @@ class Template(models.Model):
                 self.ext_key_usage_critical,
                 ','.join(eku).encode('ascii')
             ))
-        # TODO: SAN
-        # crypto.X509Extension(b'subjectAltName', False, b'DNS:www.test.net')
         # 3. Custom
         # crypto.X509Extension(b'1.6.6', False, b'DER:31:32:33')
         return extensions

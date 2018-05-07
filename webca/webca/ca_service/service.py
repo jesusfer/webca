@@ -1,4 +1,6 @@
-"""Definition of the CA service"""
+"""
+Implementation of the CA service.
+"""
 import time
 from datetime import datetime, timedelta
 
@@ -10,7 +12,7 @@ from webca.config import constants as parameters
 from webca.config.models import ConfigurationObject as Config
 from webca.crypto import utils as cert_utils
 from webca.crypto import certs
-from webca.crypto.exceptions import CryptoException
+from webca.crypto.extensions import build_san
 from webca.web.models import Certificate, Request
 
 
@@ -73,7 +75,7 @@ class CAService:
     def _process_requests(self, requests):
         """Process a list of requests that have been approved."""
         for request in requests:
-            print('Got a certificate request!')
+            print('Got a certificate request ({})!'.format(request.id))
             try:
                 self._process_request(request)
             except Exception as ex:
@@ -92,14 +94,19 @@ class CAService:
         """
         try:
             request.certificate
+            # if the above succeeds, then there certificate was already issued
             request.status = Request.STATUS_ISSUED
             request.save()
             return
         except Certificate.DoesNotExist:
-            print('Issuing...')
+            print('Issuing... ', end='')
         pub_key = request.get_csr().get_pubkey()
         subject = cert_utils.name_to_components(request.subject)
         extensions = request.template.get_extensions()
+        if request.san:
+            san = build_san(request.san)
+            extensions.append(san)
+
         # Validate stuff
         # Key size. Template requirements might have changed since the request was done
         if pub_key.bits() < request.template.min_bits:
@@ -144,3 +151,4 @@ class CAService:
         # Update the request
         request.status = Request.STATUS_ISSUED
         request.save()
+        print('done')
