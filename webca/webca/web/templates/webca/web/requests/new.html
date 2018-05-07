@@ -57,7 +57,7 @@
     {% endif %}
     <p>To request a certificate you need to generate a private and public key
         and then send us the public key.<br/>You need to paste here a Base64 encoded PEM certificate request.
-        <br/><a href="">How do I get one?</a>
+        <br/><a target="blank" href="{% url 'req:examples' %}">How do I get one?</a>
     </p>
     <p>For this type of certificate the minimum size of the public key is: <span>{{ form.template_obj.min_bits }}</span></p>
     <p>{{ form.csr.errors }}</p>

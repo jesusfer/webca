@@ -1,0 +1,29 @@
+<h3>How to generate a certificate request</h3>
+<p>With OpenSSL it's very easy to generate a key pair and a certificate request (CSR) that you can use to request certificates.</p>
+<h4>Steps</h4>
+<ol>
+    <li><p>Install OpenSSL: <a href="https://wiki.openssl.org/index.php/Binaries">binaries</a></p></li>
+    <li><p>Open a command prompt.</p></li>
+    <li><p>To create a private key and certificate request, run the following command:</p>
+        <p><code>openssl req -out request.csr -new -newkey rsa:2048 -keyout private.key</code></p>
+        <p>
+            This generates an encrypted private key and a public key in a certificate request. The key size is 2048 bits using the RSA algorithm.
+            <br/>If you don't want to have a passphrase in your private key, use the<code>-nodes</code> parameter:
+        </p>
+        <p><code>openssl req -out request.csr -new -newkey rsa:2048 -nodes -keyout private.key</code></p>
+        <p>The full documentation for the above command is:<a href="https://www.openssl.org/docs/manmaster/man1/req.html">OpenSSL req</a></p>
+    </li>
+    <li>
+        <p>The above command gives you two files:</p>
+        <ul>
+            <li>private.key: your private key. Keep it to yourself.</li>
+            <li>request.csr: your public key in a certificate request. You can send this over to a Certification Authority to
+                request a certificate.</li>
+        </ul>
+    </li>
+</ol>
+<h4>Remember this</h4>
+<ul>
+    <li>You should store your private key securely. If you lose it or it get's compromised, so does your certificate.</li>
+    <li>Use a passphrase to store to private key.</li>
+</ul>
