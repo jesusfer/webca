@@ -13,3 +13,6 @@ DATABASES['certstore_db'] = {
 }
 
 DATABASE_ROUTERS = ['webca.certstore_db.CertStoreDBRouter']
+
+from webca.ca_admin import settings_local
+DATABASES.update(settings_local.DATABASES)

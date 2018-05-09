@@ -1,0 +1,122 @@
+[
+    {
+        "model": "web.template",
+        "pk": null,
+        "fields": {
+            "name": "Certification Authority 25y",
+            "days": 9125,
+            "enabled": true,
+            "version": 1,
+            "auto_sign": true,
+            "min_bits": 4096,
+            "required_subject": 1,
+            "san_type": 1,
+            "allowed_san": "None",
+            "basic_constraints": 1,
+            "pathlen": -1,
+            "key_usage": "keyCertSign,cRLSign",
+            "ext_key_usage_critical": false,
+            "ext_key_usage": "",
+            "crl_points": "",
+            "aia": "",
+            "extensions": "",
+            "allowed_groups": []
+        }
+    },
+    {
+        "model": "web.template",
+        "pk": null,
+        "fields": {
+            "name": "Intermediate CA 10y",
+            "days": 3650,
+            "enabled": true,
+            "version": 1,
+            "auto_sign": true,
+            "min_bits": 2048,
+            "required_subject": 1,
+            "san_type": 1,
+            "allowed_san": "None",
+            "basic_constraints": 1,
+            "pathlen": 0,
+            "key_usage": "keyCertSign,cRLSign",
+            "ext_key_usage_critical": false,
+            "ext_key_usage": "",
+            "crl_points": "",
+            "aia": "",
+            "extensions": "",
+            "allowed_groups": []
+        }
+    },
+    {
+        "model": "web.template",
+        "pk": null,
+        "fields": {
+            "name": "CRL Signing 5y",
+            "days": 1825,
+            "enabled": true,
+            "version": 1,
+            "auto_sign": true,
+            "min_bits": 2048,
+            "required_subject": 1,
+            "san_type": 1,
+            "allowed_san": "None",
+            "basic_constraints": 2,
+            "pathlen": -1,
+            "key_usage": "cRLSign",
+            "ext_key_usage_critical": false,
+            "ext_key_usage": "",
+            "crl_points": "",
+            "aia": "",
+            "extensions": "",
+            "allowed_groups": []
+        }
+    },
+    {
+        "model": "web.template",
+        "pk": null,
+        "fields": {
+            "name": "Web Server 2y",
+            "days": 730,
+            "enabled": true,
+            "version": 1,
+            "auto_sign": true,
+            "min_bits": 2048,
+            "required_subject": 4,
+            "san_type": 2,
+            "allowed_san": "DNS",
+            "basic_constraints": 2,
+            "pathlen": -1,
+            "key_usage": "digitalSignature,keyEncipherment",
+            "ext_key_usage_critical": false,
+            "ext_key_usage": "serverAuth,clientAuth",
+            "crl_points": "",
+            "aia": "",
+            "extensions": "",
+            "allowed_groups": []
+        }
+    },
+    {
+        "model": "web.template",
+        "pk": null,
+        "fields": {
+            "name": "User certificate 2y",
+            "days": 730,
+            "enabled": true,
+            "version": 1,
+            "auto_sign": true,
+            "min_bits": 2048,
+            "required_subject": 2,
+            "san_type": 2,
+            "allowed_san": "email",
+            "basic_constraints": 2,
+            "pathlen": -1,
+            "key_usage": "digitalSignature,keyEncipherment,dataEncipherment",
+            "ext_key_usage_critical": false,
+            "ext_key_usage": "clientAuth,emailProtection",
+            "crl_points": "",
+            "aia": "",
+            "extensions": "",
+            "allowed_groups": []
+        }
+    }
+]

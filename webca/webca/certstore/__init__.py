@@ -31,8 +31,8 @@ class CertStore(metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     def add_certificate(self, private_key, certificate):
-        """Add an OpenSSL.crypto.X509 certificate and
-        its OpenSSL.crypto.PKey private key."""
+        """Add an OpenSSL.crypto.X509 `certificate` and
+        its OpenSSL.crypto.PKey `private_key`."""
         return
 
     @abc.abstractmethod

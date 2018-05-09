@@ -147,3 +147,6 @@ LOGGING = {
         },
     },
 }
+
+from webca import settings_local
+DATABASES.update(settings_local.DATABASES)

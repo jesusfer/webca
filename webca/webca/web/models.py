@@ -70,7 +70,7 @@ class Request(models.Model):
         return subject_display(self.subject)
 
     def __repr__(self):
-        return '<Certificate %s' % str(self)
+        return '<Certificate %s>' % str(self)
 
     def save(self, *args, **kwargs):
         # We have to do some validations here as Django validators
@@ -176,7 +176,7 @@ class Certificate(models.Model):
         return subject_display(self.subject)
 
     def __repr__(self):
-        return '<Certificate %s' % str(self)
+        return '<Certificate %s>' % str(self)
 
     def get_certificate(self):
         """Return the certificate as a OpenSSL.crypto.X509 object."""
@@ -337,7 +337,7 @@ class Template(models.Model):
         return self.name
 
     def __repr__(self):
-        return '<Template %s' % str(self)
+        return '<Template %s>' % str(self)
 
     def save(self, *args, **kwargs):
         # We want to increment the version only when the admin has made changes
@@ -453,7 +453,7 @@ class Revoked(models.Model):
         )
 
     def __repr__(self):
-        return '<Revoked %s' % str(self.certificate)
+        return '<Revoked %s>' % str(self.certificate)
 
     class Meta:
         verbose_name = 'Revoked certificate'
