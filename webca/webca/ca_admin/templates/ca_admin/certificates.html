@@ -1,0 +1,87 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+
+{% block extrastyle %}{{ block.super }}<link rel="stylesheet" type="text/css" href="{% static "admin/css/dashboard.css" %}" />{% endblock %}
+
+{% block coltype %}colMS{% endblock %}
+
+{% block bodyclass %}{{ block.super }} dashboard{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+<a href="{% url 'admin:index' %}">{% trans 'Home' %}</a>
+&rsaquo;
+CA certificates
+</div>
+{% endblock %}
+
+{% block content %}
+<div id="content-main">
+    <div class="module">
+        <h4>CA certificate</h4>
+        <table>
+            <tr>
+                <td style="border:0">
+                    <select size="5" style="height:6em;width:20em;">
+                        <option>Cert 1 (active)</option>
+                        <option>Cert 2</option>
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <td style="border:0">
+                    <input type="button" value="Make active"/>
+                </td>
+            </tr>
+        </table>
+        <h4>CRL signing certificate</h4>
+        <table>
+            <tr>
+                <td style="border:0">
+                    <select size="5" style="height:6em;width:20em;">
+                        <option>Cert 1 (active)</option>
+                        <option>Cert 2</option>
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <td style="border:0">
+                    <input type="button" value="Make active"/>
+                </td>
+            </tr>
+        </table>
+        <h4>User authentication certificate</h4>
+        <table>
+            <tr>
+                <td style="border:0">
+                    <select size="5" style="height:6em;width:20em;">
+                        <option>Cert 1 (active)</option>
+                        <option>Cert 2</option>
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <td style="border:0">
+                    <input type="button" value="Make active"/>
+                </td>
+            </tr>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block sidebar %}
+<div id="content-related">
+    <div class="module">
+        <h4>Available certificate stores</h4>
+        <ul>
+            <li style="list-style-type: circle">Certstore DB</li>
+            <li style="list-style-type: circle">Filesystem</li>
+        </ul>
+        <h4>Help links</h4>
+        <ul>
+            <li style="list-style-type: circle"><a href="">Changing the CA certfificate</a></li>
+        </ul>
+    </div>
+</div>
+{% endblock %}

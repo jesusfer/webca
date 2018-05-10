@@ -3,9 +3,12 @@ from django.conf import settings
 from django.contrib import admin, messages
 from django.http import HttpResponse
 from OpenSSL import crypto
+
+from webca.ca_admin.admin import admin_site
 from webca.web.models import Certificate, Request, Revoked, Template
 
 
+@admin.register(Request, site=admin_site)
 class RequestAdmin(admin.ModelAdmin):
     """Admin model for end user requests."""
     list_display = ['id', '__str__', 'user', 'status', 'approved']
@@ -23,6 +26,7 @@ def cert_readonly_fields():
     ]
 
 
+@admin.register(Certificate, site=admin_site)
 class CertificateAdmin(admin.ModelAdmin):
     """Admin model for certificates."""
     verbose_name = 'Issued Certificates'
@@ -41,7 +45,8 @@ class CertificateAdmin(admin.ModelAdmin):
             return None
         response = HttpResponse(content_type="text/plain")
         cert = queryset.first()
-        response.write(crypto.dump_certificate(crypto.FILETYPE_TEXT, cert.get_certificate()))
+        response.write(crypto.dump_certificate(
+            crypto.FILETYPE_TEXT, cert.get_certificate()))
         return response
 
     def download_certificate(self, request, queryset):
@@ -61,6 +66,7 @@ class CertificateAdmin(admin.ModelAdmin):
     download_certificate.short_description = 'Download CER'
 
 
+@admin.register(Template, site=admin_site)
 class TemplateAdmin(admin.ModelAdmin):
     """Admin model for templates."""
     save_as = True
@@ -105,12 +111,7 @@ class TemplateAdmin(admin.ModelAdmin):
         self.message_user(request, 'Toggled %s template(s)' % len(queryset))
 
 
+@admin.register(Revoked, site=admin_site)
 class RevokedAdmin(admin.ModelAdmin):
     """Admin model for Revoked certificates."""
     list_display = ['certificate', 'reason', 'date']
-
-
-admin.site.register(Request, RequestAdmin)
-admin.site.register(Certificate, CertificateAdmin)
-admin.site.register(Revoked, RevokedAdmin)
-admin.site.register(Template, TemplateAdmin)
