@@ -1,9 +1,11 @@
 """Models for the public web."""
+import pytz
 from django.conf import settings
 from django.contrib.auth.models import Group
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_email
 from django.db import models
+from django.utils import timezone
 from OpenSSL import crypto
 
 from webca.crypto.constants import (REV_REASON, REV_UNSPECIFIED, SUBJECT_DN,
@@ -186,6 +188,22 @@ class Certificate(models.Model):
         """Return the template used to sign this certificate."""
         return self.csr.template
     get_template.short_description = 'Template'
+
+    @property
+    def is_expired(self):
+        """Return if the certificate has expired."""
+        now = timezone.now()
+        return self.valid_from > now and now < self.valid_to
+
+    @property
+    def is_revoked(self):
+        """Return if the certificate has been revoked."""
+        return hasattr(self, 'revoked')
+
+    @property
+    def is_valid(self):
+        """Return if the certificate is valid."""
+        return not self.is_expired and not self.is_revoked
 
 
 class Template(models.Model):
@@ -458,12 +476,27 @@ class Revoked(models.Model):
     class Meta:
         verbose_name = 'Revoked certificate'
 
-# TODO: is it really needed to store the CRL?
-# maybe like a configuration object?
-# class RevocationList(models.Model):
-#     extensions = models.TextField(
-#         help_text='Extensions for this CRL'
-#     )
+
+class CRLLocation(models.Model):
+    url = models.URLField(
+        help_text='URL for this location',
+    )
+    deleted = models.BooleanField(
+        default=False,
+        help_text='Has this URL been deleted?',
+    )
+    certificates = models.ManyToManyField(
+        Certificate,
+        help_text='Certificates using this location',
+    )
+
+    class Meta:
+        verbose_name = 'CRL Locations'
+
+    @property
+    def count(self):
+        certs = [x for x in self.certificates.all() if x.is_valid]
+        return len(certs)
 
 
 """

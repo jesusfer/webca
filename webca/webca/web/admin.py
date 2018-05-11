@@ -5,7 +5,8 @@ from django.http import HttpResponse
 from OpenSSL import crypto
 
 from webca.ca_admin.admin import admin_site
-from webca.web.models import Certificate, Request, Revoked, Template
+from webca.web.models import (Certificate, CRLLocation, Request, Revoked,
+                              Template)
 
 
 @admin.register(Request, site=admin_site)
@@ -115,3 +116,8 @@ class TemplateAdmin(admin.ModelAdmin):
 class RevokedAdmin(admin.ModelAdmin):
     """Admin model for Revoked certificates."""
     list_display = ['certificate', 'reason', 'date']
+
+@admin.register(CRLLocation, site=admin_site)
+class CRLLocationAdmin(admin.ModelAdmin):
+    """Admin model for CRLLocation objects."""
+    list_display = ['url', 'deleted', 'count']

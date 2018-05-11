@@ -1,7 +1,34 @@
 {% extends "admin/base_site.html" %}
 {% load i18n static %}
-
-{% block extrastyle %}{{ block.super }}<link rel="stylesheet" type="text/css" href="{% static "admin/css/dashboard.css" %}" />{% endblock %}
+{% block extrastyle %}{{ block.super }}
+<link rel="stylesheet" type="text/css" href="{% static "admin/css/dashboard.css" %}" />
+<style>
+    table {
+        width: 100%;
+    }
+    #content-main th:first-of-type {
+        width: 75%;
+    }
+    td:first-of-type {
+        width: 75%;
+    }
+    table select {
+        width: 100%;
+        height: auto;
+        padding: 0%;
+        margin: 0%;
+    }
+    table input {
+        width: 100%;
+        padding: 0%;
+        margin: 0%;
+        box-sizing: border-box;
+    }
+    td.errors {
+        width: 100%;
+    }
+</style>
+{% endblock %}
 
 {% block coltype %}colMS{% endblock %}
 
@@ -9,16 +36,74 @@
 
 {% block breadcrumbs %}
 <div class="breadcrumbs">
-<a href="{% url 'admin:index' %}">{% trans 'Home' %}</a>
-&rsaquo;
-CRL locations
+    <a href="{% url 'admin:index' %}">{% trans 'Home' %}</a>
+    &rsaquo; CRL locations
 </div>
 {% endblock %}
 
 {% block content %}
 <div id="content-main">
     <div class="module">
-        Main content
+        <p>These are the URLs that will be added to the CRL extension in the certificates signed by this CA.</p>
+        <div style="width:auto; position:relative">
+            <form action="{% url 'admin:crl' %}" method="POST">
+                {% csrf_token %}
+                <table>
+                    <caption>Active CRL locations</caption>
+                    {% if form.non_field_errors %}
+                    <tr><td colspan="2" class="errors">{{ form.non_field_errors }}</td></tr>
+                    {% endif %}
+                    {% if form.crl_list.errors %}
+                    <tr><td colspan="2" class="errors">{{ form.crl_list.errors }}</td></tr>
+                    {% endif %}
+                    <tr>
+                        <td>
+                            <select name="{{ form.crl_list.name }}" size="5">
+                                {% for value,text in form.crl_list.field.choices %}
+                                <option value="{{ value }}">{{ text }}</option>
+                                {% endfor %}
+                            </select>
+                        </td>
+                        <td>
+                            <input name="remove" type="submit" value="Remove selected" style="padding:6px 6px;margin-top:0;" />
+                        </td>
+                    </tr>
+                    {% if form.crl.errors %}
+                    <tr><td colspan="2" class="errors">{{ form.crl.errors }}</td></tr>
+                    {% endif %}
+                    <tr>
+                        <td>
+                            <input name="crl" type="text" value="{{ form.crl.value|default:"" }}"/>
+                        </td>
+                        <td>
+                            <input name="add" type="submit" value="Add new" style="padding:6px 6px;margin-top:0;" />
+                        </td>
+                    </tr>
+                </table>
+            </form>
+        </div>
+        <br/>
+        <div>
+            <p>These are all the CRL locations that have ever been used in the CA with the number of certificates yet valid (not revoked or expired) for them.</p>
+            <p>When you remove a CRL location it never really is deleted. This allows an admin to keep track of how many valid certificates are still using it.</p>
+            <table>
+                <caption>CRL Historic</caption>
+                <tr>
+                    <th>URL</th>
+                    <th>Use count</th>
+                </tr>
+                {% for url,count in crl_historic %}
+                <tr>
+                    <td>{{ url }}</td>
+                    <td>{{ count }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="2">No signed certificates</td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
     </div>
 </div>
 {% endblock %}
