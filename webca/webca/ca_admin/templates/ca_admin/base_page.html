@@ -1,7 +1,9 @@
 {% extends "admin/base_site.html" %}
 {% load i18n static %}
 
-{% block extrastyle %}{{ block.super }}<link rel="stylesheet" type="text/css" href="{% static "admin/css/dashboard.css" %}" />{% endblock %}
+{% block extrastyle %}{{ block.super }}<link rel="stylesheet" type="text/css" href="{% static "admin/css/dashboard.css" %}" />
+{% block style %}{% endblock style %}
+{% endblock %}
 
 {% block coltype %}colMS{% endblock %}
 
@@ -11,7 +13,7 @@
 <div class="breadcrumbs">
 <a href="{% url 'admin:index' %}">{% trans 'Home' %}</a>
 &rsaquo;
-Page title
+{{ title }}
 </div>
 {% endblock %}
 

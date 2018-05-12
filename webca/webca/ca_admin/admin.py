@@ -21,13 +21,19 @@ class AdminSite(admin.AdminSite):
                  self.admin_view(certs.CertificatesView.as_view()),
                  {'update': True},
                  name='certs_update',
-                 ),
+                ),
             path('crl/', self.admin_view(crl.CRLView.as_view()), name='crl'),
             path('crl/update/',
                  self.admin_view(crl.CRLView.as_view()),
                  {'update': True},
                  name='crl_update',
-                 ),
+                ),
+            path('crl/status/', self.admin_view(crl.CRLStatusView.as_view()), name='crl_status'),
+            path('crl/status/update/',
+                 self.admin_view(crl.CRLStatusView.as_view()),
+                 {'update': True},
+                 name='crl_status_update'
+                ),
         ]
         return urls
 

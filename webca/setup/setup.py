@@ -49,6 +49,7 @@ def setup():
     init_django()
     print('*** Setup of CA certificates ***')
     setup_certificates()
+    # TODO: setup_crl_publishing() Ask for path to publish and frequency
     install_templates()
 
 
@@ -184,6 +185,7 @@ def install_templates():
 
 def setup_certificates():
     # TODO: list available certificate stores
+    # TODO: create CSR signing keypair/certificate
     pass
 
 if __name__ == '__main__':

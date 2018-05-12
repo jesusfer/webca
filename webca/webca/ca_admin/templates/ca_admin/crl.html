@@ -1,7 +1,6 @@
-{% extends "admin/base_site.html" %}
+{% extends "ca_admin/base_page.html" %}
 {% load i18n static %}
-{% block extrastyle %}{{ block.super }}
-<link rel="stylesheet" type="text/css" href="{% static "admin/css/dashboard.css" %}" />
+{% block style %}
 <style>
     table {
         width: 100%;
@@ -28,17 +27,6 @@
         width: 100%;
     }
 </style>
-{% endblock %}
-
-{% block coltype %}colMS{% endblock %}
-
-{% block bodyclass %}{{ block.super }} dashboard{% endblock %}
-
-{% block breadcrumbs %}
-<div class="breadcrumbs">
-    <a href="{% url 'admin:index' %}">{% trans 'Home' %}</a>
-    &rsaquo; CRL locations
-</div>
 {% endblock %}
 
 {% block content %}
@@ -111,7 +99,10 @@
 {% block sidebar %}
 <div id="content-related">
     <div class="module">
-        Sidebar
+        <h4>Actions</h4>
+        <ul>
+            <li><a href="{% url 'admin:crl_status' %}">CRL Status</a></li>
+        </ul>
     </div>
 </div>
 {% endblock %}

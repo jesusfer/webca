@@ -4,10 +4,15 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.template.response import TemplateResponse
 from django.urls import reverse
 from django.views import View
+from django.core import serializers
 
 from webca.ca_admin import admin
-from webca.web.models import CRLLocation
+from webca.web.models import CRLLocation,Revoked
+from webca.config.models import ConfigurationObject as Config
+from webca.config.constants import CRL_CONFIG
+from webca.config import new_crl_config
 
+import json
 
 class CRLForm(forms.Form):
     crl_list = forms.ChoiceField(
@@ -104,5 +109,66 @@ class CRLView(View):
                     location.id,
                 )
             return HttpResponseRedirect(url)
+        messages.add_message(request, messages.ERROR, 'Please check below')
+        return TemplateResponse(request, self.template, context)
+
+
+class CRLConfigForm(forms.Form):
+    days = forms.IntegerField(
+        min_value=1,
+    )
+    delta_days = forms.IntegerField(
+        min_value=1,
+    )
+    path = forms.CharField(
+
+    )
+
+class CRLStatusView(View):
+    template = 'ca_admin/crl_status.html'
+    form_class = CRLConfigForm
+
+    def get_context(self, request):
+        crl_config = json.loads(Config.get_value(CRL_CONFIG))
+        initial = {
+            'path':crl_config['path'],
+            'days':crl_config['days'],
+            'delta_days':crl_config['delta_days'],
+        }
+        context = dict(
+            admin.admin_site.each_context(request),
+            title='CRL Status',
+            config=crl_config,
+            revoked_count=Revoked.objects.count(),
+            initial=initial,
+            form=self.form_class(
+                initial=initial,
+            )
+        )
+        return context        
+
+    def get(self, request, *args, **kwargs):
+        context = self.get_context(request)
+        return TemplateResponse(request, self.template, context)
+
+    def post(self, request, *args, **kwargs):
+        context = self.get_context(request)
+        form = self.form_class(
+            request.POST,
+            initial=context['initial'],
+        )
+        context['form'] = form
+        if form.is_valid():
+            if form.has_changed():
+                print(form.cleaned_data)
+                for key in form.changed_data:
+                    new_value = form.cleaned_data[key]
+                    context['config'][key] = new_value
+                # TODO: If days have changed, a CRL may need to be published
+                value = json.dumps(context['config'])
+                Config.set_value(CRL_CONFIG, value)
+                messages.add_message(request, messages.INFO, 'Settings updated')
+            return HttpResponseRedirect(reverse('admin:crl_status'))
+        print(form.errors)
         messages.add_message(request, messages.ERROR, 'Please check below')
         return TemplateResponse(request, self.template, context)
