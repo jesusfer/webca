@@ -86,7 +86,7 @@ class CRLView(View):
                 location = CRLLocation.objects.get(pk=loc_id)
                 location.deleted = True
                 location.save()
-                messages.add_message(request, messages.INFO, 'CRL Location deleted')
+                messages.add_message(request, messages.INFO, 'CRL location deleted')
             elif form.cleaned_data['add']:
                 url = form.cleaned_data['crl']
                 location = CRLLocation.objects.filter(url=url).first()
@@ -97,7 +97,7 @@ class CRLView(View):
                 else:
                     location = CRLLocation(url=url)
                     location.save()
-                messages.add_message(request, messages.INFO, 'CRL Location added')
+                messages.add_message(request, messages.INFO, 'CRL location added')
             url = reverse('admin:crl')
             if form.cleaned_data['remove']:
                 url += '?crl={}&deleted'.format(

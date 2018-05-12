@@ -32,7 +32,7 @@ class ConfigurationObject(models.Model):
 
     def trim_value(self):
         """Trim the value of the object for displaying."""
-        return self.value[0:30]
+        return self.value[0:60] + '...'
     trim_value.short_description = 'Value'
 
     @staticmethod

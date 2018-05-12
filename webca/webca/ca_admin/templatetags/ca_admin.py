@@ -13,11 +13,27 @@ register = template.Library()
 @register.filter
 def subject(x509):
     """Return the subject of the certificate."""
-    subject = components_to_name(x509.get_subject().get_components())
-    return subject_display(subject).replace('/', ' ').strip()
+    value = components_to_name(x509.get_subject().get_components())
+    return subject_display(value).replace('/', ' ').strip()
 
 
 @register.filter
 def serial(x509):
     """Return the serial of the certificate."""
     return int_to_hex(x509.get_serial_number())
+
+
+@register.filter
+def selected(value, target):
+    """Return 'selected' if `value` equals `target`."""
+    if value == target:
+        return 'selected'
+    return ''
+
+
+@register.filter
+def active(value, target):
+    """Return ' (active)' if `value` equals `target`."""
+    if value == target:
+        return ' (active)'
+    return ''

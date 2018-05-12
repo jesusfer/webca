@@ -25,9 +25,9 @@ class CertificatesForm(forms.Form):
         ca = ca or []
         crl = crl or []
         user = user or []
-        self.fields['ca'].choices = [(serial(c), subject(c)) for c in ca]
-        self.fields['crl'].choices = [(serial(c), subject(c)) for c in crl]
-        self.fields['user'].choices = [(serial(c), subject(c)) for c in user]
+        self.fields['ca'].choices = ca
+        self.fields['crl'].choices = crl
+        self.fields['user'].choices = user
 
     def clean(self):
         cleaned_data = super().clean()
@@ -43,12 +43,25 @@ class CertificatesView(View):
         keysign = Config.get_value(parameters.CERT_KEYSIGN)
         crlsign = Config.get_value(parameters.CERT_CRLSIGN)
         usersign = Config.get_value(parameters.CERT_USERSIGN)
+
+        initial = {
+            'ca': keysign,
+            'crl': crlsign,
+            'user': usersign,
+        }
+        # list of tuples ('store_id,serial', certificate)
         ca_certificates = []
         for store in CertStore.stores():
-            ca_certificates.extend(store.get_ca_certificates())
+            for cert in store.get_ca_certificates():
+                value = '{},{}'.format(store.STORE_ID, serial(cert))
+                ca_certificates.append((value, cert))
+
         crl_certificates = []
         for store in CertStore.stores():
-            crl_certificates.extend(store.get_crl_certificates())
+            for cert in store.get_crl_certificates():
+                value = '{},{}'.format(store.STORE_ID, serial(cert))
+                crl_certificates.append((value, cert))
+
         context = dict(
             admin.admin_site.each_context(request),
             title='CA Certificates',
@@ -59,15 +72,12 @@ class CertificatesView(View):
             keysign=keysign,
             crlsign=crlsign,
             usersign=usersign,
+            initial=initial,
             form=self.form_class(
                 ca=ca_certificates,
                 crl=crl_certificates,
                 user=ca_certificates,
-                initial={
-                    'ca': keysign,
-                    'crl': crlsign,
-                    'user': usersign,
-                },
+                initial=initial,
             )
         )
         return context
@@ -87,11 +97,7 @@ class CertificatesView(View):
             crl=context['crl_certificates'],
             user=context['user_certificates'],
             data=request.POST,
-            initial={
-                'ca': context['keysign'],
-                'crl': context['crlsign'],
-                'user': context['usersign'],
-            },
+            initial=context['initial'],
         )
         if form.is_valid():
             if form.has_changed():

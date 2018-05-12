@@ -26,28 +26,32 @@ class CAService:
     #pylint: disable=w0613
     def __init__(self, *args, **kwargs):
         # Get the current certificates
-        store_id = Config.get_value(parameters.CERT_STORE)
-        if not store_id:
-            self.fatal_error('No certificate store selected')
-        # TODO: this may change during runtime
-        keysign_serial = Config.get_value(parameters.CERT_KEYSIGN)
-        crlsign_serial = Config.get_value(parameters.CERT_KEYSIGN)
-        csrsign_serial = Config.get_value(parameters.CERT_CSRSIGN)
+        self.set_certificates()
+
+    def set_certificates(self):
+        """Set up the signing certificates."""
+        key_store,keysign_serial = Config.get_value(parameters.CERT_KEYSIGN).split(',')
+        crl_store,crlsign_serial = Config.get_value(parameters.CERT_KEYSIGN).split(',')
+        csr_store,csrsign_serial = Config.get_value(parameters.CERT_CSRSIGN).split(',')
+
         if not keysign_serial or not crlsign_serial or not csrsign_serial:
             self.fatal_error('No CA certificates configured.')
-        store = CertStore.get_store(store_id)
+        store = CertStore.get_store(key_store)
         self.certsign = (
             store.get_certificate(keysign_serial),
             store.get_private_key(keysign_serial),
         )
+        store = CertStore.get_store(crl_store)
         self.crlsign = (
             store.get_certificate(crlsign_serial),
             store.get_private_key(crlsign_serial),
         )
+        store = CertStore.get_store(csr_store)
         self.csrsign = (
             store.get_certificate(csrsign_serial),
             store.get_private_key(csrsign_serial),
         )
+        
 
     def run(self):
         """Start the service."""
@@ -75,6 +79,8 @@ class CAService:
 
     def _process_requests(self, requests):
         """Process a list of requests that have been approved."""
+        if requests:
+            self.set_certificates()
         for request in requests:
             print('Got a certificate request ({})!'.format(request.id))
             try:

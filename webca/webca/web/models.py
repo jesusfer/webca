@@ -491,10 +491,11 @@ class CRLLocation(models.Model):
     )
 
     class Meta:
-        verbose_name = 'CRL Locations'
+        verbose_name = 'CRL Location'
 
     @property
     def count(self):
+        """Return the number of valid certificates that have this location in their CRL extension."""
         certs = [x for x in self.certificates.all() if x.is_valid]
         return len(certs)
 

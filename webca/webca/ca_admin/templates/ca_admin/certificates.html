@@ -64,8 +64,8 @@ CA certificates
                 {% endif %}
                 <tr><td>
                     <select name="{{ form.ca.name }}" size="5" {% if ca_certificates|length_is:'0' %}disabled{% endif %}>
-                        {% for cert in ca_certificates %}
-                        <option value="{{ cert|serial }}" {% ifequal cert|serial keysign %}selected{% endifequal %}>{{ cert|subject }}{% ifequal cert|serial keysign %} (active){% endifequal %}</option>
+                        {% for value,cert in ca_certificates %}
+                        <option value="{{ value }}" {{ value|selected:keysign }}>{{ cert|subject }}{{ value|active:keysign }}</option>
                         {% empty %}
                         <option>No certificates available</option>                            
                         {% endfor %}
@@ -82,13 +82,13 @@ CA certificates
                 <tr><td colspan="2" class="errors">{{ form.crl.errors }}</td></tr>
                 {% endif %}
                 <tr><td>
-                        <select name="{{ form.crl.name }}" size="5" {% if crl_certificates|length_is:'0' %}disabled{% endif %}>
-                            {% for cert in crl_certificates %}
-                            <option value="{{ cert|serial }}" {% ifequal cert|serial crlsign %}selected{% endifequal %}>{{ cert|subject }}{% ifequal cert|serial crlsign %} (active){% endifequal %}</option>
-                            {% empty %}
-                            <option>No certificates available</option>                            
-                            {% endfor %}
-                        </select>
+                    <select name="{{ form.crl.name }}" size="5" {% if crl_certificates|length_is:'0' %}disabled{% endif %}>
+                        {% for value,cert in crl_certificates %}
+                        <option value="{{ value }}" {{ value|selected:crlsign }}>{{ cert|subject }}{{ value|active:crlsign }}</option>
+                        {% empty %}
+                        <option>No certificates available</option>                            
+                        {% endfor %}
+                    </select>
                 </td></tr>
                 <tr><td><input name="{{ form.submit_crl.name }}" type="submit" value="Make active"/></td></tr>
             </table>
@@ -101,13 +101,13 @@ CA certificates
                 <tr><td colspan="2" class="errors">{{ form.user.errors }}</td></tr>
                 {% endif %}
                 <tr><td>
-                        <select name="{{ form.user.name }}" size="5" {% if ca_certificates|length_is:'0' %}disabled{% endif %}>
-                            {% for cert in ca_certificates %}
-                            <option value="{{ cert|serial }}" {% ifequal cert|serial usersign %}selected{% endifequal %}>{{ cert|subject }}{% ifequal cert|serial usersign %} (active){% endifequal %}</option>
-                            {% empty %}
-                            <option>No certificates available</option>                            
-                            {% endfor %}
-                        </select>
+                    <select name="{{ form.user.name }}" size="5" {% if ca_certificates|length_is:'0' %}disabled{% endif %}>
+                        {% for value,cert in user_certificates %}
+                        <option value="{{ value }}" {{ value|selected:usersign }}>{{ cert|subject }}{{ value|active:usersign }}</option>
+                        {% empty %}
+                        <option>No certificates available</option>                            
+                        {% endfor %}
+                    </select>
                 </td></tr>
                 <tr><td><input name="{{ form.submit_user.name }}" type="submit" value="Make active"/></td></tr>
             </table>
@@ -129,7 +129,7 @@ CA certificates
         </ul>
         <h4>Actions</h4>
         <ul>
-            <li><a href="">Add a certificate</a></li>
+            <li><a href="">Add a keypair/certificate</a></li>
         </ul>
         <h4>Help links</h4>
         <ul>
