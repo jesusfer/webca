@@ -17,5 +17,9 @@ DATABASE_ROUTERS = ['webca.certstore_db.CertStoreDBRouter']
 TEMPLATES[0]['DIRS'].append(os.path.join(
     BASE_DIR, 'webca', 'ca_admin', 'templates'))
 
+TEMPLATES[0]['OPTIONS']['libraries'] = {
+    'ca_admin': 'webca.ca_admin.templatetags.ca_admin',
+}
+
 from webca.ca_admin import settings_local
 DATABASES.update(settings_local.DATABASES)

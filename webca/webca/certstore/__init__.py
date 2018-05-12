@@ -24,6 +24,16 @@ class CertStore(metaclass=abc.ABCMeta):
             )
 
     @staticmethod
+    def all():
+        """Return a list of tuples with `(name, cls)` of all available stores."""
+        return [(name, cls) for name, cls in CertStore._stores.values()]
+
+    @staticmethod
+    def stores():
+        """Return a list of objects with all available stores."""
+        return [cls() for name, cls in CertStore.all()]
+
+    @staticmethod
     def get_store(store_id):
         """Return an instance of the selected store."""
         store = CertStore._stores[store_id]

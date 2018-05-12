@@ -29,6 +29,7 @@ class CAService:
         store_id = Config.get_value(parameters.CERT_STORE)
         if not store_id:
             self.fatal_error('No certificate store selected')
+        # TODO: this may change during runtime
         keysign_serial = Config.get_value(parameters.CERT_KEYSIGN)
         crlsign_serial = Config.get_value(parameters.CERT_KEYSIGN)
         csrsign_serial = Config.get_value(parameters.CERT_CSRSIGN)

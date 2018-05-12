@@ -1,7 +1,39 @@
 {% extends "admin/base_site.html" %}
 {% load i18n static %}
+{% load ca_admin %}
 
-{% block extrastyle %}{{ block.super }}<link rel="stylesheet" type="text/css" href="{% static "admin/css/dashboard.css" %}" />{% endblock %}
+{% block extrastyle %}{{ block.super }}
+<link rel="stylesheet" type="text/css" href="{% static "admin/css/dashboard.css" %}" />
+<style>
+    table {
+        width: 100%;
+    }
+    #content-main th:first-of-type {
+        width: 75%;
+    }
+    td:first-of-type {
+        width: 75%;
+    }
+    table select {
+        width: 100%;
+        height: auto;
+        padding: 0%;
+        margin: 0%;
+    }
+    table input {
+        width: 100%;
+        padding: 0%;
+        margin: 0%;
+        box-sizing: border-box;
+    }
+    td.errors {
+        width: 100%;
+    }
+    .module li {
+        list-style-type: circle;
+    }
+</style>
+{% endblock %}
 
 {% block coltype %}colMS{% endblock %}
 
@@ -18,54 +50,68 @@ CA certificates
 {% block content %}
 <div id="content-main">
     <div class="module">
-        <h4>CA certificate</h4>
-        <table>
-            <tr>
-                <td style="border:0">
-                    <select size="5" style="height:6em;width:20em;">
-                        <option>Cert 1 (active)</option>
-                        <option>Cert 2</option>
+        <form action="{% url 'admin:certs_update' %}" method="POST">
+            {% if form.non_field_errors %}
+            <div class="errors">{{ form.non_field_errors }}</div>
+            {% endif %}
+            {% csrf_token %}
+            <h3>Main CA certificate</h3>
+            <p>The active certificate will be used to sign the certificates processed by this Certification Authority.</p>
+            <table>
+                <caption>Available certificates</caption>
+                {% if form.ca.errors %}
+                <tr><td colspan="2" class="errors">{{ form.ca.errors }}</td></tr>
+                {% endif %}
+                <tr><td>
+                    <select name="{{ form.ca.name }}" size="5" {% if ca_certificates|length_is:'0' %}disabled{% endif %}>
+                        {% for cert in ca_certificates %}
+                        <option value="{{ cert|serial }}" {% ifequal cert|serial keysign %}selected{% endifequal %}>{{ cert|subject }}{% ifequal cert|serial keysign %} (active){% endifequal %}</option>
+                        {% empty %}
+                        <option>No certificates available</option>                            
+                        {% endfor %}
                     </select>
-                </td>
-            </tr>
-            <tr>
-                <td style="border:0">
-                    <input type="button" value="Make active"/>
-                </td>
-            </tr>
-        </table>
-        <h4>CRL signing certificate</h4>
-        <table>
-            <tr>
-                <td style="border:0">
-                    <select size="5" style="height:6em;width:20em;">
-                        <option>Cert 1 (active)</option>
-                        <option>Cert 2</option>
-                    </select>
-                </td>
-            </tr>
-            <tr>
-                <td style="border:0">
-                    <input type="button" value="Make active"/>
-                </td>
-            </tr>
-        </table>
-        <h4>User authentication certificate</h4>
-        <table>
-            <tr>
-                <td style="border:0">
-                    <select size="5" style="height:6em;width:20em;">
-                        <option>Cert 1 (active)</option>
-                        <option>Cert 2</option>
-                    </select>
-                </td>
-            </tr>
-            <tr>
-                <td style="border:0">
-                    <input type="button" value="Make active"/>
-                </td>
-            </tr>
-        </table>
+                </td></tr>
+                <tr><td><input name="{{ form.submit_ca.name }}" type="submit" value="Make active"/></td></tr>
+            </table>
+            <h3>CRL signing certificate</h3>
+            <p>The active certificate will be used to sign the certificate revocation lists created by this Certification Authority.
+                It must be in the same validation path as the CA certificate above.</p>
+                <table>
+                <caption>Available certificates</caption>
+                {% if form.crl.errors %}
+                <tr><td colspan="2" class="errors">{{ form.crl.errors }}</td></tr>
+                {% endif %}
+                <tr><td>
+                        <select name="{{ form.crl.name }}" size="5" {% if crl_certificates|length_is:'0' %}disabled{% endif %}>
+                            {% for cert in crl_certificates %}
+                            <option value="{{ cert|serial }}" {% ifequal cert|serial crlsign %}selected{% endifequal %}>{{ cert|subject }}{% ifequal cert|serial crlsign %} (active){% endifequal %}</option>
+                            {% empty %}
+                            <option>No certificates available</option>                            
+                            {% endfor %}
+                        </select>
+                </td></tr>
+                <tr><td><input name="{{ form.submit_crl.name }}" type="submit" value="Make active"/></td></tr>
+            </table>
+            <h3>User authentication certificate</h3>
+            <p>The active certificate will be used to sign the user authentication certificates created by this Certification Authority.
+                It must be in the same validation path as the CA certificate above.</p>
+            <table>
+                <caption>Available certificates</caption>
+                {% if form.user.errors %}
+                <tr><td colspan="2" class="errors">{{ form.user.errors }}</td></tr>
+                {% endif %}
+                <tr><td>
+                        <select name="{{ form.user.name }}" size="5" {% if ca_certificates|length_is:'0' %}disabled{% endif %}>
+                            {% for cert in ca_certificates %}
+                            <option value="{{ cert|serial }}" {% ifequal cert|serial usersign %}selected{% endifequal %}>{{ cert|subject }}{% ifequal cert|serial usersign %} (active){% endifequal %}</option>
+                            {% empty %}
+                            <option>No certificates available</option>                            
+                            {% endfor %}
+                        </select>
+                </td></tr>
+                <tr><td><input name="{{ form.submit_user.name }}" type="submit" value="Make active"/></td></tr>
+            </table>
+        </form>
     </div>
 </div>
 {% endblock %}
@@ -75,12 +121,19 @@ CA certificates
     <div class="module">
         <h4>Available certificate stores</h4>
         <ul>
-            <li style="list-style-type: circle">Certstore DB</li>
-            <li style="list-style-type: circle">Filesystem</li>
+            {% for name,cls in stores %}
+            <li>{{ name }}</li>
+            {% empty %}
+            <li>No available stores.</li>            
+            {% endfor %}
+        </ul>
+        <h4>Actions</h4>
+        <ul>
+            <li><a href="">Add a certificate</a></li>
         </ul>
         <h4>Help links</h4>
         <ul>
-            <li style="list-style-type: circle"><a href="">Changing the CA certfificate</a></li>
+            <li><a href="">Changing the CA certfificate</a></li>
         </ul>
     </div>
 </div>

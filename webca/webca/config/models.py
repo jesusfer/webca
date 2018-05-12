@@ -42,3 +42,15 @@ class ConfigurationObject(models.Model):
         if obj:
             return obj.value
         return None
+
+    @staticmethod
+    def set_value(name, value):
+        """Set the `value` of parameter with `name`"""
+        obj = ConfigurationObject.objects.filter(name=name).first()
+        if obj:
+            obj.value = value
+            obj.save()
+        else:
+            obj = ConfigurationObject(name=name, value=value)
+            obj.save()
+        return obj
