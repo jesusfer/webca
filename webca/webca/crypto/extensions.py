@@ -145,11 +145,23 @@ def json_to_extension(json_input):
     obj = json.loads(json_input, encoding='utf-8', object_hook=_as_extension)
     return obj
 
+
 def build_san(names, critical=False):
     """Return a SubjectAlternativeName OpenSSL.crypto.X509Extension."""
     san = {
-        'name':'subjectAltName',
-        'critical':critical,
-        'value':names,
+        'name': 'subjectAltName',
+        'critical': critical,
+        'value': names,
     }
     return _as_extension(san)
+
+
+def build_crl(locations, critical=False):
+    """Return a CRLDistributionPoints OpenSSL.crypto.X509Extension."""
+    value = ['URI:%s' % l for l in locations]
+    crl = {
+        'name': 'crlDistributionPoints',
+        'critical': critical,
+        'value': ','.join(value),
+    }
+    return _as_extension(crl)

@@ -12,8 +12,8 @@ from webca.config import constants as parameters
 from webca.config.models import ConfigurationObject as Config
 from webca.crypto import utils as cert_utils
 from webca.crypto import certs
-from webca.crypto.extensions import build_san
-from webca.web.models import Certificate, Request
+from webca.crypto.extensions import build_san, build_crl
+from webca.web.models import Certificate, Request, CRLLocation
 
 
 class CAService:
@@ -30,9 +30,12 @@ class CAService:
 
     def set_certificates(self):
         """Set up the signing certificates."""
-        key_store,keysign_serial = Config.get_value(parameters.CERT_KEYSIGN).split(',')
-        crl_store,crlsign_serial = Config.get_value(parameters.CERT_KEYSIGN).split(',')
-        csr_store,csrsign_serial = Config.get_value(parameters.CERT_CSRSIGN).split(',')
+        key_store, keysign_serial = Config.get_value(
+            parameters.CERT_KEYSIGN).split(',')
+        crl_store, crlsign_serial = Config.get_value(
+            parameters.CERT_KEYSIGN).split(',')
+        csr_store, csrsign_serial = Config.get_value(
+            parameters.CERT_CSRSIGN).split(',')
 
         if not keysign_serial or not crlsign_serial or not csrsign_serial:
             self.fatal_error('No CA certificates configured.')
@@ -51,7 +54,6 @@ class CAService:
             store.get_certificate(csrsign_serial),
             store.get_private_key(csrsign_serial),
         )
-        
 
     def run(self):
         """Start the service."""
@@ -107,12 +109,20 @@ class CAService:
             return
         except Certificate.DoesNotExist:
             print('Issuing... ', end='')
+        # Get the public key and subject from the user's CSR and the request
         pub_key = request.get_csr().get_pubkey()
         subject = cert_utils.name_to_components(request.subject)
+        # Get the fixed extensions from the template
         extensions = request.template.get_extensions()
+        # If there's a SAN, add it here
         if request.san:
             san = build_san(request.san)
             extensions.append(san)
+        # TODO: Now build the CRL extension.
+        crl_locations = CRLLocation.get_locations()
+        if crl_locations:
+            crl = build_crl(crl_locations.values_list('url', flat=True))
+            extensions.append(crl)
 
         # Validate stuff
         # Key size. Template requirements might have changed since the request was done
@@ -158,4 +168,8 @@ class CAService:
         # Update the request
         request.status = Request.STATUS_ISSUED
         request.save()
+        # Update the CRL locations
+        for location in crl_locations:
+            location.certificates.add(certificate)
+            location.save()
         print('done')

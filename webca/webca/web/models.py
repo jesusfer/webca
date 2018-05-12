@@ -411,11 +411,11 @@ class Template(models.Model):
         ))
         # 3. Validation
         # TODO: CRL
-        extensions.append(crypto.X509Extension(
-            b'crlDistributionPoints',
-            False,
-            b'URI:http://test.net/test.crl'
-        ))
+        # extensions.append(crypto.X509Extension(
+        #     b'crlDistributionPoints',
+        #     False,
+        #     b'URI:http://test.net/test.crl'
+        # ))
 
         # TODO: OCSP
         # 2. Extras
@@ -490,6 +490,12 @@ class CRLLocation(models.Model):
         help_text='Certificates using this location',
     )
 
+    def __str__(self):
+        return 'CRL: {}'.format(self.url)
+
+    def __repr__(self):
+        return '<CRLLocation %s>' % self.url
+
     class Meta:
         verbose_name = 'CRL Location'
 
@@ -499,6 +505,10 @@ class CRLLocation(models.Model):
         certs = [x for x in self.certificates.all() if x.is_valid]
         return len(certs)
 
+    @staticmethod
+    def get_locations():
+        """Get non-deleted locations."""
+        return CRLLocation.objects.filter(deleted=False)
 
 """
 TODO: define policies
