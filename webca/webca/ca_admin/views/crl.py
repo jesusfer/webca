@@ -1,6 +1,7 @@
 from django import forms
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
 from django.template.response import TemplateResponse
+from django.urls import reverse
 from django.views import View
 
 from webca.ca_admin import admin
@@ -56,10 +57,22 @@ class CRLView(View):
         return context
 
     def get(self, request, *args, **kwargs):
+        if 'update' in kwargs.keys():
+            return HttpResponseRedirect(reverse('admin:crl'))
         context = self.get_context(request)
+        print(request.GET)
+        if 'deleted'in request.GET.keys() and request.GET.get('crl'):
+            loc_id = int(request.GET.get('crl'))
+            try:
+                location = CRLLocation.objects.get(pk=loc_id)
+                context['form'].initial = {'crl': location.url}
+            except CRLLocation.DoesNotExist:
+                pass
         return TemplateResponse(request, "ca_admin/crl.html", context)
 
     def post(self, request, *args, **kwargs):
+        if 'update' not in kwargs.keys():
+            return HttpResponseRedirect(reverse('admin:crl'))
         context = self.get_context(request)
         form = self.form_class(
             data=request.POST,
@@ -69,8 +82,8 @@ class CRLView(View):
         if form.is_valid():
             location = None
             if form.cleaned_data['remove']:
-                id = form.cleaned_data['crl_list']
-                location = CRLLocation.objects.get(pk=id)
+                loc_id = form.cleaned_data['crl_list']
+                location = CRLLocation.objects.get(pk=loc_id)
                 location.deleted = True
                 location.save()
             elif form.cleaned_data['add']:
@@ -83,7 +96,10 @@ class CRLView(View):
                 else:
                     location = CRLLocation(url=url)
                     location.save()
-            context = self.get_context(request)
+            url = reverse('admin:crl')
             if form.cleaned_data['remove']:
-                context['form'].initial = {'crl': location.url}
+                url += '?crl={}&deleted'.format(
+                    location.id,
+                )
+            return HttpResponseRedirect(url)
         return TemplateResponse(request, "ca_admin/crl.html", context)
