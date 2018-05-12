@@ -45,7 +45,7 @@
 <div id="content-main">
     <div class="module">
         <p>These are the URLs that will be added to the CRL extension in the certificates signed by this CA.</p>
-        <div style="width:auto; position:relative">
+        <div>
             <form action="{% url 'admin:crl_update' %}" method="POST">
                 {% csrf_token %}
                 <table>

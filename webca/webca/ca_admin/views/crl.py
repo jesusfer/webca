@@ -1,4 +1,5 @@
 from django import forms
+from django.contrib import messages
 from django.http import HttpResponse, HttpResponseRedirect
 from django.template.response import TemplateResponse
 from django.urls import reverse
@@ -33,11 +34,11 @@ class CRLForm(forms.Form):
             self.add_error('crl_list', 'Choose one URL to remove it.')
         if cleaned_data['add'] and not cleaned_data['crl']:
             self.add_error('crl', 'Type a URL to add it.')
-        # return cleaned_data
 
 
 class CRLView(View):
     form_class = CRLForm
+    template = 'ca_admin/crl.html'
 
     def get_context(self, request, **kwargs):
         """Get a default context."""
@@ -60,7 +61,6 @@ class CRLView(View):
         if 'update' in kwargs.keys():
             return HttpResponseRedirect(reverse('admin:crl'))
         context = self.get_context(request)
-        print(request.GET)
         if 'deleted'in request.GET.keys() and request.GET.get('crl'):
             loc_id = int(request.GET.get('crl'))
             try:
@@ -68,7 +68,7 @@ class CRLView(View):
                 context['form'].initial = {'crl': location.url}
             except CRLLocation.DoesNotExist:
                 pass
-        return TemplateResponse(request, "ca_admin/crl.html", context)
+        return TemplateResponse(request, self.template, context)
 
     def post(self, request, *args, **kwargs):
         if 'update' not in kwargs.keys():
@@ -86,6 +86,7 @@ class CRLView(View):
                 location = CRLLocation.objects.get(pk=loc_id)
                 location.deleted = True
                 location.save()
+                messages.add_message(request, messages.INFO, 'CRL Location deleted')
             elif form.cleaned_data['add']:
                 url = form.cleaned_data['crl']
                 location = CRLLocation.objects.filter(url=url).first()
@@ -96,10 +97,12 @@ class CRLView(View):
                 else:
                     location = CRLLocation(url=url)
                     location.save()
+                messages.add_message(request, messages.INFO, 'CRL Location added')
             url = reverse('admin:crl')
             if form.cleaned_data['remove']:
                 url += '?crl={}&deleted'.format(
                     location.id,
                 )
             return HttpResponseRedirect(url)
-        return TemplateResponse(request, "ca_admin/crl.html", context)
+        messages.add_message(request, messages.ERROR, 'Please check below')
+        return TemplateResponse(request, self.template, context)
