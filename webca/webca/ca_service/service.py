@@ -17,8 +17,8 @@ from webca.crypto import utils as cert_utils
 from webca.crypto import certs, crl
 from webca.crypto.constants import REV_REASON
 from webca.crypto.extensions import build_crl, build_san
-from webca.web.models import Certificate, CRLLocation, Request, Revoked
-
+from webca.web.models import Certificate, CRLLocation, Request, Revoked, Template
+from webca import utils as ca_utils
 
 class CAService:
     """Polling service that processes requests from end users."""
@@ -119,11 +119,24 @@ class CAService:
         subject = cert_utils.name_to_components(request.subject)
         # Get the fixed extensions from the template
         extensions = request.template.get_extensions()
+        # If the template is for user certificates, then modify the subject
+        if request.template.required_subject == Template.SUBJECT_USER:
+            d = ca_utils.tuples_as_dict(subject)
+            subject_email = d.pop('emailAddress')
+            subject = ca_utils.dict_as_tuples(d)
+        else:
+            subject_email = None
         # If there's a SAN, add it here
+        # request.san is a comma separated list
+        san = []
         if request.san:
-            san = build_san(request.san)
-            extensions.append(san)
-        # TODO: Now build the CRL extension.
+            san = request.san.split(',')
+        if subject_email:
+            san.append('email:%s' % subject_email)
+        if san:
+            ext = build_san(','.join(san))
+            extensions.append(ext)
+        # Now build the CRL extension.
         crl_locations = CRLLocation.get_locations()
         if crl_locations:
             crl = build_crl(crl_locations.values_list('url', flat=True))

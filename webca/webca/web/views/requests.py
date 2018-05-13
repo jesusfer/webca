@@ -97,7 +97,7 @@ class NewView(View):
             'DN': Template.SUBJECT_DN,
             'CN': Template.SUBJECT_CN,
             'DN_PARTIAL': Template.SUBJECT_DN_PARTIAL,
-            'EMAIL': Template.SUBJECT_EMAIL,
+            'USER': Template.SUBJECT_USER,
             'form': request_form,
         }
         return render(request, 'webca/web/requests/new.html', context)
@@ -128,8 +128,8 @@ class SubmitView(View):
             new_req.user = request.user
             new_req.subject = form.get_subject()
             new_req.csr = data['csr']
+            if san_current:
             san = ','.join(data['san'])
-            if san:
                 new_req.san = san
             template = Template.objects.get(pk=data['template'])
             if template not in request.user.templates:
@@ -146,7 +146,7 @@ class SubmitView(View):
                 'DN': Template.SUBJECT_DN,
                 'CN': Template.SUBJECT_CN,
                 'DN_PARTIAL': Template.SUBJECT_DN_PARTIAL,
-                'EMAIL': Template.SUBJECT_EMAIL,
+                'USER': Template.SUBJECT_USER,
                 'form': form,
             }
             return render(request, 'webca/web/requests/new.html', context)

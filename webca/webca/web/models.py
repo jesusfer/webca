@@ -75,7 +75,7 @@ class Request(models.Model):
         return '<Certificate %s>' % str(self)
 
     def save(self, *args, **kwargs):
-        # We have to do some validations here as Django validators
+        # We have to do some validations here as field validators
         # can't access other stuff than the value to validate
         # Validate key size minimum
         # We don't need to check that if the request is being rejected
@@ -86,21 +86,25 @@ class Request(models.Model):
                 code='minBits',
                 params={'min': self.template.min_bits}
             )
-        # Clean up the subject
+        # Clean up the subject (keep only the components we define)
         subject = tuples_as_dict(name_to_components(self.subject))
         new_subject = {}
         for name, value in subject.items():
             if name in SUBJECT_PARTS:
                 new_subject[name] = value
         # Validate the subject requirements against the template
+        # CN is always required at this time
+        if 'CN' not in new_subject.keys():
+            raise ValidationError(
+                'A Common Name is required for this request',
+                code='cn-required',
+            )
         if self.template.required_subject == Template.SUBJECT_CN:
-            if 'CN' not in new_subject.keys():
-                raise ValidationError(
-                    'A Common Name is required for this request',
-                    code='cn-required',
-                )
-            self.subject = '/CN={}'.format(new_subject['CN'])
-        elif self.template.required_subject == Template.SUBJECT_EMAIL:
+            # Only keep CN
+            self.subject = '/CN={}'.format(
+                new_subject['CN']
+            )
+        elif self.template.required_subject == Template.SUBJECT_USER:
             if 'emailAddress' not in new_subject.keys():
                 raise ValidationError(
                     'An E-Mail is required for this request',
@@ -108,35 +112,35 @@ class Request(models.Model):
                 )
             else:
                 validate_email(new_subject['emailAddress'])
-            self.subject = '/emailAddress=%s' % new_subject['emailAddress']
+            # Only keep CN and emailAddress
+            self.subject = '/CN={}/emailAddress={}'.format(
+                new_subject['CN'],
+                new_subject['emailAddress'],
+            )
         elif self.template.required_subject == Template.SUBJECT_DN:
-            valid = True
-            for name in SUBJECT_DN:
-                if name not in new_subject.keys():
-                    print(name)
-                    valid = False
-                    break
-            if not valid:
+            # Check for a full DN
+            missing = [name for name in SUBJECT_DN if name not in new_subject.keys()]
+            if missing:
                 raise ValidationError(
                     'A full Distinguished Name is required for this request',
                     code='dn-required',
                 )
             self.subject = components_to_name(dict_as_tuples(new_subject))
         else:
-            # A partial DN means at least CN or email and then whatever else
-            if 'CN' not in new_subject.keys() and 'emailAddres' not in new_subject.keys():
+            # A partial DN means at least CN and then whatever else
+            if 'CN' not in new_subject.keys():
                 raise ValidationError(
-                    'At least one of Common Name or E-Mail are required for this request',
+                    'At least Common Name is required for this request',
                     code='partial-required',
                 )
             self.subject = components_to_name(dict_as_tuples(new_subject))
-
         super().save(*args, **kwargs)
 
     def get_csr(self):
         """Return the request as a OpenSSL.crypto.X509Req object."""
         return crypto.load_certificate_request(crypto.FILETYPE_PEM, self.csr)
 
+    # TODO: Django already provides this get_status_display()
     @property
     def status_text(self):
         return [y for x, y in Request.STATUS if x == self.status][0]
@@ -216,11 +220,11 @@ class Template(models.Model):
     ]
     SUBJECT_DN = 1
     SUBJECT_CN = 2
-    SUBJECT_EMAIL = 3
+    SUBJECT_USER = 3
     SUBJECT_DN_PARTIAL = 4
     SUBJECT_TYPE = [
         (SUBJECT_CN, 'Common Name'),
-        (SUBJECT_EMAIL, 'E-Mail address'),
+        (SUBJECT_USER, 'User (CN + E-Mail)'),
         (SUBJECT_DN, 'Full Distinguished Name'),
         (SUBJECT_DN_PARTIAL, 'Partial Distinguished Name'),
     ]
@@ -247,7 +251,7 @@ class Template(models.Model):
     )
     auto_sign = models.BooleanField(
         default=True,
-        help_text='Certificates using this template will automatically be signed by the CA',
+        help_text='Certificate requests using this template will automatically be signed by the CA',
     )
     min_bits = models.PositiveSmallIntegerField(
         default=2048,
@@ -257,16 +261,20 @@ class Template(models.Model):
     required_subject = models.SmallIntegerField(
         choices=SUBJECT_TYPE,
         default=SUBJECT_CN,
-        help_text='Type of subject required: Full or partial DN, CN or emailAddress',
+        help_text="""Type of subject required (which fields are required in requests):<br/>
+        - CN: Common Name.<br/>
+        - User: CN + email. The email will be added as rfc822Name in the SubjectAltName extension.<br/>
+        - Full DN: All fields of the DN are required (C, ST, L, O, OU).<br/>
+        - Partial DN: CN is required, the rest are optional.""",
     )
     san_type = models.SmallIntegerField(
         choices=SAN_TYPE,
         default=SAN_HIDDEN,
-        verbose_name='SAN Type',
-        help_text='Require Subject Alternative Name',
+        verbose_name='Show SAN',
+        help_text='Show the Subject Alternative Name field',
     )
     allowed_san = SubjectAltNameField(
-        help_text='Allowed SAN keywords',
+        help_text='Allowed SAN keywords. Any number of keywords is allowed.',
         verbose_name='Allowed SAN',
     )
     basic_constraints = models.PositiveSmallIntegerField(
@@ -509,6 +517,7 @@ class CRLLocation(models.Model):
     def get_locations():
         """Get non-deleted locations."""
         return CRLLocation.objects.filter(deleted=False)
+
 
 """
 TODO: define policies

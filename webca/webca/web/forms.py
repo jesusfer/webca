@@ -104,9 +104,9 @@ class RequestNewForm(forms.Form):
                 required=False,
             )
 
-        if self.template_obj.required_subject == Template.SUBJECT_CN:
-            self.fields['cn'].required = True
-        elif self.template_obj.required_subject == Template.SUBJECT_EMAIL:
+        # Set up required fields per subject type
+        self.fields['cn'].required = True
+        if self.template_obj.required_subject == Template.SUBJECT_USER:
             self.fields['email'].required = True
         elif self.template_obj.required_subject == Template.SUBJECT_DN:
             self.fields['country'].required = True
@@ -114,30 +114,29 @@ class RequestNewForm(forms.Form):
             self.fields['locality'].required = True
             self.fields['org'].required = True
             self.fields['ou'].required = True
-            self.fields['cn'].required = True
 
     def get_subject(self):
         """Return the subject in OpenSSL string format."""
         if self.is_valid():
             data = self.cleaned_data
-            value = '/'
-            for component in ['cn', 'email', 'country', 'state', 'locality', 'org', 'ou']:
+            value = ''
+            fields = ['cn', 'email', 'country', 'state', 'locality', 'org', 'ou']
+            for component in fields:
                 if data[component]:
-                    value += '%s=%s/' % (NAME_DICT[component], data[component])
+                    value += '/%s=%s' % (NAME_DICT[component], data[component])
             return value
-        return ''
+        return None
 
     def clean(self):
         cleaned_data = super().clean()
         # TODO: logic for subject names missing
         if self.template_obj.required_subject == Template.SUBJECT_DN_PARTIAL:
-            # At least common name or e-mail should be set
-            print(cleaned_data.keys())
-            if not cleaned_data['cn'] and not cleaned_data['email']:
+            # At least common name should be set
+            if not cleaned_data['cn']:
                 # self.add_error('cn', 'This field is required')
                 # self.add_error('email', 'This field is required')
                 raise forms.ValidationError(
-                    'Either Common Name or E-Mail are required',
+                    'At least Common Name must be present',
                     code='invalid-dn',
                 )
         return cleaned_data

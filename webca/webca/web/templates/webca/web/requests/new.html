@@ -9,11 +9,11 @@
     <p>Valid for: {{ form.template_obj.days|valid_for }} ({{ form.template_obj.days|valid_until|date }})</p>
     <h4>Certificate name</h4>
     {{ form.non_field_errors }}
-    <p>Your certificate needs a name.
-    {% if form.template_obj.required_subject == DN %}
-    Please fill <b>all</b> of the following fields:</p>
+    <p>Your certificate must have a name.</p>
     <p>{{ form.cn.errors }}</p>
     <p>{{ form.cn.label_tag }}{{ form.cn }}</p>
+    {% if form.template_obj.required_subject == DN %}
+    <p>Please fill <b>all</b> of the following fields:</p>
     <p>{{ form.country.errors }}</p>
     <p>{{ form.country.label_tag }}{{ form.country }}</p>
     <p>{{ form.state.errors }}</p>
@@ -25,11 +25,7 @@
     <p>{{ form.ou.errors }}</p>
     <p>{{ form.ou.label_tag }}{{ form.ou }}</p>
     {% elif form.template_obj.required_subject == DN_PARTIAL %}
-    You must fill in Common Name or E-Mail. The rest may be left blank:</p>
-    <p>{{ form.cn.errors }}</p>
-    <p>{{ form.cn.label_tag }}{{ form.cn }}</p>
-    <p>{{ form.email.errors }}</p>
-    <p>{{ form.email.label_tag }}{{ form.email }}</p>
+    <p>The following fields are not required and may be left blank but it's highly recommended to fill them in:</p>
     <p>{{ form.country.errors }}</p>
     <p>{{ form.country.label_tag }}{{ form.country }}</p>
     <p>{{ form.state.errors }}</p>
@@ -40,14 +36,9 @@
     <p>{{ form.org.label_tag }}{{ form.org }}</p>
     <p>{{ form.ou.errors }}</p>
     <p>{{ form.ou.label_tag }}{{ form.ou }}</p>
-    {% elif form.template_obj.required_subject == EMAIL %}
-    Please fill in the following field:
+    {% elif form.template_obj.required_subject == USER %}
     <p>{{ form.email.errors }}</p>
     <p>{{ form.email.label_tag }}{{ form.email }}</p>
-    {% elif form.template_obj.required_subject == CN %}
-    Please fill in the following field:
-    <p>{{ form.cn.errors }}</p>
-    <p>{{ form.cn.label_tag }}{{ form.cn }}</p>
     {% endif %}
     {% if form.san %}
     With this type of certificate you can add Subject Alternative Names if needed.
@@ -63,6 +54,11 @@
     <p>For this type of certificate the minimum size of the public key is: <span>{{ form.template_obj.min_bits }}</span></p>
     <p>{{ form.csr.errors }}</p>
     <p>{{ form.csr }}</p>
+    {% if not form.template_obj.auto_sign %}
+    <p>This template requires approval. Once you submit the request, the approval process will begin. Please check back later.</p>
+    {% else %}
+    {% endif %}
+    <p></p>
     <input type="submit" value="Submit" />
 </form>
 {% else %}
