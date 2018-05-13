@@ -156,7 +156,7 @@ def build_san(names, critical=False):
     return _as_extension(san)
 
 
-def build_crl(locations, critical=False):
+def build_cdp(locations, critical=False):
     """Return a CRLDistributionPoints OpenSSL.crypto.X509Extension."""
     value = ['URI:%s' % l for l in locations]
     crl = {

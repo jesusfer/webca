@@ -16,7 +16,7 @@ from webca.config.models import ConfigurationObject as Config
 from webca.crypto import utils as cert_utils
 from webca.crypto import certs, crl
 from webca.crypto.constants import REV_REASON
-from webca.crypto.extensions import build_crl, build_san
+from webca.crypto.extensions import build_cdp, build_san
 from webca.web.models import Certificate, CRLLocation, Request, Revoked, Template
 from webca import utils as ca_utils
 
@@ -136,11 +136,11 @@ class CAService:
         if san:
             ext = build_san(','.join(san))
             extensions.append(ext)
-        # Now build the CRL extension.
+        # Now build the CDP extension.
         crl_locations = CRLLocation.get_locations()
         if crl_locations:
-            crl = build_crl(crl_locations.values_list('url', flat=True))
-            extensions.append(crl)
+            ext = build_cdp(crl_locations.values_list('url', flat=True))
+            extensions.append(ext)
 
         # Validate stuff
         # Key size. Template requirements might have changed since the request was done
