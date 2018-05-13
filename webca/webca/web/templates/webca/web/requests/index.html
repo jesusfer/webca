@@ -1,3 +1,4 @@
+{% load webca %}
 <h2>Request a certificate</h2>
 <p>In this section you can start the process to request a certificate.</p>
 <p>To begin, choose a type of certificate below:</p>
@@ -11,7 +12,7 @@
 {% endif %}
 {% if request_list %}
 <h3>Your requests</h3>
-<p>These are the {{ request_list|length }} requests that you have made already.</p>
+<p>These are the requests that you have made already.</p>
 <table>
     <tr>
         <th>Request</th>
@@ -26,7 +27,7 @@
             <a target="blank" href="{% url 'req:view_cert' req.id %}">{{ req }}</a>
         </td>
         <td>{{ req.template.name }}</td>
-        <td>{{ req.approved }}</td>
+        <td>{{ req.approved|approval }}</td>
         <td>{{ req.status_text }}</td>
         <td>{{ req.reject_reason }}</td>
     </tr>

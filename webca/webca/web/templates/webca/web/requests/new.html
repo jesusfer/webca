@@ -6,6 +6,7 @@
     {% csrf_token %} {{ form.template.as_hidden }}
     <h4>Certificate type</h4>
     <p>Name: {{ form.template_obj.name }}</p>
+    <p>Valid for: {{ form.template_obj.days|valid_for }} ({{ form.template_obj.days|valid_until|date }})</p>
     <h4>Certificate name</h4>
     {{ form.non_field_errors }}
     <p>Your certificate needs a name.
