@@ -106,6 +106,13 @@ class NewView(View):
 class SubmitView(View):
     """Process a request submission."""
 
+    def get(self, request, *args, **kwargs):
+        """GET is not a correct verb."""
+        context = {
+            'error': "You can't access this page like this."
+        }
+        return render(request, 'webca/web/requests/error.html', context)
+
     def post(self, request, *args, **kwargs):
         """POST method."""
         previous = reverse('req:new')
@@ -129,7 +136,7 @@ class SubmitView(View):
             new_req.subject = form.get_subject()
             new_req.csr = data['csr']
             if san_current:
-            san = ','.join(data['san'])
+                san = ','.join(data['san'])
                 new_req.san = san
             template = Template.objects.get(pk=data['template'])
             if template not in request.user.templates:
