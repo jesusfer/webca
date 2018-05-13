@@ -1,6 +1,9 @@
 """
 Custom template tags and filters.
 """
+from datetime import datetime
+
+import pytz
 from django import template
 from django.utils.safestring import SafeText
 
@@ -36,4 +39,12 @@ def active(value, target):
     """Return ' (active)' if `value` equals `target`."""
     if value == target:
         return ' (active)'
+    return ''
+
+
+@register.filter
+def from_timestamp(value):
+    """Transform a timestamp in a tz-aware datetime."""
+    if isinstance(value, int) or isinstance(value, float):
+        return datetime.fromtimestamp(value, pytz.utc)
     return ''

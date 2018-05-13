@@ -1,18 +1,21 @@
+import json
+from datetime import datetime, timedelta
+
+import pytz
 from django import forms
 from django.contrib import messages
+from django.core import serializers
 from django.http import HttpResponse, HttpResponseRedirect
 from django.template.response import TemplateResponse
 from django.urls import reverse
 from django.views import View
-from django.core import serializers
 
 from webca.ca_admin import admin
-from webca.web.models import CRLLocation,Revoked
-from webca.config.models import ConfigurationObject as Config
-from webca.config.constants import CRL_CONFIG
 from webca.config import new_crl_config
+from webca.config.constants import CRL_CONFIG
+from webca.config.models import ConfigurationObject as Config
+from webca.web.models import CRLLocation, Revoked
 
-import json
 
 class CRLForm(forms.Form):
     crl_list = forms.ChoiceField(
@@ -91,7 +94,8 @@ class CRLView(View):
                 location = CRLLocation.objects.get(pk=loc_id)
                 location.deleted = True
                 location.save()
-                messages.add_message(request, messages.INFO, 'CRL location deleted')
+                messages.add_message(request, messages.INFO,
+                                     'CRL location deleted')
             elif form.cleaned_data['add']:
                 url = form.cleaned_data['crl']
                 location = CRLLocation.objects.filter(url=url).first()
@@ -102,7 +106,8 @@ class CRLView(View):
                 else:
                     location = CRLLocation(url=url)
                     location.save()
-                messages.add_message(request, messages.INFO, 'CRL location added')
+                messages.add_message(
+                    request, messages.INFO, 'CRL location added')
             url = reverse('admin:crl')
             if form.cleaned_data['remove']:
                 url += '?crl={}&deleted'.format(
@@ -117,27 +122,29 @@ class CRLConfigForm(forms.Form):
     days = forms.IntegerField(
         min_value=1,
     )
-    delta_days = forms.IntegerField(
-        min_value=1,
-    )
+    # FUTURE: Delta CRL not supported
+    # delta_days = forms.IntegerField(
+    #     min_value=1,
+    # )
     path = forms.CharField(
-
     )
+
 
 class CRLStatusView(View):
     template = 'ca_admin/crl_status.html'
     form_class = CRLConfigForm
 
     def get_context(self, request):
-        crl_config = json.loads(Config.get_value(CRL_CONFIG))
+        value = Config.get_value(CRL_CONFIG) or json.dumps(new_crl_config())
+        crl_config = json.loads(value)
         initial = {
-            'path':crl_config['path'],
-            'days':crl_config['days'],
-            'delta_days':crl_config['delta_days'],
+            'path': crl_config['path'],
+            'days': crl_config['days'],
+            'delta_days': crl_config['delta_days'],
         }
         context = dict(
             admin.admin_site.each_context(request),
-            title='CRL Status',
+            title='CRL status',
             config=crl_config,
             revoked_count=Revoked.objects.count(),
             initial=initial,
@@ -145,7 +152,7 @@ class CRLStatusView(View):
                 initial=initial,
             )
         )
-        return context        
+        return context
 
     def get(self, request, *args, **kwargs):
         context = self.get_context(request)
@@ -160,14 +167,24 @@ class CRLStatusView(View):
         context['form'] = form
         if form.is_valid():
             if form.has_changed():
-                print(form.cleaned_data)
+                # Update the crl configuration with the new values
                 for key in form.changed_data:
                     new_value = form.cleaned_data[key]
                     context['config'][key] = new_value
-                # TODO: If days have changed, a CRL may need to be published
+                if 'days' in form.changed_data:
+                    new_next = datetime.fromtimestamp(
+                        context['config']['last_update'],
+                        pytz.utc
+                    ) + timedelta(days=form.cleaned_data['days'])
+                    # Update next_update, even though it's just a note in the admin site
+                    context['config']['next_update'] = new_next.timestamp()
                 value = json.dumps(context['config'])
                 Config.set_value(CRL_CONFIG, value)
-                messages.add_message(request, messages.INFO, 'Settings updated')
+                messages.add_message(
+                    request, messages.INFO, 'Settings updated')
+            else:
+                messages.add_message(
+                    request, messages.WARNING, 'No changes done')
             return HttpResponseRedirect(reverse('admin:crl_status'))
         print(form.errors)
         messages.add_message(request, messages.ERROR, 'Please check below')

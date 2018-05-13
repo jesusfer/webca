@@ -1,5 +1,6 @@
 {% extends "ca_admin/base_page.html" %}
 {% load i18n static %}
+{% load ca_admin %}
 
 {% block style %}
 <style>
@@ -11,6 +12,9 @@
     }
     #crl_settings input {
         text-align: right;
+    }
+    .module li {
+        list-style-type: circle;
     }
 </style>
 {% endblock %}
@@ -26,20 +30,22 @@
             </tr>
             <tr>
                 <td>Last update</td>
-                <td>{{ config.last_update|default:"Never" }}</td>
+                <td>{{ config.last_update|default:"Never"|from_timestamp }}{% if config.last_update  %} ({{ config.last_update|from_timestamp|timesince }}){% endif %}</td>
             </tr>
             <tr>
-                <td>Next update</td>
-                <td>{{ config.next_update|default:"Who knows" }}</td>
+                <td>Next update (expected)</td>
+                <td>{{ config.next_update|default:"Who knows"|from_timestamp }}{% if config.next_update  %} ({{ config.next_update|from_timestamp|timeuntil }}){% endif %}</td>
             </tr>
+            {% comment "Delta CRL not supported" %}
             <tr>
                 <td>Last delta update</td>
-                <td>{{ config.delta_last_update|default:"Never" }}</td>
+                <td>{{ config.delta_last_update|default:"Never"|from_timestamp }}</td>
             </tr>
             <tr>
                 <td>Next delta update</td>
                 <td>{{ config.delta_next_update|default:"Who knows" }}</td>
             </tr>
+            {% endcomment %}
             <tr>
                 <td>Last message</td>
                 <td>{{ config.status }}</td>
@@ -60,9 +66,10 @@
                 <tr><td colspan="2" class="errors">{{ form.days.errors }}</td></tr>
                 {% endif %}
                 <tr>
-                    <td><p>Publish a full CRL every</p></td>
+                    <td><p>Publish a complete CRL every</p></td>
                     <td><input name="{{ form.days.name }}" value="{{ form.days.value }}"/> days</td>
                 </tr>
+                {% comment "Delta CRL not supported yet" %}
                 {% if form.delta_days.errors %}
                 <tr><td colspan="2" class="errors">{{ form.delta_days.errors }}</td></tr>
                 {% endif %}
@@ -70,12 +77,13 @@
                     <td><p>Publish a delta CRL every</p></td>
                     <td><input name="{{ form.delta_days.name }}" value="{{ form.delta_days.value }}"/> days</td>
                 </tr>
+                {% endcomment %}
                 {% if form.path.errors %}
                 <tr><td colspan="2" class="errors">{{ form.path.errors }}</td></tr>
                 {% endif %}
                 <tr>
-                    <td><p>Publishing path</p></td>
-                    <td><input name="{{ form.path.name }}" type="text" style="width: 100%" value="{{ form.path.value }}"/></td>
+                    <td><p>Export path</p></td>
+                    <td><input name="{{ form.path.name }}" type="text" style="width: 100%;text-align:left" value="{{ form.path.value }}"/></td>
                 </tr>
                 <tr>
                     <td colspan="2"><input type="submit" value="Update settings"/></td>
@@ -91,6 +99,7 @@
     <div class="module">
         <h4>Actions</h4>
         <ul>
+            <li><a href="{% url 'admin:crl' %}">Setup CRL locations</a></li>
         </ul>
     </div>
 </div>

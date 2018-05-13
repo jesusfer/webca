@@ -1,19 +1,23 @@
 """
 Implementation of the CA service.
 """
+import json
 import time
 from datetime import datetime, timedelta
 
 import pytz
 from django.db.models import Q
+from django.utils import timezone
 
 from webca.certstore import CertStore
 from webca.config import constants as parameters
+from webca.config import new_crl_config
 from webca.config.models import ConfigurationObject as Config
 from webca.crypto import utils as cert_utils
-from webca.crypto import certs
-from webca.crypto.extensions import build_san, build_crl
-from webca.web.models import Certificate, Request, CRLLocation
+from webca.crypto import certs, crl
+from webca.crypto.constants import REV_REASON
+from webca.crypto.extensions import build_crl, build_san
+from webca.web.models import Certificate, CRLLocation, Request, Revoked
 
 
 class CAService:
@@ -26,9 +30,9 @@ class CAService:
     #pylint: disable=w0613
     def __init__(self, *args, **kwargs):
         # Get the current certificates
-        self.set_certificates()
+        self.refresh_certificates()
 
-    def set_certificates(self):
+    def refresh_certificates(self):
         """Set up the signing certificates."""
         key_store, keysign_serial = Config.get_value(
             parameters.CERT_KEYSIGN).split(',')
@@ -67,8 +71,8 @@ class CAService:
         """Really run the service."""
         while True:
             time.sleep(0.5)
-            self._process_requests(
-                Request.objects.filter(self.pending_requests))
+            self.process_requests()
+            self.process_crl()
 
     # Output and control
 
@@ -79,10 +83,11 @@ class CAService:
 
     # The stuff
 
-    def _process_requests(self, requests):
+    def process_requests(self):
         """Process a list of requests that have been approved."""
+        requests = Request.objects.filter(self.pending_requests)
         if requests:
-            self.set_certificates()
+            self.refresh_certificates()
         for request in requests:
             print('Got a certificate request ({})!'.format(request.id))
             try:
@@ -173,3 +178,55 @@ class CAService:
             location.certificates.add(certificate)
             location.save()
         print('done')
+
+    def process_crl(self):
+        """Check if there is a CRL to sign."""
+        value = Config.get_value(
+            parameters.CRL_CONFIG) or json.dumps(new_crl_config())
+        crl_config = json.loads(value)
+        now = timezone.now()
+        next = now - timedelta(days=1)
+        if crl_config['last_update']:
+            next = datetime.fromtimestamp(crl_config['last_update'], pytz.utc)
+            next += timedelta(days=crl_config['days'])
+        # TODO: handle errors, should we keep trying?
+        if now > next:
+            print('CRL time!')
+            # Refresh signing certificates
+            self.refresh_certificates()
+            # Get CRL signing certificate
+            crl_cert, crl_key = self.crlsign
+            # Get Revoked certificates
+            # TODO: should it be filtered with certs only signed by the current certificate?
+            revoked_list = [
+                (int(r.certificate.serial, 16), r.date, REV_REASON[r.reason])
+                for r in Revoked.objects.all()
+            ]
+            # Build CRL
+            x509crl = crl.create_crl(
+                revoked_list,
+                crl_config['days'],
+                self.crlsign,
+                crl_config['sequence'],
+            )
+            # Export CRL to path
+            try:
+                crl_file = open(crl_config['path'], 'w')
+                crl_file.write(cert_utils.export_crl(x509crl))
+                crl_file.close()
+            except Exception as ex:
+                crl_config.update({
+                    'status': str(ex),
+                })
+                Config.set_value(parameters.CRL_CONFIG, json.dumps(crl_config))
+                self.fatal_error(ex)
+            # Update CRL config
+            next = now + timedelta(days=crl_config['days'])
+            crl_config.update({
+                'last_update': now.timestamp(),
+                'next_update': next.timestamp(),
+                'sequence': crl_config['sequence'] + 1,
+                'status': 'OK',
+            })
+            Config.set_value(parameters.CRL_CONFIG, json.dumps(crl_config))
+            print('CRL done')
