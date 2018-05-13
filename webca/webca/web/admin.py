@@ -12,7 +12,7 @@ from webca.web.models import (Certificate, CRLLocation, Request, Revoked,
 @admin.register(Request, site=admin_site)
 class RequestAdmin(admin.ModelAdmin):
     """Admin model for end user requests."""
-    list_display = ['id', '__str__', 'user', 'status', 'approved']
+    list_display = ['id', '__str__', 'user', 'template', 'status', 'approved']
     list_filter = ['status']
     list_display_links = ['__str__']
 
@@ -31,7 +31,7 @@ def cert_readonly_fields():
 class CertificateAdmin(admin.ModelAdmin):
     """Admin model for certificates."""
     verbose_name = 'Issued Certificates'
-    list_display = ['id', '__str__', 'valid_from', 'valid_to']
+    list_display = ['id', '__str__', 'get_template', 'valid_from', 'valid_to']
     list_display_links = ['__str__']
     readonly_fields = cert_readonly_fields()
     actions = ['view_certificate', 'download_certificate']
@@ -74,16 +74,16 @@ class TemplateAdmin(admin.ModelAdmin):
     save_as_continue = False
     save_on_top = True
     list_display = [
-        '__str__', 'enabled', 'version'
+        '__str__', 'days', 'basic_constraints', 'auto_sign', 'enabled', 'version'
     ]
     readonly_fields = ['version']
     fieldsets = (
         (None, {
-            'fields': ('name', 'version', 'enabled', 'days', 'min_bits')
+            'fields': ('name', 'version', 'enabled', 'days', 'min_bits', 'auto_sign')
         }),
-        ('Certificate name', {
+        ('Certificate names', {
             'classes': ('',),
-            'fields': ('required_subject', 'san_type', 'allowed_san'),
+            'fields': ('user_subject', 'required_subject', 'san_type', 'allowed_san'),
         }),
         ('Basic Constraints', {
             'classes': ('',),
@@ -116,6 +116,7 @@ class TemplateAdmin(admin.ModelAdmin):
 class RevokedAdmin(admin.ModelAdmin):
     """Admin model for Revoked certificates."""
     list_display = ['certificate', 'reason', 'date']
+
 
 @admin.register(CRLLocation, site=admin_site)
 class CRLLocationAdmin(admin.ModelAdmin):
