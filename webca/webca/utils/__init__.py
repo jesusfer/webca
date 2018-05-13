@@ -26,10 +26,7 @@ def subject_display(subject):
 
     Arguments
     ---------
-    `subject` str : OpenSSL subject string.
+    `subject` str : OpenSSL subject.
     """
-    if 'CN=' in subject:
-        return re.search('CN=([^/]+)', subject).groups()[0]
-    if 'emailAddress=' in subject:
-        return re.search('emailAddress=([^/]+)', subject).groups()[0]
+    subject = subject[1:].replace('/', ', ')
     return subject
