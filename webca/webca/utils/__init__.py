@@ -22,7 +22,12 @@ def tuples_as_dict(tuples):
 
 
 def subject_display(subject):
-    """Display a subject nicely."""
+    """Display a subject nicely.
+
+    Arguments
+    ---------
+    `subject` str : OpenSSL subject string.
+    """
     if 'CN=' in subject:
         return re.search('CN=([^/]+)', subject).groups()[0]
     if 'emailAddress=' in subject:

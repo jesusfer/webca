@@ -69,16 +69,15 @@ def create_certificate(request, issuer_cert_key, serial, validity_period, digest
     """
     Generate a certificate given a certificate request.
 
-    Arguments:
-        request - Certificate request to use
-        issuer_cert - The certificate of the issuer
-        issuer_key  - The private key of the issuer
-        serial     - Serial number for the certificate
-        not_before  - Timestamp (relative to now) when the certificate
-                    starts being valid
-        notAfter   - Timestamp (relative to now) when the certificate
-                    stops being valid
-        digest     - Digest method to use for signing, default is sha256
+    Arguments
+    ---------
+    `request` - X509Req request to use
+    `issuer_cert` - X509 certificate of the issuer
+    `issuer_key` - private PKey of the issuer
+    `serial` - Serial number for the certificate
+    `not_before` - Timestamp (relative to now) when the certificate starts being valid
+    `notAfter` - Timestamp (relative to now) when the certificate stops being valid
+    `digest` - Digest method to use for signing, default is sha256
     Returns: The signed certificate in an X509 object
     """
     # Check signing cert validity period against the new cert validity period
@@ -86,16 +85,18 @@ def create_certificate(request, issuer_cert_key, serial, validity_period, digest
     not_before, not_after = validity_period
     new_valid_from = datetime.now(pytz.utc) + timedelta(seconds=not_before)
     new_valid_to = datetime.now(pytz.utc) + timedelta(seconds=not_after)
-    signing_valid_from = asn1_to_datetime(
-        issuer_cert.get_notBefore().decode('utf-8'))
-    signing_valid_to = asn1_to_datetime(
-        issuer_cert.get_notAfter().decode('utf-8'))
-    if signing_valid_from > new_valid_from:
-        raise CryptoException(
-            "The new certificate validity spans beyond the CA certificate's")
-    if signing_valid_to < new_valid_to:
-        raise CryptoException(
-            "The new certificate validity spans beyond the CA certificate's")
+    # Validity period check only makes sense if issuer_cert is a X509
+    if isinstance(issuer_cert, crypto.X509):
+        signing_valid_from = asn1_to_datetime(
+            issuer_cert.get_notBefore().decode('utf-8'))
+        signing_valid_to = asn1_to_datetime(
+            issuer_cert.get_notAfter().decode('utf-8'))
+        if signing_valid_from > new_valid_from:
+            raise CryptoException(
+                "The new certificate validity spans beyond the CA certificate's")
+        if signing_valid_to < new_valid_to:
+            raise CryptoException(
+                "The new certificate validity spans beyond the CA certificate's")
 
     cert = crypto.X509()
     cert.set_version(2)  # 2 for v3
