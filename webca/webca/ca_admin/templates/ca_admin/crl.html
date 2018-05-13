@@ -26,13 +26,16 @@
     td.errors {
         width: 100%;
     }
+    .module li {
+        list-style-type: circle;
+    }
 </style>
 {% endblock %}
 
 {% block content %}
 <div id="content-main">
     <div class="module">
-        <p>These are the URLs that will be added to the CRL extension in the certificates signed by this CA.</p>
+        <p>These are the URLs that will be added to the CDP extension in the certificates signed by this CA.</p>
         <div>
             <form action="{% url 'admin:crl_update' %}" method="POST">
                 {% csrf_token %}
