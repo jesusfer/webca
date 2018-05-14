@@ -16,5 +16,5 @@ Including another URLconf
 from django.urls import include, path
 
 urlpatterns = [
-    path('req/', include('webca.web.urls')),
+    path('', include('webca.web.urls')),
 ]

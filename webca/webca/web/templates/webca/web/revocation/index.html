@@ -1,0 +1,28 @@
+{% load webca %}
+<h2>Revoke a certificate</h2>
+<p>In this section you can start the process to revoke a certificate.</p>
+<p>A certificate may be revoked if there is no further need to use it, because the keys have been compromised or because of some other reason.</p>
+<h3>Your certificates</h3>
+<p>These are the certificates that may be revoked. Only valid certificates are shown.</p>
+{% if certificates %}
+<table>
+    <tr>
+        <th>Certificate</th>
+        <th>Valid until</th>
+        <th>Actions</th>
+    </tr>
+    {% for cert in certificates %}
+    <tr>
+        <td>{{ cert.subject_filename }}</td>
+        <td>{{ cert.valid_to|date }}</td>
+        <td>
+            {% if not cert.is_revoked %}
+            <a href="">Revoke</a>
+            {% endif %}
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+{% else %}
+<p>You don't have any certificate that may be revoked yet.</p>
+{% endif %}

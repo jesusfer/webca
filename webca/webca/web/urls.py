@@ -1,10 +1,9 @@
-from django.urls import path
+from django.urls import include, path
 from django.views.generic import TemplateView
 
-from webca.web.views import requests
+from webca.web.views import requests, revocation
 
-app_name = 'req'
-urlpatterns = [
+request_patterns = ([
     path('', requests.IndexView.as_view(), name='index'),
     path('view/<int:request_id>/', requests.view_certificate, name='view_cert'),
     path('download/<int:request_id>/pem/',
@@ -15,4 +14,13 @@ urlpatterns = [
     path('submit/', requests.SubmitView.as_view(), name='submit'),
     path('ok/', requests.request_confirmation, name='ok'),
     path('examples/', TemplateView.as_view(template_name="webca/web/requests/examples.html"), name='examples'),
+], 'req')
+
+revoke_patterns = ([
+    path('', revocation.IndexView.as_view(), name='index'),
+], 'revoke')
+
+urlpatterns = [
+    path('request/', include(request_patterns)),
+    path('revoke/', include(revoke_patterns)),
 ]

@@ -2,9 +2,14 @@
 Custom template tags and filters.
 """
 from datetime import timedelta
+
 from django import template
-from django.utils.safestring import SafeText
 from django.utils import timezone
+from django.utils.safestring import SafeText
+
+from webca.crypto.utils import components_to_name, int_to_hex
+from webca.utils import subject_display
+
 register = template.Library()
 
 
@@ -16,6 +21,7 @@ def required(value):  # Only one argument.
         html = html.replace('<input ', '<input required ')
     return SafeText(html)
 
+
 @register.filter
 def approval(value):
     """Return the approval status of a request."""
@@ -24,6 +30,7 @@ def approval(value):
     if value:
         return 'Approved'
     return 'Denied'
+
 
 @register.filter
 def valid_for(days):
@@ -37,8 +44,20 @@ def valid_for(days):
         value += '%d days' % delta.days
     return value
 
+
 @register.filter
 def valid_until(days):
     """Return a date that is `days` in the future."""
     future = timezone.now() + timedelta(days=days)
     return future
+
+
+@register.filter
+def status(cert):
+    """Return a string with the status of the certificate."""
+    value = 'Valid'
+    if cert.is_revoked:
+        value = 'Revoked'
+    elif cert.is_expired:
+        value = 'Expired'
+    return value

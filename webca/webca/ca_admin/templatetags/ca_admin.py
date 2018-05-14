@@ -6,7 +6,6 @@ from datetime import datetime
 import pytz
 from django import template
 from django.contrib.admin.utils import display_for_value
-from django.utils.safestring import SafeText
 
 from webca.crypto.utils import components_to_name, int_to_hex
 from webca.utils import subject_display
@@ -48,7 +47,7 @@ def from_timestamp(value):
     """Transform a timestamp in a tz-aware datetime."""
     if isinstance(value, int) or isinstance(value, float):
         return datetime.fromtimestamp(value, pytz.utc)
-    return ''
+    return None
 
 @register.filter
 def boolean_icon(value):
