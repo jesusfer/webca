@@ -1,0 +1,59 @@
+{% load webca %}
+<h3>Revoke a certificate</h3>
+<div>
+    <p>You are about to revoke the following certificate:</p>
+    <table>
+        <tr>
+            <td>Subject</td>
+            <td> {{ certificate.get_certificate|subject }}</td>
+        </tr>
+        <tr>
+            <td>Valid from</td>
+            <td> {{ certificate.valid_from|date }}</td>
+        </tr>
+        <tr>
+            <td>Valid to</td>
+            <td> {{ certificate.valid_to|date }}</td>
+        </tr>
+        <tr>
+            <td>Type</td>
+            <td> {{ certificate.get_template }}</td>
+        </tr>
+    </table>
+    <p>Please choose a revocation reason below and confirm the revocation:</p>
+    <form action="{% url 'revoke:revoke_update' certificate.id %}" method="POST">
+        {% csrf_token %}
+        <table>
+            {% if form.non_field_errors %}
+            <tr>
+                <td>{{ form.non_field_errors }}</td>
+            </tr>
+            {% endif %}
+            {% if form.reason.errors %}
+            <tr>
+                <td>{{ form.reason.errors }}</td>
+            </tr>
+            {% endif %}
+            <tr>
+                <td>{{ form.reason.label }}</td>
+                <td>{{ form.reason }}</td>
+            </tr>
+            <tr>
+                <td>&nbsp;</td>
+            </tr>
+            {% if form.confirm.errors %}
+            <tr>
+                <td>{{ form.confirm.errors }}</td>
+            </tr>
+            {% endif %}
+            <tr>
+                <td>{{ form.confirm.label }}</td>
+                <td>{{ form.confirm }}</td>
+            </tr>
+            <tr>
+                <td><input type="submit" value="Revoke the certificate"/></td>
+                <td><input type="button" value="Cancel" onclick="javascript:history.back()"/></td>
+            </tr>
+        </table>
+    </form>
+</div>

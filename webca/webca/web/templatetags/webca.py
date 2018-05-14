@@ -61,3 +61,9 @@ def status(cert):
     elif cert.is_expired:
         value = 'Expired'
     return value
+
+@register.filter
+def subject(x509):
+    """Return the subject of the certificate."""
+    value = components_to_name(x509.get_subject().get_components())
+    return subject_display(value).replace('/', ' ').strip()

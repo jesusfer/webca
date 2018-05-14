@@ -1,5 +1,7 @@
 from django import forms
 
+from webca.crypto.constants import REV_USER
+from webca.utils import dict_as_tuples
 from webca.web.fields import SubjectAltNameCertificateField
 from webca.web.models import Template
 from webca.web.validators import valid_pem_csr, validate_csr_bits
@@ -145,3 +147,13 @@ class RequestNewForm(forms.Form):
         text = self.cleaned_data['csr']
         validate_csr_bits(text, self.template_obj.min_bits)
         return text
+
+class RevocationForm(forms.Form):
+    reason = forms.ChoiceField(
+        choices=dict_as_tuples(REV_USER),
+        label='Reason for revocation',
+    )
+
+    confirm = forms.BooleanField(
+        label='I understand that revocation is a one-way process and cannot be undone',
+    )

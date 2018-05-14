@@ -31,7 +31,7 @@ def cert_readonly_fields():
 class CertificateAdmin(admin.ModelAdmin):
     """Admin model for certificates."""
     verbose_name = 'Issued Certificates'
-    list_display = ['id', '__str__', 'get_template', 'valid_from', 'valid_to']
+    list_display = ['id', '__str__', 'get_template', 'user', 'valid_from', 'valid_to']
     list_display_links = ['__str__']
     readonly_fields = cert_readonly_fields()
     actions = ['view_certificate', 'download_certificate']
@@ -83,7 +83,7 @@ class TemplateAdmin(admin.ModelAdmin):
         }),
         ('Certificate names', {
             'classes': ('',),
-            'fields': ('user_subject', 'required_subject', 'san_type', 'allowed_san'),
+            'fields': ('required_subject', 'san_type', 'allowed_san'),
         }),
         ('Basic Constraints', {
             'classes': ('',),

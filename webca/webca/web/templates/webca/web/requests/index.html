@@ -19,8 +19,9 @@
         <th>Type</th>
         <th>Approval</th>
         <th>Status</th>
+        <th>Certificate status</th>
+        <th>Download</th>
         <th>Notes</th>
-        <th>Download certificate</th>
     </tr>
     {% for req in request_list %}
     <tr>
@@ -29,11 +30,16 @@
         </td>
         <td>{{ req.template.name }}</td>
         <td>{{ req.approved|approval }}</td>
-        <td>{{ req.status_text }}</td>
-        <td>{{ req.reject_reason }}</td>
+        <td>{{ req.get_status_display }}</td>
+        {% if req.certificate %}
+        <td>{{ req.certificate|status }}</td>
+        {% else %}
+        <td>&nbsp;</td>
+        {% endif %}
         <td>{% if req.approved %}
-        <a href="{% url 'req:download_pem' req.id %}">PEM</a>&nbsp;<a href="{% url 'req:download_crt' req.id %}">DER</a>
+            <a href="{% url 'req:download_pem' req.id %}">PEM</a>&nbsp;<a href="{% url 'req:download_crt' req.id %}">DER</a>
         {% else %}&nbsp;{% endif %}</td>
+        <td>{{ req.reject_reason }}</td>
     </tr>
     {% endfor %}
 </table>

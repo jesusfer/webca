@@ -191,7 +191,7 @@ class SubmitView(View):
             }
             return render(request, 'webca/web/requests/new.html', context)
         # TODO: for now a static confirmation page should be ok
-        return http.HttpResponseRedirect('/req/ok')
+        return http.HttpResponseRedirect(reverse('req:ok'))
 
 
 def request_confirmation(request):

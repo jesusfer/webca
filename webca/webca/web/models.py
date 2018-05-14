@@ -143,11 +143,6 @@ class Request(models.Model):
         """Return the request as a OpenSSL.crypto.X509Req object."""
         return crypto.load_certificate_request(crypto.FILETYPE_PEM, self.csr)
 
-    # TODO: Django already provides this get_status_display()
-    @property
-    def status_text(self):
-        return [y for x, y in Request.STATUS if x == self.status][0]
-
 
 class Certificate(models.Model):
     """An issued certificate."""
@@ -200,7 +195,7 @@ class Certificate(models.Model):
     def is_expired(self):
         """Return if the certificate has expired."""
         now = timezone.now()
-        return self.valid_from > now and now < self.valid_to
+        return now < self.valid_from or self.valid_to < now
 
     @property
     def is_revoked(self):
@@ -480,7 +475,6 @@ class Revoked(models.Model):
         help_text='When the certificate was revoked'
     )
     reason = models.SmallIntegerField(
-        # TODO: end users should not have access to all reasons
         choices=dict_as_tuples(REV_REASON),
         default=REV_UNSPECIFIED
     )

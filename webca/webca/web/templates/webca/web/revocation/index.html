@@ -1,9 +1,21 @@
 {% load webca %}
+
+{% if messages %}
+<ul class="messages">
+    {% for message in messages %}
+    <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+    {% endfor %}
+</ul>
+{% endif %}
+
 <h2>Revoke a certificate</h2>
 <p>In this section you can start the process to revoke a certificate.</p>
-<p>A certificate may be revoked if there is no further need to use it, because the keys have been compromised or because of some other reason.</p>
+<p>A certificate may be revoked if there is no further need to use it,
+    because the keys have been compromised or because of some other reason.
+    <b>Please note that it will take some time to revoke the certificate.</b>
+</p>
 <h3>Your certificates</h3>
-<p>These are the certificates that may be revoked. Only valid certificates are shown.</p>
+<p>These are the certificates that may be revoked. Only revocable certificates are shown.</p>
 {% if certificates %}
 <table>
     <tr>
@@ -17,7 +29,7 @@
         <td>{{ cert.valid_to|date }}</td>
         <td>
             {% if not cert.is_revoked %}
-            <a href="">Revoke</a>
+            <a href="{% url 'revoke:revoke' cert.id %}">Revoke</a>
             {% endif %}
         </td>
     </tr>

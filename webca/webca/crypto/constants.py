@@ -78,6 +78,7 @@ REV_SUPERSEDED = 5
 REV_CESSATIONOFOPERATION = 6
 REV_CERTIFICATEHOLD = 7
 
+# All revocation reasons
 REV_REASON = {
     REV_UNSPECIFIED: 'unspecified',
     REV_KEYCOMPROMISE: 'keyCompromise',
@@ -86,4 +87,13 @@ REV_REASON = {
     REV_SUPERSEDED: 'superseded',
     REV_CESSATIONOFOPERATION: 'cessationOfOperation',
     REV_CERTIFICATEHOLD: 'certificateHold',
+}
+
+# User selectable reasons
+REV_USER = {
+    REV_UNSPECIFIED: 'Unspecified',
+    REV_KEYCOMPROMISE: 'Key Compromise',
+    REV_AFFILIATIONCHANGED: 'Affiliation Changed',
+    REV_SUPERSEDED: 'Superseded',
+    REV_CESSATIONOFOPERATION: 'Cessation of Operation',
 }

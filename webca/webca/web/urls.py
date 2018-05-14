@@ -13,11 +13,16 @@ request_patterns = ([
     path('new/', requests.NewView.as_view(), name='new'),
     path('submit/', requests.SubmitView.as_view(), name='submit'),
     path('ok/', requests.request_confirmation, name='ok'),
-    path('examples/', TemplateView.as_view(template_name="webca/web/requests/examples.html"), name='examples'),
+    path('examples/',
+         TemplateView.as_view(template_name="webca/web/requests/examples.html"), name='examples'),
 ], 'req')
 
 revoke_patterns = ([
     path('', revocation.IndexView.as_view(), name='index'),
+    path('<int:certificate_id>/',
+         revocation.RevocationView.as_view(), name='revoke'),
+    path('<int:certificate_id>/update/',
+         revocation.RevocationView.as_view(), name='revoke_update'),
 ], 'revoke')
 
 urlpatterns = [
