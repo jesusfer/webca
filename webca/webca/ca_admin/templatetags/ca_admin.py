@@ -5,6 +5,7 @@ from datetime import datetime
 
 import pytz
 from django import template
+from django.contrib.admin.utils import display_for_value
 from django.utils.safestring import SafeText
 
 from webca.crypto.utils import components_to_name, int_to_hex
@@ -48,3 +49,13 @@ def from_timestamp(value):
     if isinstance(value, int) or isinstance(value, float):
         return datetime.fromtimestamp(value, pytz.utc)
     return ''
+
+@register.filter
+def boolean_icon(value):
+    """Show the Django admin boolean icon."""
+    return display_for_value(value, '', True)
+
+@register.filter
+def concat(str1, str2):
+    """Concat two string."""
+    return str1 + str2

@@ -1,8 +1,16 @@
 {% extends "admin/base_site.html" %}
 {% load i18n static %}
 
-{% block extrastyle %}{{ block.super }}<link rel="stylesheet" type="text/css" href="{% static "admin/css/dashboard.css" %}" />
-{% block style %}{% endblock style %}
+{% block extrastyle %}
+{{ block.super }}
+<link rel="stylesheet" type="text/css" href="{% static "admin/css/dashboard.css" %}" />
+{% block style %}
+<style>
+    .module li {
+        list-style-type: circle;
+    }
+</style>
+{% endblock style %}
 {% endblock %}
 
 {% block coltype %}colMS{% endblock %}
@@ -20,7 +28,9 @@
 {% block content %}
 <div id="content-main">
     <div class="module">
-        Main content
+        {% block left_column %}
+        
+        {% endblock left_column %}
     </div>
 </div>
 {% endblock %}
@@ -28,7 +38,9 @@
 {% block sidebar %}
 <div id="content-related">
     <div class="module">
-        Sidebar
+        {% block sidebar_items %}
+        
+        {% endblock sidebar_items %}
     </div>
 </div>
 {% endblock %}

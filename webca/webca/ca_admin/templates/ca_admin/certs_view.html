@@ -1,0 +1,61 @@
+{% extends "ca_admin/base_page.html" %}
+{% load i18n static %}
+{% load ca_admin %}
+
+{% block style %}
+<style>
+.dashboard #content {
+    min-width: 800px;
+}
+.module h2 {
+    margin-bottom: 2em;
+}
+</style>
+{% endblock style %}
+
+{% block left_column %}
+<h2>Installed certificates</h2>
+{% if text %}
+<input type="button" onclick="javascript:history.back()" value="Back"/>
+<br/>
+<code style="white-space: pre-wrap">
+{{ text }}    
+</code>
+{% else %}
+<p>These certificates will be used to sign user requests and other operations in the Certification Authority.</p>
+<div class="module">
+<table>
+    <tr>
+        <th>Subject</th>
+        <th>Serial</th>
+        <th>Valid from</th>
+        <th>Valid until</th>
+        <th>Key Sign</th>
+        <th>CRL Sign</th>
+    </tr>
+    {% for serial,cert in certificates.items %}
+        <tr>
+            <td><a href="{% url 'admin:certs_view' cert.store|concat:'-'|concat:serial %}">{{ cert.subject }}</a></td>
+            <td>{{ serial }}</td>
+            <td>{{ cert.valid_from|date }}</td>
+            <td>{{ cert.valid_until|date }}</td>
+            <td>{{ cert.keyCertSign|boolean_icon }}</td>
+            <td>{{ cert.cRLSign|boolean_icon }}</td>
+        </tr>    
+    {% empty %}
+    <tr>
+        <td colspan="3">There are no installed certificates??</td>
+    </tr>
+    {% endfor %}
+</table>
+</div>
+{% endif %}
+{% endblock left_column %}
+
+{% block sidebar_items %}
+<h4>Actions</h4>
+<ul>
+    <li><a href="{% url 'admin:certs_add' %}">Add a keypair/certificate</a></li>
+    <li><a href="{% url 'admin:certs_setup' %}">Setup CA certificates</a></li>
+</ul>
+{% endblock sidebar_items %}

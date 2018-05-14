@@ -14,7 +14,8 @@
     <div style="width:100%; float:left;" class="module">
         <table style="width:100%">
             <caption>CA Configuration</caption>
-            <tr><td><a href="{% url 'admin:certs' %}">Setup CA certificates</a></td></tr>
+            <tr><td><a href="{% url 'admin:certs_view' %}">View CA certificates</a></td></tr>
+            <tr><td><a href="{% url 'admin:certs_setup' %}">Setup CA certificates</a></td></tr>
             <tr><td><a href="{% url 'admin:crl' %}">Setup CRL locations</a></td></tr>
             <tr><td><a href="{% url 'admin:crl_status' %}">CRL status</a></td></tr>
         </table>

@@ -13,11 +13,53 @@ from webca.ca_admin.templatetags.ca_admin import serial, subject
 from webca.certstore import CertStore
 from webca.config import constants as parameters
 from webca.config.models import ConfigurationObject as Config
-from webca.crypto.utils import components_to_name
+from webca.crypto import constants
+from webca.crypto.utils import asn1_to_datetime, components_to_name, int_to_hex, export_certificate
 from webca.utils import subject_display
 
 
-class CertificatesForm(forms.Form):
+class CertificatesView(View):
+    template = 'ca_admin/certs_view.html'
+
+    def get(self, request, *args, **kwargs):
+        context = dict(
+            admin.admin_site.each_context(request),
+            title='CA Certificates',
+        )
+        if 'serial' in kwargs.keys():
+            store, serial = kwargs.pop('serial').split('-')
+            cert = CertStore.get_by_name(store).get_certificate(serial)
+            text = export_certificate(cert, text=True)
+            context['text'] = SafeString(text)
+        else:
+            certs = {}
+            for name, store in CertStore.all():
+                for usage in [constants.KU_KEYCERTSIGN, constants.KU_CRLSIGN]:
+                    usage_name = constants.KEY_USAGE[usage]
+                    for cert in store().get_certificates(key_usage=[usage]):
+                        serial = int_to_hex(cert.get_serial_number())
+                        if serial not in certs.keys():
+                            # TODO: this is ugly!
+                            subject = subject_display(components_to_name(
+                                cert.get_subject().get_components()))
+                            cert = {
+                                'store': name,
+                                'serial': serial,
+                                'subject': subject,
+                                'valid_from': asn1_to_datetime(cert.get_notBefore().decode('utf-8')),
+                                'valid_until': asn1_to_datetime(cert.get_notAfter().decode('utf-8')),
+                                constants.KEY_USAGE[constants.KU_KEYCERTSIGN]: False,
+                                constants.KEY_USAGE[constants.KU_CRLSIGN]: False,
+                            }
+                        else:
+                            cert = certs[serial]
+                        cert[usage_name] = True
+                        certs[serial] = cert
+            context['certificates'] = certs
+        return TemplateResponse(request, self.template, context)
+
+
+class CertificateSetupForm(forms.Form):
     ca = forms.ChoiceField(required=False)
     crl = forms.ChoiceField(required=False)
     user = forms.ChoiceField(required=False)
@@ -39,8 +81,8 @@ class CertificatesForm(forms.Form):
         return cleaned_data
 
 
-class CertificatesView(View):
-    form_class = CertificatesForm
+class CertificateSetupView(View):
+    form_class = CertificateSetupForm
     template = 'ca_admin/certificates.html'
 
     def get_context(self, request, **kwargs):
@@ -89,13 +131,13 @@ class CertificatesView(View):
 
     def get(self, request, *args, **kwargs):
         if 'update' in kwargs.keys():
-            return HttpResponseRedirect(reverse('admin:certs'))
+            return HttpResponseRedirect(reverse('admin:certs_update'))
         context = self.get_context(request)
         return TemplateResponse(request, self.template, context)
 
     def post(self, request, *args, **kwargs):
         if 'update' not in kwargs.keys():
-            return HttpResponseRedirect(reverse('admin:certs'))
+            return HttpResponseRedirect(reverse('admin:certs_update'))
         context = self.get_context(request)
         form = self.form_class(
             ca=context['ca_certificates'],
@@ -124,7 +166,7 @@ class CertificatesView(View):
                 else:
                     messages.add_message(
                         request, messages.WARNING, 'No changes done')
-            url = reverse('admin:certs')
+            url = reverse('admin:certs_update')
             return HttpResponseRedirect(url)
         return TemplateResponse(request, self.template, context)
 
