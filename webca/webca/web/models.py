@@ -68,6 +68,9 @@ class Request(models.Model):
         verbose_name='SAN names',
     )
 
+    class Meta:
+        ordering = ['-id']
+
     def __str__(self):
         return subject_display(self.subject)
 
@@ -208,6 +211,16 @@ class Certificate(models.Model):
     def is_valid(self):
         """Return if the certificate is valid."""
         return not self.is_expired and not self.is_revoked
+
+    def subject_filename(self):
+        """Return part of the subject to create file names."""
+        #if user cert, then return the email
+        #else, return the CN
+        components = tuples_as_dict(name_to_components(self.subject))
+        if 'emailAddress' in components.keys():
+            return components['emailAddress']
+        else:
+            return components['CN']
 
 
 class Template(models.Model):

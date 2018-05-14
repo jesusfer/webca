@@ -44,6 +44,39 @@ def view_certificate(request, request_id):
     return http.HttpResponse(content, content_type='text/plain')
 
 
+def download_certificate(request, request_id, pem=True):
+    """Downloads a certificate from a request."""
+    try:
+        request = Request.objects.get(
+            Q(pk=request_id),
+            Q(user=request.user),
+        )
+    except Request.DoesNotExist:
+        return http.HttpResponseRedirect(reverse('req:index'))
+
+    try:
+        x509 = request.certificate.get_certificate()
+    except Certificate.DoesNotExist:
+        return http.HttpResponseRedirect(reverse('req:index'))
+
+    if pem:
+        content = export_certificate(x509, pem=True)
+        content_type = 'application/x-pem-file'
+        extension = '.cer'
+    else:
+        content = export_certificate(x509, pem=False)
+        content_type = 'application/pkix-cert'
+        extension = '.cer'
+
+    response = http.HttpResponse(content_type=content_type)
+    response['Content-Disposition'] = 'attachment; filename="{}{}"'.format(
+        request.certificate.subject_filename(),
+        extension,
+    )
+    response.write(content)
+    return response
+
+
 class IndexView(View):
     """Index view for the requests section."""
     form_class = TemplateSelectorForm

@@ -20,6 +20,7 @@
         <th>Approval</th>
         <th>Status</th>
         <th>Notes</th>
+        <th>Download certificate</th>
     </tr>
     {% for req in request_list %}
     <tr>
@@ -30,6 +31,9 @@
         <td>{{ req.approved|approval }}</td>
         <td>{{ req.status_text }}</td>
         <td>{{ req.reject_reason }}</td>
+        <td>{% if req.approved %}
+        <a href="{% url 'req:download_pem' req.id %}">PEM</a>&nbsp;<a href="{% url 'req:download_crt' req.id %}">DER</a>
+        {% else %}&nbsp;{% endif %}</td>
     </tr>
     {% endfor %}
 </table>
