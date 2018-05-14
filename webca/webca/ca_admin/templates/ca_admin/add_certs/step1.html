@@ -1,0 +1,25 @@
+{% extends "ca_admin/base_page.html" %}
+{% load i18n static %}
+{% load ca_admin %}
+
+{% block style %}
+<style>
+    #choose_form li {
+        list-style-type: none;
+    }
+    #choose_form li span {
+        font-weight: bold;
+    }
+</style>
+{% endblock style %}
+
+{% block content %}
+<form id="choose_form" action="{% url 'admin:certs_add_create' %}" method="POST">
+    {% csrf_token %}
+    {{ form }}
+    <input type="submit" value="Continue"/>
+</form>
+{% endblock content %}
+
+{% block sidebar %}
+{% endblock sidebar %}

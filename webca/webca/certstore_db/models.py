@@ -1,11 +1,12 @@
 """"""
+from cryptography import hazmat
 from django.db import models
 from OpenSSL import crypto
 
-from webca.utils import dict_as_tuples, subject_display
-from webca.crypto.constants import EXT_KEY_USAGE, KEY_USAGE
 from webca.crypto import utils as cert_utils
-from webca.crypto.extensions import get_extension, KeyUsage, ExtendedKeyUsage
+from webca.crypto.constants import EXT_KEY_USAGE, KEY_USAGE
+from webca.crypto.extensions import ExtendedKeyUsage, KeyUsage, get_extension
+from webca.utils import dict_as_tuples, subject_display
 
 # Create your models here.
 
@@ -17,9 +18,11 @@ class KeyPair(models.Model):
     """
     TYPE_RSA = 'rsa'
     TYPE_DSA = 'dsa'
+    TYPE_EC = 'ec'
     KEY_TYPE = (
         (TYPE_RSA, 'RSA'),
         (TYPE_DSA, 'DSA'),
+        (TYPE_EC, 'EC'),
     )
 
     name = models.CharField(
@@ -65,22 +68,26 @@ class KeyPair(models.Model):
     @classmethod
     def from_keypair(cls, keys):
         """Create a key pair using an OpenSSL.crypto.PKey key pair."""
-        keyPair = KeyPair()
+        key_pair = KeyPair()
+        key_pair.key_type = KeyPair.TYPE_RSA
+        if keys.type() == crypto.TYPE_DSA:
+            key_pair.key_type = KeyPair.TYPE_DSA
+        elif isinstance(
+                keys.to_cryptography_key(),
+                hazmat.primitives.asymmetric.ec.EllipticCurvePrivateKey):
+            key_pair.key_type = KeyPair.TYPE_EC
         try:
-            keys.check()
-            keyPair.private_key = crypto.dump_privatekey(
+            key_pair.private_key = crypto.dump_privatekey(
                 crypto.FILETYPE_PEM, keys).decode('utf-8')
-            keyPair.public_key = crypto.dump_publickey(
+            if key_pair.key_type == KeyPair.TYPE_RSA:
+                keys.check()
+            key_pair.public_key = crypto.dump_publickey(
                 crypto.FILETYPE_PEM, keys).decode('utf-8')
-            # TODO: check if the key has a passphrase and do something
-        except TypeError:
+        except TypeError as ex:
             # check() will raise a TypeError if the key pair
             # only contains the public key and we need a private key
             return None
-        keyPair.key_type = KeyPair.TYPE_RSA
-        if keys.type() == crypto.TYPE_DSA:
-            keyPair.key_type = KeyPair.TYPE_DSA
-        return keyPair
+        return key_pair
 
 
 class Certificate(models.Model):
@@ -160,6 +167,10 @@ class Certificate(models.Model):
         ext = get_extension(certificate, 'keyUsage')
         if ext:
             cert.key_usage = KeyUsage.from_extension(ext).value()
+        else:
+            # If there is no keyUsage, then we assume it's valid for
+            # all of them that make sense to us
+            cert.key_usage = 'digitalSignature,keyCertSign,cRLSign'
         ext = get_extension(certificate, 'extendedKeyUsage')
         if ext:
             cert.ext_key_usage = ExtendedKeyUsage.from_extension(ext).value()

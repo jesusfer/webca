@@ -44,7 +44,7 @@ class MultiValueExtension(object):
         """Build from a comma separated string."""
         for value in values.split(','):
             self._add(value)
-
+        return self
 
 class KeyUsage(MultiValueExtension):
     """The keyUsage extension.

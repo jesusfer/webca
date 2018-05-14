@@ -1,0 +1,41 @@
+{% extends "ca_admin/base_page.html" %}
+{% load i18n static %}
+{% load ca_admin %}
+
+{% block style %}
+<style>
+    table {
+        width: 100%;
+    }
+</style>
+{% endblock style %}
+
+{% block content %}
+<div class="module">
+    <table>
+        <caption>Uploaded key/certificate details</caption>
+        <tr>
+            <td><p>Subject</p></td>
+            <td><p>{{ pfx.subject }}</p></td>
+        </tr>
+        <tr>
+            <td><p>Key type</p></td>
+            <td><p>{{ pfx.type }} - {{ pfx.bits }} bits</p></td>
+        </tr>
+        <tr>
+            <td><p>Certificate store</p></td>
+            <td>{{ form.store }}</td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                <form action="{% url 'admin:index' %}" method="GET">
+                    <input type="submit" value="OK" style="width:10em"/>
+                </form>
+            </td>
+        </tr>
+    </table>
+</div>
+{% endblock content %}
+
+{% block sidebar %}
+{% endblock sidebar %}

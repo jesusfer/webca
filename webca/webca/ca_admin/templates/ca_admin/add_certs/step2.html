@@ -1,0 +1,47 @@
+{% extends "ca_admin/base_page.html" %}
+{% load i18n static %}
+{% load ca_admin %}
+
+{% block style %}
+<style>
+    #choose_form table {
+        width: 100%;
+    }
+    #choose_form li {
+        list-style-type: none;
+    }
+    #choose_form li span {
+        font-weight: bold;
+    }
+    #choose_form td:first-of-type {
+        text-align: right;
+    }
+</style>
+{% endblock style %}
+
+{% block content %}
+<p>Please upload a PFX file <b>without</b> passphrase.</p>
+<form id="choose_form" action="{% url 'admin:certs_add_confirm' %}" method="POST" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ form.option.as_hidden }}
+    <table>
+        <tr>
+            <td><p>{{ form.file.label }}</p></td>
+            <td>{{ form.file }}</td>
+        </tr>
+        <tr>
+            <td><p>{{ form.store.label }}</p></td>
+            <td>{{ form.store }}</td>
+        </tr>
+        <tr>
+            <td colspan="2" style="text-align: left">
+                <input type="submit" value="Continue"/>
+            </td>
+        </tr>
+    </table>
+    <br/><br/>
+</form>
+{% endblock content %}
+
+{% block sidebar %}
+{% endblock sidebar %}

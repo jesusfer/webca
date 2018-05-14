@@ -1,15 +1,20 @@
+from cryptography import hazmat
 from django import forms
 from django.contrib import messages
 from django.http import HttpResponseRedirect
 from django.template.response import TemplateResponse
 from django.urls import reverse
+from django.utils.safestring import SafeString
 from django.views import View
+from OpenSSL import crypto
 
 from webca.ca_admin import admin
 from webca.ca_admin.templatetags.ca_admin import serial, subject
 from webca.certstore import CertStore
 from webca.config import constants as parameters
 from webca.config.models import ConfigurationObject as Config
+from webca.crypto.utils import components_to_name
+from webca.utils import subject_display
 
 
 class CertificatesForm(forms.Form):
@@ -122,3 +127,196 @@ class CertificatesView(View):
             url = reverse('admin:certs')
             return HttpResponseRedirect(url)
         return TemplateResponse(request, self.template, context)
+
+
+OPTION_PFX = 1
+OPTION_KEYCERT = 2
+OPTION_KEYGENCERT = 3
+OPTION_GENERATE = 4
+OPTIONS = [
+    (OPTION_PFX, SafeString(
+        '<span>PFX/PKCS#12:</span> Upload a PFX file with a private key and certificate.')),
+    # (OPTION_KEYCERT, SafeString(
+    #     '<span>Key+Cert:</span> Upload a key and certificate in separate files.')),
+    # (OPTION_KEYGENCERT, SafeString(
+    #     '<span>Key:</span> upload a key and display a form to generate a certificate.')),
+    # (OPTION_GENERATE, SafeString(
+    #     '<span></span>Generate a key/certificate in the server')),
+]
+
+
+class AddStep1Form(forms.Form):
+    option = forms.ChoiceField(
+        widget=forms.RadioSelect,
+        choices=OPTIONS,
+        label='Choose an option to continue:',
+    )
+
+
+class AddStep2PFX(AddStep1Form):
+    file = forms.FileField(
+        label='PFX file',
+    )
+    store = forms.ChoiceField(
+        label='Save the key/certificate in this store',
+    )
+
+    def __init__(self, stores=None, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        stores = stores or []
+        self.fields['store'].choices = stores
+
+    def clean(self):
+        data = super().clean()
+        if data['file'].size > 1 * 1024 * 1024:
+            raise forms.ValidationError(
+                'file too big (> 1MB)',
+                code='file-too-big',
+            )
+        if data['file'].content_type != 'application/x-pkcs12':
+            raise forms.ValidationError(
+                'content-type not valid (not a PFX file?)',
+                code='invalid-content-type',
+            )
+        try:
+            pfx = data['file'].read()
+            pfx = crypto.load_pkcs12(pfx)
+            data['pfx'] = pfx
+        except:
+            self.add_error(
+                'file', 'could not read the PFX file. Does it have a passphrase?')
+        return data
+
+
+class AddCertificateView(View):
+    STEP_CHOOSE = 1
+    STEP_CREATE = 2
+    STEP_CONFIRM = 3
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.cert_stores = [(store.STORE_ID, name)
+                            for name, store in CertStore.all()]
+
+    def dispatch(self, request, *args, **kwargs):
+        # Try to dispatch to the right method; if a method doesn't exist,
+        # defer to the error handler. Also defer to the error handler if the
+        # request method isn't on the approved list.
+        handler = self.http_method_not_allowed
+        if request.method.lower() in self.http_method_names:
+            if request.method.lower() == 'get':
+                handler = self.get
+            else:
+                step = kwargs.pop('step')
+                if step == self.STEP_CREATE:
+                    handler = self.post_create
+                elif step == self.STEP_CONFIRM:
+                    handler = self.post_confirm
+        return handler(request, *args, **kwargs)
+
+    def get_context(self, request, **kwargs):
+        """Return a default context."""
+        context = dict(
+            admin.admin_site.each_context(request),
+            title='Add a CA certificate',
+        )
+
+        return context
+
+    def get(self, request, *args, **kwargs):
+        """Begin the add certificate process by choosing how to add a certificate."""
+        context = self.get_context(request)
+        template = 'ca_admin/add_certs/step1.html'
+        step = kwargs.pop('step')
+        if step != self.STEP_CHOOSE:
+            return HttpResponseRedirect(reverse('admin:certs_add'))
+        form = AddStep1Form(
+            initial={'option': OPTION_PFX},
+        )
+        context['form'] = form
+        return TemplateResponse(request, template, context)
+
+    def post_create(self, request, *args, **kwargs):
+        """Render a form depending on the option chosen."""
+        template = 'ca_admin/add_certs/step2.html'
+        context = self.get_context(request)
+        choose_form = AddStep1Form(
+            request.POST,
+        )
+        if not choose_form.is_valid():
+            messages.add_message(request, messages.WARNING,
+                                 'Not a valid option')
+            return HttpResponseRedirect(reverse('admin:certs_add'))
+
+        option = int(choose_form.cleaned_data['option'])
+        initial = {'option': option}
+        if option == OPTION_PFX:
+            form = AddStep2PFX(
+                stores=self.cert_stores,
+                initial=initial,
+            )
+        # TODO: Add the rest of the options
+        context['form'] = form
+        return TemplateResponse(request, template, context)
+
+    def post_confirm(self, request, *args, **kwargs):
+        """Process the request and store the new key/certificate."""
+        form = AddStep1Form(
+            request.POST
+        )
+        if form.is_valid():
+            handler = None
+            option = int(form.cleaned_data['option'])
+            if option == OPTION_PFX:
+                handler = self.post_confirm_pfx
+            # TODO: Add the rest of the options
+            if handler:
+                return handler(request, *args, **kwargs)
+        messages.add_message(request, messages.WARNING, 'Not a valid option')
+        return HttpResponseRedirect(reverse('admin:certs_add'))
+
+    def post_confirm_pfx(self, request, *args, **kwargs):
+        """Process a PFX upload."""
+        template = 'ca_admin/add_certs/step3.html'
+        context = self.get_context(request)
+        create_form = AddStep2PFX(
+            stores=self.cert_stores,
+            data=request.POST,
+            files=request.FILES,
+        )
+        context['form'] = create_form
+        if not create_form.is_valid():
+            if create_form.non_field_errors():
+                messages.add_message(
+                    request, messages.WARNING,
+                    'Not a valid PFX: %s' % create_form.non_field_errors()[0]
+                )
+            else:
+                messages.add_message(
+                    request, messages.WARNING,
+                    'Not a valid PFX: %s' % create_form.errors['file'][0]
+                )
+            return HttpResponseRedirect(reverse('admin:certs_add'))
+
+        # At this point, we should be fairly certain it's a PFX file < 1MB
+        pfx = create_form.cleaned_data['pfx']
+        key_type = 'RSA'
+        if pfx.get_privatekey().type() == crypto.TYPE_DSA:
+            key_type = 'DSA'
+        elif isinstance(
+                pfx.get_privatekey().to_cryptography_key(),
+                hazmat.primitives.asymmetric.ec.EllipticCurvePrivateKey):
+            key_type = 'EC'
+        context['pfx'] = {
+            'subject': subject_display(components_to_name(pfx.get_certificate().get_subject().get_components())),
+            'type': key_type,
+            'bits': pfx.get_privatekey().bits,
+        }
+
+        store = CertStore.get_store(create_form.cleaned_data['store'])
+        store.add_certificate(
+            pfx.get_privatekey(),
+            pfx.get_certificate(),
+        )
+        create_form.fields['store'].disabled = True
+        return TemplateResponse(request, template, context)
