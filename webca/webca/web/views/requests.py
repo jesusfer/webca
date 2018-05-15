@@ -88,7 +88,8 @@ class IndexView(View):
             'request_list': request_list,
             'templates_form': self.form_class(
                 template_choices=request.user.templates
-            )
+            ),
+            'issued': Request.STATUS_ISSUED,
         }
         return render(request, 'webca/web/requests/index.html', context)
 

@@ -29,16 +29,12 @@
             <a target="blank" href="{% url 'req:view_cert' req.id %}">{{ req }}</a>
         </td>
         <td>{{ req.template.name }}</td>
-        <td>{{ req.approved|approval }}</td>
-        <td>{{ req.get_status_display }}</td>
-        {% if req.certificate %}
-        <td>{{ req.certificate|status }}</td>
-        {% else %}
-        <td>&nbsp;</td>
-        {% endif %}
-        <td>{% if req.approved %}
+        <td>{% if req.template.auto_sign %}&nbsp;{% else %}{{ req.approved|approval }}{% endif %}</td>
+        <td>{{ req.get_status_display }}</td>        
+        <td>{% if req.certificate %}{{ req.certificate|status }}{% else %}&nbsp;{% endif %}</td>
+        <td>{% ifequal req.status issued %}
             <a href="{% url 'req:download_pem' req.id %}">PEM</a>&nbsp;<a href="{% url 'req:download_crt' req.id %}">DER</a>
-        {% else %}&nbsp;{% endif %}</td>
+        {% else %}&nbsp;{% endifequal %}</td>
         <td>{{ req.reject_reason }}</td>
     </tr>
     {% endfor %}
