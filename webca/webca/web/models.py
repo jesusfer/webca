@@ -122,7 +122,9 @@ class Request(models.Model):
             )
         elif self.template.required_subject == Template.SUBJECT_DN:
             # Check for a full DN
-            missing = [name for name in SUBJECT_DN if name not in new_subject.keys()]
+            missing = [name
+                       for name in SUBJECT_DN
+                       if name not in new_subject.keys()]
             if missing:
                 raise ValidationError(
                     'A full Distinguished Name is required for this request',
@@ -209,8 +211,8 @@ class Certificate(models.Model):
 
     def subject_filename(self):
         """Return part of the subject to create file names."""
-        #if user cert, then return the email
-        #else, return the CN
+        # if user cert, then return the email
+        # else, return the CN
         components = tuples_as_dict(name_to_components(self.subject))
         if 'emailAddress' in components.keys():
             return components['emailAddress']
@@ -245,6 +247,11 @@ class Template(models.Model):
     name = models.CharField(
         max_length=100,
         help_text='Name for this certificate template',
+    )
+    description = models.TextField(
+        blank=True,
+        help_text='Description of the certificate that will be displayed '
+        'to the users so that they understand the purpose of this template.',
     )
     days = models.PositiveSmallIntegerField(
         help_text='Number of days that this certificate will be valid for',

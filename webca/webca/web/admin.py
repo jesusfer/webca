@@ -79,7 +79,7 @@ class TemplateAdmin(admin.ModelAdmin):
     readonly_fields = ['version']
     fieldsets = (
         (None, {
-            'fields': ('name', 'version', 'enabled', 'days', 'min_bits', 'auto_sign')
+            'fields': ('name', 'description', 'version', 'enabled', 'days', 'min_bits', 'auto_sign')
         }),
         ('Certificate names', {
             'classes': ('',),

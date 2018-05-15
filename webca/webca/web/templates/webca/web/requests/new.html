@@ -7,6 +7,8 @@
     <h4>Certificate type</h4>
     <p>Name: {{ form.template_obj.name }}</p>
     <p>Valid for: {{ form.template_obj.days|valid_for }} ({{ form.template_obj.days|valid_until|date }})</p>
+    <h5>Description</h5>
+    <p>{{ form.template_obj.description }}</p>
     <h4>Certificate name</h4>
     {{ form.non_field_errors }}
     <p>Your certificate must have a name.</p>
