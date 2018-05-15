@@ -17,9 +17,13 @@ class AdminSite(admin.AdminSite):
         urls = super().get_urls()
         urls += [
             # CA certs configuration
-            path('certs/view/', self.admin_view(certs.CertificatesView.as_view()), name='certs_view'),
-            path('certs/view/<slug:serial>/', self.admin_view(certs.CertificatesView.as_view()), name='certs_view'),
-            path('certs/setup/', self.admin_view(certs.CertificateSetupView.as_view()), name='certs_setup'),
+            path('certs/view/', self.admin_view(certs.CertificatesView.as_view()),
+                 name='certs_view'),
+            path('certs/view/<slug:serial>/', self.admin_view(certs.CertificatesView.as_view()),
+                 name='certs_view'),
+
+            path('certs/setup/', self.admin_view(certs.CertificateSetupView.as_view()),
+                 name='certs_setup'),
             path('certs/update/', self.admin_view(certs.CertificateSetupView.as_view()),
                  {'update': True}, name='certs_update'),
             # Upload CA certs

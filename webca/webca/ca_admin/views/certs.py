@@ -166,7 +166,7 @@ class CertificateSetupView(View):
                 else:
                     messages.add_message(
                         request, messages.WARNING, 'No changes done')
-            url = reverse('admin:certs_update')
+            url = reverse('admin:certs_setup')
             return HttpResponseRedirect(url)
         return TemplateResponse(request, self.template, context)
 
