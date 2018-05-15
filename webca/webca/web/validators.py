@@ -5,29 +5,26 @@ from django.core.exceptions import ValidationError
 from OpenSSL import crypto
 
 from webca.crypto import constants as c
-from webca.crypto.utils import public_key_type, check_key_usage
+from webca.crypto.utils import check_key_usage, import_csr, public_key_type
 from webca.web import models as web_models
 
 MAX_DAYS = 50 * 365
 
 
-def power_two(value):
-    """Check that the value is a power of two."""
-    number = value
-    while number > 1 and number % 2 == 0:
-        number = number / 2
-    if number != 1:
+def valid_key_size_number(number):
+    """Check that the value is divisible by 32."""
+    if number % 32:
         raise ValidationError(
-            '%(value)s is not a power of two',
+            '%(value)s is not divisible by 32',
             code='invalid-bits',
-            params={'value': value},
+            params={'value': number},
         )
 
 
 def valid_pem_csr(value):
     """A valid PEM-encoded CSR."""
     try:
-        crypto.load_certificate_request(crypto.FILETYPE_PEM, value)
+        import_csr(value)
     except:
         raise ValidationError(
             'This is not a valid PEM-encoded certificate request',
@@ -48,8 +45,7 @@ def valid_pem_cer(value):
 
 def validate_csr_bits(value, min_bits):
     """Validate the PEM CSR has at least `min_bits`."""
-    valid_pem_csr(value)
-    csr = crypto.load_certificate_request(crypto.FILETYPE_PEM, value)
+    csr = import_csr(value)
     req_size = csr.get_pubkey().bits()
     if req_size < min_bits:
         raise ValidationError(
@@ -80,20 +76,6 @@ def validate_csr_key_usage(value, template):
 
     key_type = public_key_type(csr)
     # Any type is good for digitalSignature nonRepudiation
-    # FIXME: This should really be validated in the Template model
-    if (c.KU_KEYCERTSIGN in key_usage and
-            template.basic_constraints != web_models.Template.BC_CA):
-        raise ValidationError(
-            'Bad template (keyCertSign and !CA)',
-            code='invalid-ca-template',
-        )
-    if (len(key_usage) > 1 and
-            c.KU_CRLSIGN in key_usage and
-            c.KU_KEYCERTSIGN not in key_usage):
-        raise ValidationError(
-            'Bad template (crlSign and !keyCertSign)',
-            code='invalid-ca-template',
-        )
 
     is_ca = template.basic_constraints == web_models.Template.BC_CA
     valid = check_key_usage(key_type, key_usage, is_ca)

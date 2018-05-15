@@ -10,6 +10,7 @@ from django.shortcuts import render
 from django.urls import reverse
 from django.views import View
 
+from webca.crypto import constants as c
 from webca.crypto.utils import export_certificate, export_csr
 from webca.web.forms import RequestNewForm, TemplateSelectorForm
 from webca.web.models import Certificate, Request, Template
@@ -119,21 +120,22 @@ class NewView(View):
             return http.HttpResponseRedirect(reverse('req:index'))
         template_id = int(template_form.cleaned_data['template'])
         template = [x for x in request.user.templates if x.id == template_id][0]
-
         initial = {
             'template': template_id
         }
-
         request_form = RequestNewForm(
             template=template,
             initial=initial
         )
-
         context = {
             'DN': Template.SUBJECT_DN,
             'CN': Template.SUBJECT_CN,
             'DN_PARTIAL': Template.SUBJECT_DN_PARTIAL,
             'USER': Template.SUBJECT_USER,
+            'allowed_key_types': template.allowed_key_types(),
+            'KEY_RSA': c.KEY_RSA,
+            'KEY_DSA': c.KEY_DSA,
+            'KEY_EC': c.KEY_EC,
             'form': request_form,
         }
         return render(request, 'webca/web/requests/new.html', context)
@@ -193,6 +195,10 @@ class SubmitView(View):
                 'CN': Template.SUBJECT_CN,
                 'DN_PARTIAL': Template.SUBJECT_DN_PARTIAL,
                 'USER': Template.SUBJECT_USER,
+                'allowed_key_types': template.allowed_key_types(),
+                'KEY_RSA': c.KEY_RSA,
+                'KEY_DSA': c.KEY_DSA,
+                'KEY_EC': c.KEY_EC,
                 'form': form,
             }
             return render(request, 'webca/web/requests/new.html', context)

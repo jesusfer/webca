@@ -1,6 +1,7 @@
 from django import forms
 
 from webca.crypto.constants import REV_USER
+from webca.crypto.utils import import_csr, public_key_type
 from webca.utils import dict_as_tuples
 from webca.web.fields import SubjectAltNameCertificateField
 from webca.web.models import Template
@@ -144,7 +145,10 @@ class RequestNewForm(forms.Form):
     def clean_csr(self):
         """Extended checks in the Certificate Request."""
         text = self.cleaned_data['csr']
-        validate_csr_bits(text, self.template_obj.min_bits)
+        valid_pem_csr(text)
+        key_type = public_key_type(import_csr(text))
+        min_bits = self.template_obj.min_bits_for(key_type)
+        validate_csr_bits(text, min_bits)
         validate_csr_key_usage(text, self.template_obj)
         return text
 

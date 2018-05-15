@@ -116,10 +116,12 @@ KEY_TYPE_KEY_USAGE_EE = {
         KU_NONREPUDIATION,
         KU_KEYENCIPHERMENT,
         KU_DATAENCIPHERMENT,
+        KU_CRLSIGN,
     ],
     KEY_DSA: [
         KU_DIGITALSIGNATURE,
         KU_NONREPUDIATION,
+        KU_CRLSIGN,
     ],
     # TODO: There really are two different EC public keys
     # depending on the algorithm in SubjectPublicKeyInfo
@@ -130,6 +132,7 @@ KEY_TYPE_KEY_USAGE_EE = {
         KU_KEYAGREEMENT,
         KU_ENCIPHERONLY,
         KU_DECIPHERONLY,
+        KU_CRLSIGN,
     ],
 }
 

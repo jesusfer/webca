@@ -9,7 +9,8 @@ from django.utils import timezone
 from OpenSSL import crypto
 
 from webca.crypto import constants as c
-from webca.crypto.utils import components_to_name, name_to_components
+from webca.crypto.utils import (components_to_name, name_to_components,
+                                public_key_type)
 from webca.utils import dict_as_tuples, subject_display, tuples_as_dict
 from webca.web import validators
 from webca.web.fields import (ExtendedKeyUsageField, KeyUsageField,
@@ -90,11 +91,13 @@ class Request(models.Model):
         # Validate key size minimum
         # We don't need to check that if the request is being rejected
         req_size = self.get_csr().get_pubkey().bits()
-        if req_size < self.template.min_bits and self.status != Request.STATUS_REJECTED:
+        key_type = public_key_type(self.get_csr())
+        min_bits = self.template.min_bits_for(key_type)
+        if req_size < min_bits and self.status != Request.STATUS_REJECTED:
             raise ValidationError(
                 'Key size must be %(min)d or more',
                 code='minBits',
-                params={'min': self.template.min_bits}
+                params={'min': min_bits}
             )
         # Clean up the subject (keep only the components we define)
         subject = tuples_as_dict(name_to_components(self.subject))
@@ -275,10 +278,23 @@ class Template(models.Model):
         default=True,
         help_text='Certificate requests using this template will automatically be signed by the CA',
     )
-    min_bits = models.PositiveSmallIntegerField(
+    min_bits_rsa = models.PositiveSmallIntegerField(
         default=2048,
-        help_text='Minimum key size',
-        validators=[validators.power_two],
+        help_text='Minimum RSA key size',
+        verbose_name='RSA Key size',
+        validators=[validators.valid_key_size_number],
+    )
+    min_bits_dsa = models.PositiveSmallIntegerField(
+        default=1024,
+        help_text='Minimum DSA key size',
+        verbose_name='DSA Key size',
+        validators=[validators.valid_key_size_number],
+    )
+    min_bits_ec = models.PositiveSmallIntegerField(
+        default=256,
+        help_text='Minimum Elliptic Curves (EC) key size',
+        verbose_name='EC Key size',
+        validators=[validators.valid_key_size_number],
     )
     required_subject = models.SmallIntegerField(
         choices=SUBJECT_TYPE,
@@ -312,7 +328,7 @@ class Template(models.Model):
     )
     key_usage = KeyUsageField(
         verbose_name='KeyUsage',
-        help_text='',
+        help_text='This list defines the allowed algorithms used by the public key of the certificates.',
     )
     ext_key_usage_critical = models.BooleanField(
         default=False,
@@ -453,6 +469,35 @@ class Template(models.Model):
         # 3. Custom
         # crypto.X509Extension(b'1.6.6', False, b'DER:31:32:33')
         return extensions
+
+    def min_bits_for(self, key_type):
+        """Return the minimum bits required in this template for `key_type`."""
+        if key_type == c.KEY_RSA:
+            return self.min_bits_rsa
+        elif key_type == c.KEY_DSA:
+            return self.min_bits_dsa
+        else:
+            return self.min_bits_ec
+
+    def allowed_key_types(self):
+        """Return a list of `webca.crypto.constants.KEY_TYPE`
+        with the algorithms that are allowed in this template."""
+        template_usages = [number
+                           for number, name in c.KEY_USAGE.items()
+                           if name in self.key_usage]
+
+        if self.basic_constraints == Template.BC_CA:
+            bc_usages = c.KEY_TYPE_KEY_USAGE_CA
+        else:
+            bc_usages = c.KEY_TYPE_KEY_USAGE_EE
+        allowed = []
+        for key_type, type_usages in bc_usages.items():
+            matches = [x
+                       for x in template_usages
+                       if x in type_usages]
+            if len(matches) == len(template_usages):
+                allowed.append(key_type)
+        return allowed
 
     @staticmethod
     def get_enabled():

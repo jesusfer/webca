@@ -7,10 +7,10 @@ import traceback
 from datetime import datetime, timedelta
 
 import pytz
+from django.conf import settings
 from django.db.models import Q
 from django.utils import timezone
 from OpenSSL import crypto
-from django.conf import settings
 
 from webca import utils as ca_utils
 from webca.certstore import CertStore
@@ -150,13 +150,17 @@ class CAService:
 
         # Validate stuff
         # Key size. Template requirements might have changed since the request was done
-        if pub_key.bits() < request.template.min_bits:
+        key_type = cert_utils.public_key_type(request.get_csr())
+        min_bits = request.template.min_bits_for(key_type)
+
+        if pub_key.bits() < min_bits:
             # The request at this point will never meet the template minimum
             # so it should be rejected
             request.status = Request.STATUS_REJECTED
-            request.reject_reason = 'The key does not meet the required minimum size: size={} required={}'.format(
+            request.reject_reason = 'The key does not meet the required '
+            'minimum size: size={} required={}'.format(
                 pub_key.bits(),
-                request.template.min_bits)
+                min_bits)
             request.save()
             return
 

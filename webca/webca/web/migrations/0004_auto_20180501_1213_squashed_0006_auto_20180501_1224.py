@@ -41,7 +41,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='template',
             name='min_bits',
-            field=models.PositiveSmallIntegerField(default=2048, help_text='Minimum key size', validators=[webca.web.validators.power_two]),
+            field=models.PositiveSmallIntegerField(default=2048, help_text='Minimum key size', validators=[webca.web.validators.valid_key_size_number]),
         ),
         migrations.AlterField(
             model_name='template',
