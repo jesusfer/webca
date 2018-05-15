@@ -5,9 +5,10 @@ import secrets
 from datetime import datetime
 
 import pytz
+from cryptography import hazmat
 from OpenSSL import crypto
 
-from webca.crypto.constants import SERIAL_BYTES
+from webca.crypto import constants as c
 
 #################
 # ASN.1 helpers #
@@ -16,7 +17,7 @@ from webca.crypto.constants import SERIAL_BYTES
 
 def new_serial():
     """Return a large positive integer."""
-    return abs(secrets.randbits(SERIAL_BYTES * 8))
+    return abs(secrets.randbits(c.SERIAL_BYTES * 8))
 
 
 def int_to_hex(number):
@@ -82,6 +83,38 @@ def asn1_to_datetime(when):
 ################
 # X509 helpers #
 ################
+
+
+def public_key_type(x509object):
+    """Return the type of key used in a public key.
+    Arguments
+    ---------
+    `x509object` - either an OpenSSL.crypto.`X509` or OpenSSL.crypto.`X509Req`
+
+    Returns: one of `webca.crypto.constants.KEY_TYPE`
+    """
+    public_key = x509object.get_pubkey()
+    key_type = c.KEY_RSA
+    if public_key.type() == crypto.TYPE_DSA:
+        key_type = c.KEY_DSA
+    elif isinstance(
+            public_key.to_cryptography_key(),
+            hazmat.primitives.asymmetric.ec.EllipticCurvePublicKey):
+        key_type = c.KEY_EC
+    return key_type
+
+
+def check_key_usage(key_type, key_usage, ca=False):
+    """Validates that `key_type` and `key_usage` match."""
+    if ca:
+        key_vector = c.KEY_TYPE_KEY_USAGE_CA[key_type]
+    else:
+        key_vector = c.KEY_TYPE_KEY_USAGE_EE[key_type]
+
+    not_allowed = [usage
+                   for usage in key_usage
+                   if usage not in key_vector]
+    return not bool(not_allowed)
 
 
 ##################

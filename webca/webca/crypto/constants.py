@@ -97,3 +97,67 @@ REV_USER = {
     REV_SUPERSEDED: 'Superseded',
     REV_CESSATIONOFOPERATION: 'Cessation of Operation',
 }
+
+KEY_RSA = 1
+KEY_DSA = 2
+KEY_EC = 3
+
+KEY_TYPE = {
+    KEY_RSA: 'RSA',
+    KEY_DSA: 'DSA',
+    KEY_EC: 'EC',
+}
+
+# Possible keyUsage combinations depending on the algorithm used by
+# a public key
+KEY_TYPE_KEY_USAGE_EE = {
+    KEY_RSA: [
+        KU_DIGITALSIGNATURE,
+        KU_NONREPUDIATION,
+        KU_KEYENCIPHERMENT,
+        KU_DATAENCIPHERMENT,
+    ],
+    KEY_DSA: [
+        KU_DIGITALSIGNATURE,
+        KU_NONREPUDIATION,
+    ],
+    # TODO: There really are two different EC public keys
+    # depending on the algorithm in SubjectPublicKeyInfo
+    # id-ecPublicKey and id-ecDH or id-ecMQV
+    KEY_EC: [
+        KU_DIGITALSIGNATURE,
+        KU_NONREPUDIATION,
+        KU_KEYAGREEMENT,
+        KU_ENCIPHERONLY,
+        KU_DECIPHERONLY,
+    ],
+}
+
+KEY_TYPE_KEY_USAGE_CA = {
+    KEY_RSA: [
+        KU_DIGITALSIGNATURE,
+        KU_NONREPUDIATION,
+        KU_KEYENCIPHERMENT,
+        KU_DATAENCIPHERMENT,
+        KU_KEYCERTSIGN,
+        KU_CRLSIGN,
+    ],
+    KEY_DSA: [
+        KU_DIGITALSIGNATURE,
+        KU_NONREPUDIATION,
+        KU_KEYCERTSIGN,
+        KU_CRLSIGN,
+    ],
+    # TODO: There really are two different EC public keys
+    # depending on the algorithm in SubjectPublicKeyInfo
+    # id-ecPublicKey and id-ecDH or id-ecMQV
+    KEY_EC: [
+        KU_DIGITALSIGNATURE,
+        KU_NONREPUDIATION,
+        KU_KEYAGREEMENT,
+        KU_ENCIPHERONLY,
+        KU_DECIPHERONLY,
+        KU_KEYCERTSIGN,
+        KU_CRLSIGN,
+    ],
+}

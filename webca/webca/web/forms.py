@@ -4,7 +4,8 @@ from webca.crypto.constants import REV_USER
 from webca.utils import dict_as_tuples
 from webca.web.fields import SubjectAltNameCertificateField
 from webca.web.models import Template
-from webca.web.validators import valid_pem_csr, validate_csr_bits
+from webca.web.validators import (valid_pem_csr, validate_csr_bits,
+                                  validate_csr_key_usage)
 
 NAME_DICT = {
     'country': 'C',
@@ -144,8 +145,10 @@ class RequestNewForm(forms.Form):
         return cleaned_data
 
     def clean_csr(self):
+        """Extended checks in the Certificate Request."""
         text = self.cleaned_data['csr']
         validate_csr_bits(text, self.template_obj.min_bits)
+        validate_csr_key_usage(text, self.template_obj)
         return text
 
 class RevocationForm(forms.Form):
