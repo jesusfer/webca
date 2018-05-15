@@ -125,9 +125,8 @@ class KeyUsageField(MultiSelectField):
 
     def validate(self, value, model_instance):
         """
-        encipherOnly and decipherOnly can only be chosen if keyAgreement is chosen
-
-        Extended validation could be done regarding the other fields of the model.
+        encipherOnly and decipherOnly can only be asserted if
+        keyAgreement is also asserted
         """
         super().validate(value, model_instance)
         for usage in value:

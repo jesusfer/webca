@@ -8,8 +8,7 @@ from django.db import models
 from django.utils import timezone
 from OpenSSL import crypto
 
-from webca.crypto.constants import (REV_REASON, REV_UNSPECIFIED, SUBJECT_DN,
-                                    SUBJECT_PARTS)
+from webca.crypto import constants as c
 from webca.crypto.utils import components_to_name, name_to_components
 from webca.utils import dict_as_tuples, subject_display, tuples_as_dict
 from webca.web import validators
@@ -93,7 +92,7 @@ class Request(models.Model):
         subject = tuples_as_dict(name_to_components(self.subject))
         new_subject = {}
         for name, value in subject.items():
-            if name in SUBJECT_PARTS:
+            if name in c.SUBJECT_PARTS:
                 new_subject[name] = value
         # Validate the subject requirements against the template
         # CN is always required at this time
@@ -123,7 +122,7 @@ class Request(models.Model):
         elif self.template.required_subject == Template.SUBJECT_DN:
             # Check for a full DN
             missing = [name
-                       for name in SUBJECT_DN
+                       for name in c.SUBJECT_DN
                        if name not in new_subject.keys()]
             if missing:
                 raise ValidationError(
@@ -381,7 +380,23 @@ class Template(models.Model):
                     break
         if has_changed and self.id is not None:
             self.version += 1
+        if self.basic_constraints == Template.BC_ENTITY:
+            self.pathlen = -1
         super().save(*args, **kwargs)
+
+    def clean(self):
+        # Validate that basic_constraints and key_usage make sense.
+        key_usage = [number
+                     for number, name in c.KEY_USAGE.items()
+                     if name in self.key_usage]
+        if (c.KU_KEYCERTSIGN in key_usage and
+                self.basic_constraints != Template.BC_CA):
+            raise ValidationError({
+                'key_usage': ValidationError(
+                    'keyCertSign cannot be asserted if Basic Constraints is End Entity',
+                    code='invalid-key_usage-keyCertSign',
+                ),
+            })
 
     def get_basic_constraints(self):
         """Return the OpenSSL formated basicConstraints value."""
@@ -459,14 +474,14 @@ class Revoked(models.Model):
         help_text='When the certificate was revoked'
     )
     reason = models.SmallIntegerField(
-        choices=dict_as_tuples(REV_REASON),
-        default=REV_UNSPECIFIED
+        choices=dict_as_tuples(c.REV_REASON),
+        default=c.REV_UNSPECIFIED
     )
 
     def __str__(self):
         return '{} ({})'.format(
             str(self.certificate),
-            REV_REASON[self.reason]
+            c.REV_REASON[self.reason]
         )
 
     def __repr__(self):

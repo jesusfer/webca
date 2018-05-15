@@ -29,10 +29,6 @@ class TemplateSelectorForm(forms.Form):
         super().__init__(*args, **kwargs)
         self.fields['template'].choices = Template.get_form_choices(
             template_choices)
-        # self.fields['template'] = forms.ChoiceField(
-        #     choices=templates,
-        #     label='Choose a template',
-        # )
 
 
 class RequestNewForm(forms.Form):
@@ -123,7 +119,8 @@ class RequestNewForm(forms.Form):
         if self.is_valid():
             data = self.cleaned_data
             value = ''
-            fields = ['cn', 'email', 'country', 'state', 'locality', 'org', 'ou']
+            fields = ['cn', 'email', 'country',
+                      'state', 'locality', 'org', 'ou']
             for component in fields:
                 if data[component]:
                     value += '/%s=%s' % (NAME_DICT[component], data[component])
@@ -150,6 +147,7 @@ class RequestNewForm(forms.Form):
         validate_csr_bits(text, self.template_obj.min_bits)
         validate_csr_key_usage(text, self.template_obj)
         return text
+
 
 class RevocationForm(forms.Form):
     reason = forms.ChoiceField(
