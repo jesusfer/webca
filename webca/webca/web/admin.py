@@ -15,6 +15,17 @@ class RequestAdmin(admin.ModelAdmin):
     list_display = ['id', '__str__', 'user', 'template', 'status', 'approved']
     list_filter = ['status']
     list_display_links = ['__str__']
+    actions = ['approve_requests']
+
+    def approve_requests(self, request, queryset):
+        """Approve a list of requests."""
+        for req in queryset:
+            req.approved = True
+            req.save()
+        self.message_user(
+            request,
+            '%d requests have been approved.' % queryset.count(),
+            level=messages.INFO)
 
 
 def cert_readonly_fields():
@@ -31,7 +42,8 @@ def cert_readonly_fields():
 class CertificateAdmin(admin.ModelAdmin):
     """Admin model for certificates."""
     verbose_name = 'Issued Certificates'
-    list_display = ['id', '__str__', 'get_template', 'user', 'valid_from', 'valid_to']
+    list_display = ['id', '__str__', 'get_template',
+                    'user', 'valid_from', 'valid_to']
     list_display_links = ['__str__']
     readonly_fields = cert_readonly_fields()
     actions = ['view_certificate', 'download_certificate']
