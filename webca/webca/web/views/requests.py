@@ -20,7 +20,7 @@ def is_referrer_ok(request, allowed):
     if 'HTTP_REFERER' in request.META.keys():
         ref = request.META['HTTP_REFERER']
         ref_path = urlparse(ref)[2]
-        if ref_path != allowed:
+        if ref_path not in allowed:
             return False
     return True
 
@@ -105,7 +105,9 @@ class NewView(View):
 
     def post(self, request, *args, **kwargs):
         """Start a new request for a given template."""
-        previous = reverse('req:index')
+        previous = [
+            reverse('req:index'),
+        ]
         if not is_referrer_ok(request, previous):
             return render(request, 'webca/web/requests/referer.html', {})
         template_form = TemplateSelectorForm(
@@ -113,7 +115,7 @@ class NewView(View):
             template_choices=request.user.templates,
         )
         if not template_form.is_valid():
-            return http.HttpResponseBadRequest()
+            return http.HttpResponseRedirect(reverse('req:index'))
         template_id = int(template_form.cleaned_data['template'])
         template = [x for x in request.user.templates if x.id == template_id][0]
 
@@ -148,7 +150,10 @@ class SubmitView(View):
 
     def post(self, request, *args, **kwargs):
         """POST method."""
-        previous = reverse('req:new')
+        previous = [
+            reverse('req:new'),
+            reverse('req:submit'),
+        ]
         if not is_referrer_ok(request, previous):
             return render(request, 'webca/web/requests/referer.html', {})
         template_id = int(request.POST.get('template'))
@@ -198,7 +203,10 @@ def request_confirmation(request):
     """
     Confirmation that a request has been successfully created.
     """
-    previous = reverse('req:new')
+    previous = [
+        reverse('req:submit'),
+        reverse('req:new'),
+    ]
     if not is_referrer_ok(request, previous):
         return render(request, 'webca/web/requests/referer.html', {})
     context = {}
