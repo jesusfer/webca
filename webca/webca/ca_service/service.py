@@ -3,12 +3,16 @@ Implementation of the CA service.
 """
 import json
 import time
+import traceback
 from datetime import datetime, timedelta
 
 import pytz
 from django.db.models import Q
 from django.utils import timezone
+from OpenSSL import crypto
+from django.conf import settings
 
+from webca import utils as ca_utils
 from webca.certstore import CertStore
 from webca.config import constants as parameters
 from webca.config import new_crl_config
@@ -17,8 +21,10 @@ from webca.crypto import utils as cert_utils
 from webca.crypto import certs, crl
 from webca.crypto.constants import REV_REASON
 from webca.crypto.extensions import build_cdp, build_san
-from webca.web.models import Certificate, CRLLocation, Request, Revoked, Template
-from webca import utils as ca_utils
+from webca.web.models import (Certificate, CRLLocation, Request, Revoked,
+                              Template)
+
+SLEEP = 1
 
 class CAService:
     """Polling service that processes requests from end users."""
@@ -70,7 +76,7 @@ class CAService:
     def _run(self):
         """Really run the service."""
         while True:
-            time.sleep(0.5)
+            time.sleep(SLEEP)
             self.process_requests()
             self.process_crl()
 
@@ -159,18 +165,34 @@ class CAService:
         valid_from = 0
         valid_to = int(timedelta(days=request.template.days).total_seconds())
         # Generate CSR and then the certificate
-        new_csr = certs.create_cert_request(
-            pub_key,
-            name=subject,
-            extensions=extensions,
-            signing_key=self.csrsign[1]
-        )
-        x509 = certs.create_certificate(
-            new_csr,
-            self.certsign,
-            serial,
-            (valid_from, valid_to)
-        )
+        try:
+            new_csr = certs.create_cert_request(
+                pub_key,
+                name=subject,
+                extensions=extensions,
+                signing_key=self.csrsign[1]
+            )
+        except crypto.Error as ex:
+            print('error!')
+            request.status = Request.STATUS_ERROR
+            error = traceback.format_exc().replace(settings.BASE_DIR, '')
+            request.admin_comment = 'Error creating internal CSR:\n%s' % error
+            request.save()
+            return
+        try:
+            x509 = certs.create_certificate(
+                new_csr,
+                self.certsign,
+                serial,
+                (valid_from, valid_to)
+            )
+        except crypto.Error as ex:
+            print('error!')
+            request.status = Request.STATUS_ERROR
+            error = traceback.format_exc().replace(settings.BASE_DIR, '')
+            request.admin_comment = 'Error creating certificate: %s' % error
+            request.save()
+            return
 
         # Save the new certificate
         certificate = Certificate()
@@ -180,8 +202,8 @@ class CAService:
         certificate.serial = serial
         certificate.subject = cert_utils.components_to_name(subject)
         certificate.valid_from = datetime.now(pytz.utc)
-        certificate.valid_to = datetime.now(
-            pytz.utc) + timedelta(days=request.template.days)
+        certificate.valid_to = (datetime.now(pytz.utc) +
+                                timedelta(days=request.template.days))
         certificate.save()
         # Update the request
         request.status = Request.STATUS_ISSUED

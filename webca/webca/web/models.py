@@ -24,11 +24,12 @@ class Request(models.Model):
     STATUS_PROCESSING = 1
     STATUS_ISSUED = 2
     STATUS_REJECTED = 3
-    # TODO: Add a status for error during issuance?
+    STATUS_ERROR = 4
     STATUS = [
         (STATUS_PROCESSING, 'Processing'),
         (STATUS_ISSUED, 'Issued'),
         (STATUS_REJECTED, 'Rejected'),
+        (STATUS_ERROR, 'Error'),
     ]
 
     user = models.ForeignKey(
@@ -66,6 +67,10 @@ class Request(models.Model):
         help_text='Alternative Names requested',
         verbose_name='SAN names',
     )
+    admin_comment = models.TextField(
+        blank=True,
+        help_text='Internal messages about this request',
+    )
 
     class Meta:
         ordering = ['-id']
@@ -77,8 +82,11 @@ class Request(models.Model):
         return '<Certificate %s>' % str(self)
 
     def save(self, *args, **kwargs):
-        # We have to do some validations here as field validators
-        # can't access other stuff than the value to validate
+        # If there wasan error processing the request, just save it
+        if self.status == Request.STATUS_ERROR:
+            super().save(*args, **kwargs)
+            return
+
         # Validate key size minimum
         # We don't need to check that if the request is being rejected
         req_size = self.get_csr().get_pubkey().bits()
