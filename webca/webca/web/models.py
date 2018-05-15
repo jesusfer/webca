@@ -337,42 +337,20 @@ class Template(models.Model):
     )
     # policies = models.ForeignKey('PolicyInformation')
 
-    __id = None
-    __days = None
-    __enabled = None
-    __auto_sign = None
-    __min_bits = None
-    __required_subject = None
-    __san_type = None
-    __allowed_san = None
-    __basic_constraints = None
-    __pathlen = None
-    __key_usage = None
-    __ext_key_usage_critical = None
-    __ext_key_usage = None
-    __crl_points = None
-    __aia = None
-    __extensions = None
-
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Save the original values
-        self.__id = self.id
-        self.__days = self.days
-        self.__enabled = self.enabled
-        self.__auto_sign = self.auto_sign
-        self.__min_bits = self.min_bits
-        self.__required_subject = self.required_subject
-        self.__san_type = self.san_type
-        self.__allowed_san = self.allowed_san
-        self.__basic_constraints = self.basic_constraints
-        self.__pathlen = self.pathlen
-        self.__key_usage = self.key_usage
-        self.__ext_key_usage_critical = self.ext_key_usage_critical
-        self.__ext_key_usage = self.ext_key_usage
-        self.__crl_points = self.crl_points
-        self.__aia = self.aia
-        self.__extensions = self.extensions
+        fields = [str(f).split('.')[2]
+                  for f in Template._meta.get_fields()
+                  if not f.is_relation
+                  or f.one_to_one
+                  or (f.many_to_one and f.related_model)]
+        ignored_fields = ['id', 'enabled', 'version']
+        for field in fields:
+            if field not in ignored_fields:
+                value = getattr(self, field, None)
+                if isinstance(value, list):
+                    value = [x for x in value if x]
+                setattr(self, "_%s" % field, value)
 
     def __str__(self):
         return self.name
@@ -385,24 +363,23 @@ class Template(models.Model):
         # Enabling/disabling should not count
         # Since we shouldn't except much concurrency when editing templates,
         # it should be fine to just check current values with previous
-        # FUTURE: this may be better done in some other way
         # FUTURE: if there are pending requests and the key is increased, we may want to automatically reject those pending requests
         # TODO: if the Template did not have auto_sign before and it does when saving, approve automatically all requests?
-        # TODO: if san_type is shown, then allowed_san should not be None
-        if (self.__days != self.days or
-                self.__auto_sign != self.auto_sign or
-                self.__min_bits != self.min_bits or
-                self.__required_subject != self.required_subject or
-                self.__san_type != self.san_type or
-                self.__allowed_san != self.allowed_san or
-                self.__basic_constraints != self.basic_constraints or
-                self.__pathlen != self.pathlen or
-                self.__key_usage != self.key_usage or
-                self.__ext_key_usage_critical != self.ext_key_usage_critical or
-                self.__ext_key_usage != self.ext_key_usage or
-                self.__crl_points != self.crl_points or
-                self.__aia != self.aia or
-                self.__extensions != self.extensions) and self.id is not None:
+        fields = [str(f).split('.')[2]
+                  for f in Template._meta.get_fields()
+                  if not f.is_relation
+                  or f.one_to_one
+                  or (f.many_to_one and f.related_model)]
+        ignored_fields = ['id', 'enabled', 'version']
+        has_changed = False
+        for field in fields:
+            if field not in ignored_fields:
+                value = getattr(self, field, None)
+                old_value = getattr(self, "_%s" % field)
+                if value != old_value:
+                    has_changed = True
+                    break
+        if has_changed and self.id is not None:
             self.version += 1
         super().save(*args, **kwargs)
 
