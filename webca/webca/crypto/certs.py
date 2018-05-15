@@ -113,10 +113,10 @@ def create_certificate(request, issuer_cert_key, serial, validity_period, digest
     if isinstance(issuer_cert, crypto.X509):
         # issuer_cert could be a X509Req if this is a self-signed cert
         aki = crypto.X509Extension(
-            b'authorityKeyIdentifier', False, b'keyid,issuer', issuer=issuer_cert)
+            b'authorityKeyIdentifier', False, b'keyid:always,issuer:always', issuer=issuer_cert)
     else:
         aki = crypto.X509Extension(
-            b'authorityKeyIdentifier', False, b'keyid,issuer', issuer=cert)
+            b'authorityKeyIdentifier', False, b'keyid:always,issuer:always', issuer=cert)
     cert.add_extensions([aki])
 
     cert.sign(issuer_key, digest)
