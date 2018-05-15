@@ -6,6 +6,7 @@ from OpenSSL import crypto
 
 from webca.crypto import constants as c
 from webca.crypto.utils import check_key_usage, import_csr, public_key_type
+from webca.utils.iso_3166 import ISO_3166_1_ALPHA2_COUNTRY_CODES
 from webca.web import models as web_models
 
 MAX_DAYS = 50 * 365
@@ -103,4 +104,12 @@ def valid_pathlen(value):
         raise ValidationError(
             'The value must be -1 <= pathlen < 32767',
             code='invalid-pathlen',
+        )
+
+def valid_country_code(value):
+    """Validate that the country code is an ISO3166 2-letter code."""
+    if value.upper() not in ISO_3166_1_ALPHA2_COUNTRY_CODES:
+        raise ValidationError(
+            'Not a valid country code',
+            code='invalid-country',
         )

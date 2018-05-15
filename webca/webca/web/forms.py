@@ -5,8 +5,8 @@ from webca.crypto.utils import import_csr, public_key_type
 from webca.utils import dict_as_tuples
 from webca.web.fields import SubjectAltNameCertificateField
 from webca.web.models import Template
-from webca.web.validators import (valid_pem_csr, validate_csr_bits,
-                                  validate_csr_key_usage)
+from webca.web.validators import (valid_country_code, valid_pem_csr,
+                                  validate_csr_bits, validate_csr_key_usage)
 
 NAME_DICT = {
     'country': 'C',
@@ -48,6 +48,7 @@ class RequestNewForm(forms.Form):
         max_length=2,
         required=False,
         label='Country (2 letters)',
+        validators=[valid_country_code],
     )
     state = forms.CharField(
         max_length=50,
@@ -141,6 +142,14 @@ class RequestNewForm(forms.Form):
                     code='invalid-dn',
                 )
         return cleaned_data
+
+    def clean_country(self):
+        """Make the country code uppercase."""
+        value = self.cleaned_data['country']
+        if value:
+            value = value.upper()
+        return value
+
 
     def clean_csr(self):
         """Extended checks in the Certificate Request."""
