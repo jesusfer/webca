@@ -28,33 +28,45 @@ Outputs:
 - User certificates CA certificate
 
 """
+# pylint: disable=E0611,E0401,C0413,W0611
 import os
 import getpass
+import sys
 
 BASE_DIR = os.path.abspath(os.path.join(
     os.path.dirname(os.path.abspath(__file__)), os.path.pardir))
+sys.path.append(BASE_DIR)
 
-MSG_DB = """We need a database to store templates, user requests and generated certificates."""
-MSG_DB_CERTS = """Now we need a database to store the CA certificates.
+os.environ["DJANGO_SETTINGS_MODULE"] = "webca.ca_admin.settings"
+
+from webca.certstore import CertStore
+from webca.config import constants as p
+from webca.crypto import certs
+from webca.crypto import constants as c
+from webca.crypto.utils import int_to_hex
+
+MSG_DB = """\nA database is needed to store templates, user requests and issued certificates."""
+MSG_DB_CERTS = """\nAnother database is needed to store the CA certificates.
 It should a different than the web database."""
 
 
 def setup():
-    print(BASE_DIR)
-    print('*** Setup of database servers ***')
+    print('\n*** Setup of database servers ***')
     config = {}
     config.update(get_database(MSG_DB, 'web_'))
     config.update(get_database(MSG_DB_CERTS, 'certs_'))
-    create_settings(config)
+    if input('Modify settings?'):
+        create_settings(config)
     init_django()
-    print('*** Setup of CA certificates ***')
+    print('\n*** Setup of CA certificates ***')
     setup_certificates()
     # TODO: setup_crl_publishing() Ask for path to publish and frequency
     install_templates()
 
 
 """
-Just in case we wanted to filter the options with the installed modules:
+FUTURE: Just in case we wanted to filter the options
+with the installed modules:
 django.db.backends.sqlite3
 django.db.backends.postgresql: psycopg2
 django.db.backends.mysql: mysqlclient
@@ -153,12 +165,13 @@ def _create_settings(config, prefix, template, path):
 
 
 def init_django():
-    print('Initializing Django...')
-    os.environ["DJANGO_SETTINGS_MODULE"] = "webca.ca_admin.settings"
+    print('\nInitializing Django...')
     import django
     try:
         django.setup()
     except Exception as ex:
+        import traceback
+        traceback.print_exc()
         print('There was an error initializing up Django: {}'.format(ex))
         print('Exiting...')
         exit()
@@ -171,10 +184,62 @@ def init_django():
         print('Error setting up databases: {}'.format(ex))
 
 
+def setup_certificates():
+    print('\nA CA certificate needs to be imported or created.')
+    from webca.config.models import ConfigurationObject as Config
+    # List available certificate stores
+    stores = CertStore.all()
+    print('These are the available certificate stores.')
+    option = 0
+    i = 1
+    while option < 1 or option > len(stores):
+        for name, cls in stores:
+            print('{}. {}'.format(i, name))
+        option = input('Choose a certificate store: ')
+        try:
+            option = int(option)
+        except:
+            option = 0
+    store = stores[option - 1][1]()
+    # Create CSR signing keypair/certificate
+    name = [
+        ('CN', 'Internal CSR Signing'),
+        ('O', 'WebCA'),
+    ]
+    dur = (1 << 31) - 1
+    csr_keys, csr_cert = certs.create_self_signed(name, duration=dur)
+    store.add_certificate(csr_keys, csr_cert)
+    Config.set_value(p.CERT_CSRSIGN, '{},{}'.format(
+        store.STORE_ID, int_to_hex(csr_cert.get_serial_number())
+    ))
+    # TODO: import CA certificate
+    print('\nThe CA needs a certificate. '
+          'You must import one or create a self-signed one now.')
+    option = 0
+    while option not in [1, 2]:
+        print('\n1. Import a PFX')
+        print('2. Generate a self-signed Root CA')
+        option = input('Choose an option: ')
+        try:
+            option = int(option)
+        except:
+            pass
+    if option == 1:
+        # import_pfx(store) TODO:
+        pass
+    else:
+        # generate a self-signed CA TODO:
+        # request bits
+        # request DN
+        # confirm DN
+        pass
+    # TODO: create user authentication certificate
+
+
 def install_templates():
-    print('Do you want some certificate templates to be automatically created?')
-    yn = input('Omit this step (y/N): ')
-    if yn == 'y':
+    print('\nDo you want some certificate templates to be automatically created?')
+    option = input('Omit this step (y/N): ')
+    if option == 'y':
         return
     from django.core import serializers
     data = open(os.path.join(BASE_DIR, 'setup/templates.json'))
@@ -183,10 +248,9 @@ def install_templates():
         print(template.object.name)
         template.save()
 
-def setup_certificates():
-    # TODO: list available certificate stores
-    # TODO: create CSR signing keypair/certificate
-    pass
 
 if __name__ == '__main__':
-    setup()
+    try:
+        setup()
+    except KeyboardInterrupt:
+        sys.exit(-1)
