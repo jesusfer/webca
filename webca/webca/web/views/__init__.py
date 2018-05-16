@@ -2,10 +2,10 @@
 General view classes.
 """
 
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
 from django.views import View
-from django.shortcuts import render
-
+from django.shortcuts import render, reverse
+from django.contrib.auth.views import logout
 
 class WebCAView(View):
     """Class that views should inherit that support minimal context
@@ -27,3 +27,9 @@ class IndexView(WebCAView):
     def get(self, request, *args, **kwargs):
         """Render the welcome page."""
         return render(request, 'webca/web/index.html', self.context)
+
+
+def logout_user(request, *args, **kwargs):
+    """Log a user out."""
+    logout(request)
+    return HttpResponseRedirect(reverse('webca:index'))

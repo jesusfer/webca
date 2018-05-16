@@ -39,6 +39,9 @@ h1, h2, h3, h4, h5 {
     clear: both;
     display: table;
 }
+#header a {
+    color: white;
+}
 #title {
     /* background-color: lightgreen; */
     margin: 5px 0 5px 20px;
@@ -51,7 +54,6 @@ h1, h2, h3, h4, h5 {
 #title a:hover,
 #title a:focus,
 #title a:visited {
-    color: white;
     text-decoration: unset;
     border: 0;
 }

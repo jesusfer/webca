@@ -12,9 +12,12 @@
                 <h1 id="title"><a href="{% url 'webca:index' %}">{{ title }}</a></h1>
                 <div id="header_tools">
                 <p>
+                    {% if user.is_authenticated %}
                     Hi, {{ user }}.
+                    <a href="{% url 'webca:logout' %}">Log out</a>.
+                    {% else %}
                     <a href="{% url 'webca:index' %}">Log in</a>.
-                    <a href="{% url 'webca:index' %}">Log out</a>.
+                    {% endif %}
                 </p>
                 {% block header_tools %}
                 {% endblock header_tools %}
