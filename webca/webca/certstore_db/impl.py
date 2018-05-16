@@ -79,7 +79,7 @@ class DatabaseStore(CertStore):
         its OpenSSL.crypto.PKey private key."""
         with transaction.atomic(using=DATABASE_LABEL):
             keys = KeyPair.from_keypair(private_key)
-            if keys is None:
+            if not keys:
                 raise ValueError('private_key')
             cert = Certificate.from_certificate(certificate)
             keys.name = "%s - %s" % (str(cert), cert.serial)

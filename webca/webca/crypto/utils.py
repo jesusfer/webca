@@ -85,6 +85,28 @@ def asn1_to_datetime(when):
 ################
 
 
+def private_key_type(x509object):
+    """Return the type of key used in a private key.
+    Arguments
+    ---------
+    `x509object` - an `OpenSSL.crypto.PKCS12`
+
+    Returns: one of `webca.crypto.constants.KEY_TYPE`
+    """
+    if isinstance(x509object, crypto.PKey):
+        private = x509object
+    else:
+        private = x509object.get_privatekey()
+    key_type = c.KEY_RSA
+    if private.type() == crypto.TYPE_DSA:
+        key_type = c.KEY_DSA
+    elif isinstance(
+            private.to_cryptography_key(),
+            hazmat.primitives.asymmetric.ec.EllipticCurvePrivateKey):
+        key_type = c.KEY_EC
+    return key_type
+
+
 def public_key_type(x509object):
     """Return the type of key used in a public key.
     Arguments

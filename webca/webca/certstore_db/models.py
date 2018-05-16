@@ -3,6 +3,7 @@ from cryptography import hazmat
 from django.db import models
 from OpenSSL import crypto
 
+from webca.certstore import CertificateExistsError
 from webca.crypto import utils as cert_utils
 from webca.crypto.constants import EXT_KEY_USAGE, KEY_USAGE
 from webca.crypto.extensions import ExtendedKeyUsage, KeyUsage, get_extension
@@ -67,15 +68,9 @@ class KeyPair(models.Model):
 
     @classmethod
     def from_keypair(cls, keys):
-        """Create a key pair using an OpenSSL.crypto.PKey key pair."""
+        """Create a key pair using an `OpenSSL.crypto.PKey` key pair."""
         key_pair = KeyPair()
-        key_pair.key_type = KeyPair.TYPE_RSA
-        if keys.type() == crypto.TYPE_DSA:
-            key_pair.key_type = KeyPair.TYPE_DSA
-        elif isinstance(
-                keys.to_cryptography_key(),
-                hazmat.primitives.asymmetric.ec.EllipticCurvePrivateKey):
-            key_pair.key_type = KeyPair.TYPE_EC
+        key_pair.key_type = cert_utils.private_key_type(keys)
         try:
             key_pair.private_key = crypto.dump_privatekey(
                 crypto.FILETYPE_PEM, keys).decode('utf-8')
@@ -150,6 +145,10 @@ class Certificate(models.Model):
         """Create a new Certificate object based on a X509 certificate.
 
         The new object is not saved by default."""
+        serial = cert_utils.int_to_hex(certificate.get_serial_number())
+        old = Certificate.objects.filter(serial=serial).count()
+        if old:
+            raise CertificateExistsError('duplicated-certificate')
         cert = Certificate()
         cert.subject = cert_utils.components_to_name(
             certificate.get_subject().get_components())

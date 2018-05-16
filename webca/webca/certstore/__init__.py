@@ -7,6 +7,11 @@ import abc
 from webca.crypto.constants import KU_KEYCERTSIGN, KU_CRLSIGN
 
 
+class CertificateExistsError(Exception):
+    """Raised when the certificate already exists in a store."""
+    pass
+
+
 class CertStore(metaclass=abc.ABCMeta):
     """"This class is to be used to track the different
     implementations of a certificate store."""
@@ -38,11 +43,12 @@ class CertStore(metaclass=abc.ABCMeta):
         """Return an instance of the selected store."""
         store = CertStore._stores[store_id]
         return store[1]()
-    
+
     @staticmethod
     def get_by_name(name):
         """Return an instance of the selected store by `name`."""
-        store = [store for store_name,store in CertStore.all() if store_name == name]
+        store = [store for store_name,
+                 store in CertStore.all() if store_name == name]
         if store:
             return store[0]()
         return None

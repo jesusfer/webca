@@ -10,11 +10,13 @@ from OpenSSL import crypto
 
 from webca.ca_admin import admin
 from webca.ca_admin.templatetags.ca_admin import serial, subject
-from webca.certstore import CertStore
+from webca.certstore import CertificateExistsError, CertStore
 from webca.config import constants as parameters
 from webca.config.models import ConfigurationObject as Config
-from webca.crypto import constants
-from webca.crypto.utils import asn1_to_datetime, components_to_name, int_to_hex, export_certificate
+from webca.crypto import constants as c
+from webca.crypto.utils import (asn1_to_datetime, components_to_name,
+                                export_certificate, int_to_hex,
+                                private_key_type)
 from webca.utils import subject_display
 
 
@@ -34,8 +36,8 @@ class CertificatesView(View):
         else:
             certs = {}
             for name, store in CertStore.all():
-                for usage in [constants.KU_KEYCERTSIGN, constants.KU_CRLSIGN]:
-                    usage_name = constants.KEY_USAGE[usage]
+                for usage in [c.KU_KEYCERTSIGN, c.KU_CRLSIGN]:
+                    usage_name = c.KEY_USAGE[usage]
                     for cert in store().get_certificates(key_usage=[usage]):
                         serial = int_to_hex(cert.get_serial_number())
                         if serial not in certs.keys():
@@ -48,8 +50,8 @@ class CertificatesView(View):
                                 'subject': subject,
                                 'valid_from': asn1_to_datetime(cert.get_notBefore().decode('utf-8')),
                                 'valid_until': asn1_to_datetime(cert.get_notAfter().decode('utf-8')),
-                                constants.KEY_USAGE[constants.KU_KEYCERTSIGN]: False,
-                                constants.KEY_USAGE[constants.KU_CRLSIGN]: False,
+                                c.KEY_USAGE[c.KU_KEYCERTSIGN]: False,
+                                c.KEY_USAGE[c.KU_CRLSIGN]: False,
                             }
                         else:
                             cert = certs[serial]
@@ -340,25 +342,24 @@ class AddCertificateView(View):
                 )
             return HttpResponseRedirect(reverse('admin:certs_add'))
 
-        # At this point, we should be fairly certain it's a PFX file < 1MB
         pfx = create_form.cleaned_data['pfx']
-        key_type = 'RSA'
-        if pfx.get_privatekey().type() == crypto.TYPE_DSA:
-            key_type = 'DSA'
-        elif isinstance(
-                pfx.get_privatekey().to_cryptography_key(),
-                hazmat.primitives.asymmetric.ec.EllipticCurvePrivateKey):
-            key_type = 'EC'
+        key_type = private_key_type(pfx)
         context['pfx'] = {
             'subject': subject_display(components_to_name(pfx.get_certificate().get_subject().get_components())),
-            'type': key_type,
+            'type': c.KEY_TYPE[key_type],
             'bits': pfx.get_privatekey().bits,
         }
 
         store = CertStore.get_store(create_form.cleaned_data['store'])
-        store.add_certificate(
-            pfx.get_privatekey(),
-            pfx.get_certificate(),
-        )
+        try:
+            store.add_certificate(
+                pfx.get_privatekey(),
+                pfx.get_certificate(),
+            )
+        except CertificateExistsError:
+            messages.add_message(request, messages.ERROR,
+                                 'The certificate already exists')
+            return HttpResponseRedirect(reverse('admin:certs_add'))
+
         create_form.fields['store'].disabled = True
         return TemplateResponse(request, template, context)
