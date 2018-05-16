@@ -72,7 +72,7 @@ server_extensions = [
                          b'URI:http://test.net/test.crl'),
     crypto.X509Extension(b'1.6.6', False, b'DER:31:32:33')
 ]
-server_key = create_key_pair(crypto.TYPE_RSA, 512)
+server_key = create_key_pair(constants.TYPE_RSA, 512)
 server_req = create_cert_request(
     server_key,
     server_name,

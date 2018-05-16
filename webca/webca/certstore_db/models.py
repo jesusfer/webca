@@ -1,6 +1,4 @@
 """"""
-from cryptography import hazmat
-from django.contrib import messages
 from django.db import models
 from OpenSSL import crypto
 
@@ -8,7 +6,7 @@ from webca.certstore import CertificateExistsError
 from webca.config import constants as parameters
 from webca.config.models import ConfigurationObject as Config
 from webca.crypto import utils as cert_utils
-from webca.crypto.constants import EXT_KEY_USAGE, KEY_USAGE
+from webca.crypto import constants as c
 from webca.crypto.extensions import ExtendedKeyUsage, KeyUsage, get_extension
 from webca.utils import dict_as_tuples, subject_display
 
@@ -20,31 +18,21 @@ class KeyPair(models.Model):
 
     TODO: need to decide what to do with private keys with a passphrase.
     """
-    TYPE_RSA = 'rsa'
-    TYPE_DSA = 'dsa'
-    TYPE_EC = 'ec'
-    KEY_TYPE = (
-        (TYPE_RSA, 'RSA'),
-        (TYPE_DSA, 'DSA'),
-        (TYPE_EC, 'EC'),
-    )
-
     name = models.CharField(
         max_length=255,
-        help_text='Display name for this key pair'
+        help_text='Display name for this key pair',
     )
     private_key = models.TextField(
         default='',
-        help_text='Private key in PEM format'
+        help_text='Private key in PEM format',
     )
     public_key = models.TextField(
         blank=True,
-        help_text='Public key in PEM format. Might be blank.'
+        help_text='Public key in PEM format. Might be blank.',
     )
-    key_type = models.CharField(
-        max_length=3,
-        choices=KEY_TYPE,
-        default=TYPE_RSA
+    key_type = models.IntegerField(
+        choices=dict_as_tuples(c.KEY_TYPE),
+        default=c.KEY_RSA,
     )
 
     def __str__(self):
@@ -61,16 +49,19 @@ class KeyPair(models.Model):
             parameters.CERT_KEYSIGN).split(',')
         _, csrsign_serial = Config.get_value(
             parameters.CERT_CSRSIGN).split(',')
+        _, usersign_serial = Config.get_value(
+            parameters.CERT_USERSIGN).split(',')
         serial = self.certificate_set.first().serial
 
-        if serial == keysign_serial or serial == crlsign_serial or serial == csrsign_serial:
+        if (serial == keysign_serial or serial == crlsign_serial or
+            serial == csrsign_serial or serial == usersign_serial):
             raise models.ProtectedError(
                 'This certificate is being used and cannot be removed', self)
         super().delete(**kwargs)
 
     def get_key_type(self):
         """Return the key type as an OpenSSL key type."""
-        if self.key_type == KeyPair.TYPE_RSA:
+        if self.key_type == c.KEY_RSA:
             return crypto.TYPE_RSA
         return crypto.TYPE_DSA
 
@@ -92,7 +83,7 @@ class KeyPair(models.Model):
         try:
             key_pair.private_key = crypto.dump_privatekey(
                 crypto.FILETYPE_PEM, keys).decode('utf-8')
-            if key_pair.key_type == KeyPair.TYPE_RSA:
+            if key_pair.key_type == c.KEY_RSA:
                 keys.check()
             key_pair.public_key = crypto.dump_publickey(
                 crypto.FILETYPE_PEM, keys).decode('utf-8')

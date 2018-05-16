@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 import pytz
 from OpenSSL import crypto
 
-from webca.crypto.constants import CERT_DURATION
+from webca.crypto import constants as c
 from webca.crypto.exceptions import CryptoException
 from webca.crypto.utils import asn1_to_datetime, new_serial
 
@@ -22,6 +22,12 @@ def create_key_pair(key_type, bits):
         bits - Number of bits to use in the key
     Returns:   The public/private key pair in a PKey object
     """
+    if key_type == c.KEY_RSA:
+        key_type = crypto.TYPE_RSA
+    elif key_type == c.KEY_DSA:
+        key_type = crypto.TYPE_DSA
+    else:
+        raise ValueError('key_type cannot be KEY_EC')
     pkey = crypto.PKey()
     pkey.generate_key(key_type, bits)
     return pkey
@@ -123,7 +129,22 @@ def create_certificate(request, issuer_cert_key, serial, validity_period, digest
     return cert
 
 
-def create_ca_certificate(name, bits=2048, pathlen=-1, duration=CERT_DURATION, signing_cert=None):
+def create_self_signed(name, key_type=c.KEY_RSA, bits=2048, duration=c.CERT_DURATION, extensions=None):
+    """
+    Create a self-signed certificate.
+    """
+    extensions = extensions or [
+        crypto.X509Extension(b'keyUsage', True, b'digitalSignature')
+    ]
+    serial = new_serial()
+    key = create_key_pair(key_type, bits)
+    req = create_cert_request(key, name, extensions)
+    signing_cert = (req, key)
+    cert = create_certificate(req, signing_cert, serial, (0, duration))
+    return key, cert
+    
+
+def create_ca_certificate(name, bits=2048, pathlen=-1, duration=c.CERT_DURATION, signing_cert=None):
     """
     Create a self-signed certificate to be used in a CA.
 
@@ -140,7 +161,7 @@ def create_ca_certificate(name, bits=2048, pathlen=-1, duration=CERT_DURATION, s
         crypto.X509Extension(b'keyUsage', True, b'keyCertSign,cRLSign')
     ]
     serial = new_serial()
-    ca_key = create_key_pair(crypto.TYPE_RSA, bits)
+    ca_key = create_key_pair(c.KEY_RSA, bits)
     ca_req = create_cert_request(ca_key, name, ca_extensions)
     if not signing_cert:
         signing_cert = (ca_req, ca_key)
