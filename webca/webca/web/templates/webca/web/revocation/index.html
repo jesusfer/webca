@@ -1,13 +1,6 @@
+{% extends "webca/web/base.html" %}
 {% load webca %}
-
-{% if messages %}
-<ul class="messages">
-    {% for message in messages %}
-    <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
-    {% endfor %}
-</ul>
-{% endif %}
-
+{% block content %}
 <h2>Revoke a certificate</h2>
 <p>In this section you can start the process to revoke a certificate.</p>
 <p>A certificate may be revoked if there is no further need to use it,
@@ -38,3 +31,4 @@
 {% else %}
 <p>You don't have any certificate that may be revoked yet.</p>
 {% endif %}
+{% endblock content %}

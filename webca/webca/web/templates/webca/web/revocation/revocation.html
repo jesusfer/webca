@@ -1,4 +1,6 @@
+{% extends "webca/web/base.html" %}
 {% load webca %}
+{% block content %}
 <h3>Revoke a certificate</h3>
 <div>
     <p>You are about to revoke the following certificate:</p>
@@ -57,3 +59,4 @@
         </table>
     </form>
 </div>
+{% endblock content %}

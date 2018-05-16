@@ -1,0 +1,21 @@
+{% extends "webca/web/base.html" %}
+
+{% block breadcrumbs %}
+{% comment %} So that it doesn't show {% endcomment %}
+{% endblock breadcrumbs %}
+
+{% block content %}
+<h2>Welcome to {{ title }}</h2>
+{% comment %} If anonymous {% endcomment %}
+<p>
+WebCA is a Certification Authority which allows any user
+to request digital certificates.
+</p>
+<p>Log in above to continue.</p>
+{% comment %} If authenticated {% endcomment %}
+<p>These are the actions available:</p>
+<ul>
+    <li><a href="{% url 'req:index' %}">Request a certificate</a></li>
+    <li><a href="{% url 'revoke:index' %}">Revoke a certificate</a></li>
+</ul>
+{% endblock content %}

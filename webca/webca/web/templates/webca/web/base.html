@@ -1,0 +1,45 @@
+{% load static i18n %}<!DOCTYPE html>
+<html>
+    <head>
+        <title>{% if page_title %}{{ page_title }} | {% endif %}{{ title }}</title>
+        <link rel="stylesheet" type="text/css" href="{% static '/webca/css/base.css' %}">
+        {% block head %}{% endblock head %}        
+        {% block style %}{% endblock style %}        
+    </head>
+    <body>
+        <div id="container">
+            <div id="header">
+                <h1 id="title">{{ title }}</h1>
+                <div id="header_tools">
+                <p>
+                    Hi, {{ user }}.
+                    <a href="{% url 'webca:index' %}">Log in</a>.
+                    <a href="{% url 'webca:index' %}">Log out</a>.
+                </p>
+                {% block header_tools %}
+                {% endblock header_tools %}
+            </div>
+            </div>
+            {% block breadcrumbs %}
+            <div id="breadcrumbs">
+                <a href="{% url 'webca:index' %}">{% trans 'Home' %}</a>
+                {% if section_title %} &rsaquo; {% if section_url %}<a href="{{ section_url }}">{{ section_title }}</a>{% else %}{{ section_title }}{% endif %}{% endif %}
+                {% if page_title %} &rsaquo; {{ page_title }}{% endif %}
+            </div>
+            {% endblock breadcrumbs %}
+            {% block messages %}
+                {% if messages %}
+                    <ul id="messages">{% for message in messages %}
+                        <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+                    {% endfor %}</ul>
+                {% endif %}
+            {% endblock messages %}
+            <div id="content_container">
+                <div id="content">{% block content %}{% endblock content %}</div>
+                {% if show_sidebar %}
+                <div id="sidebar">{% block sidebar %}{% endblock sidebar %}</div>
+                {% endif %}
+            </div>
+        </div>
+    </body>
+</html>

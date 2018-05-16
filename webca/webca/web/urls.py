@@ -1,7 +1,14 @@
-from django.urls import include, path
-from django.views.generic import TemplateView
+"""
+URLconf for the public web.
 
-from webca.web.views import requests, revocation
+"""
+#pylint: disable=C0103
+
+from django.conf import settings
+from django.conf.urls.static import static
+from django.urls import include, path
+
+from webca.web.views import IndexView, requests, revocation
 
 request_patterns = ([
     path('', requests.IndexView.as_view(), name='index'),
@@ -16,8 +23,7 @@ request_patterns = ([
     path('submit/', requests.SubmitView.as_view(), name='submit'),
     path('ok/', requests.request_confirmation, name='ok'),
 
-    path('examples/',
-         TemplateView.as_view(template_name="webca/web/requests/examples.html"), name='examples'),
+    path('examples/', requests.view_examples, name='examples'),
 ], 'req')
 
 revoke_patterns = ([
@@ -28,7 +34,13 @@ revoke_patterns = ([
          revocation.RevocationView.as_view(), name='revoke_update'),
 ], 'revoke')
 
+app_patterns = ([
+    path('', IndexView.as_view(), name='index'),
+], 'webca')
+
 urlpatterns = [
+    path('', include(app_patterns)),
     path('request/', include(request_patterns)),
     path('revoke/', include(revoke_patterns)),
-]
+    # FIXME: STATIC only for dev
+] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

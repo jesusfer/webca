@@ -1,10 +1,16 @@
+{% extends "webca/web/base.html" %}
 {% load webca %}
+{% block style %}
+<style>
+</style>
+{% endblock style %}
+{% block content %}
 <h2>Request a certificate</h2>
 <p>In this section you can start the process to request a certificate.</p>
 <p>To begin, choose a type of certificate below:</p>
 {% if templates_form %}
 <form action="{% url 'req:new' %}" method="post">
-    {% csrf_token %} {{ templates_form.as_p }}
+    {% csrf_token %} {{ templates_form }}
     <input type="submit" value="Start" />
 </form>
 {% else %}
@@ -34,7 +40,7 @@
         <td>{% if req.certificate %}{{ req.certificate|status }}{% else %}&nbsp;{% endif %}</td>
         <td>{% ifequal req.status issued %}
             <a href="{% url 'req:download_pem' req.id %}">PEM</a>&nbsp;<a href="{% url 'req:download_crt' req.id %}">DER</a>
-        {% else %}&nbsp;{% endifequal %}</td>
+            {% else %}&nbsp;{% endifequal %}</td>
         <td>{{ req.reject_reason }}</td>
     </tr>
     {% endfor %}
@@ -42,3 +48,11 @@
 {% else %}
 <p>You haven't made any requests yet</p>
 {% endif %}
+{% endblock content %}
+
+{% block sidebar %}
+<h3>Links</h3>
+<ul class="links">
+    <li><a href="{% url 'req:examples' %}">Request examples</a></li>
+</ul>
+{% endblock sidebar %}

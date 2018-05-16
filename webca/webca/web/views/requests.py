@@ -4,16 +4,17 @@ Views related to the certificate request process.
 from urllib.parse import urlparse
 
 from django import http
+from django.contrib import messages
 from django.core.exceptions import ValidationError
 from django.db.models import Q
 from django.shortcuts import render
 from django.urls import reverse
-from django.views import View
 
 from webca.crypto import constants as c
 from webca.crypto.utils import export_certificate, export_csr
 from webca.web.forms import RequestNewForm, TemplateSelectorForm
 from webca.web.models import Certificate, Request, Template
+from webca.web.views import WebCAView
 
 
 def is_referrer_ok(request, allowed):
@@ -78,32 +79,47 @@ def download_certificate(request, request_id, pem=True):
     return response
 
 
-class IndexView(View):
+class IndexView(WebCAView):
     """Index view for the requests section."""
     form_class = TemplateSelectorForm
+
+    def __init__(self, *args, **kwargs):
+        super().__init__()
+        self.context.update({
+            'section_title': 'Requests',
+            'show_sidebar': True,
+        })
 
     def get(self, request, *args, **kwargs):
         """Display welcome page."""
         request_list = Request.objects.filter(user=request.user)
-        context = {
+        self.context.update({
             'request_list': request_list,
             'templates_form': self.form_class(
                 template_choices=request.user.templates
             ),
             'issued': Request.STATUS_ISSUED,
-        }
-        return render(request, 'webca/web/requests/index.html', context)
+        })
+        return render(request, 'webca/web/requests/index.html', self.context)
 
 
-class NewView(View):
+class NewView(WebCAView):
     """Create a request for a certificate using a template."""
+
+    def __init__(self, *args, **kwargs):
+        super().__init__()
+        self.context.update({
+            'section_title': 'Requests',
+            'section_url': reverse('req:index'),
+            'page_title': 'New request',
+        })
 
     def get(self, request, *args, **kwargs):
         """GET is not a correct verb."""
-        context = {
+        self.context.update({
             'error': "You can't access this page like this."
-        }
-        return render(request, 'webca/web/requests/error.html', context)
+        })
+        return render(request, 'webca/web/requests/error.html', self.context)
 
     def post(self, request, *args, **kwargs):
         """Start a new request for a given template."""
@@ -127,7 +143,7 @@ class NewView(View):
             template=template,
             initial=initial
         )
-        context = {
+        self.context.update({
             'DN': Template.SUBJECT_DN,
             'CN': Template.SUBJECT_CN,
             'DN_PARTIAL': Template.SUBJECT_DN_PARTIAL,
@@ -137,19 +153,27 @@ class NewView(View):
             'KEY_DSA': c.KEY_DSA,
             'KEY_EC': c.KEY_EC,
             'form': request_form,
-        }
-        return render(request, 'webca/web/requests/new.html', context)
+        })
+        return render(request, 'webca/web/requests/new.html', self.context)
 
 
-class SubmitView(View):
+class SubmitView(WebCAView):
     """Process a request submission."""
+
+    def __init__(self, *args, **kwargs):
+        super().__init__()
+        self.context.update({
+            'section_title': 'Requests',
+            'section_url': reverse('req:index'),
+            'page_title': 'New request',
+        })
 
     def get(self, request, *args, **kwargs):
         """GET is not a correct verb."""
-        context = {
+        self.context.update({
             'error': "You can't access this page like this."
-        }
-        return render(request, 'webca/web/requests/error.html', context)
+        })
+        return render(request, 'webca/web/requests/error.html', self.context)
 
     def post(self, request, *args, **kwargs):
         """POST method."""
@@ -190,7 +214,9 @@ class SubmitView(View):
                 new_req.approved = True
             new_req.save()
         else:
-            context = {
+            messages.add_message(request, messages.ERROR,
+                                 'Please review the errors below')
+            self.context.update({
                 'DN': Template.SUBJECT_DN,
                 'CN': Template.SUBJECT_CN,
                 'DN_PARTIAL': Template.SUBJECT_DN_PARTIAL,
@@ -200,9 +226,10 @@ class SubmitView(View):
                 'KEY_DSA': c.KEY_DSA,
                 'KEY_EC': c.KEY_EC,
                 'form': form,
-            }
-            return render(request, 'webca/web/requests/new.html', context)
+            })
+            return render(request, 'webca/web/requests/new.html', self.context)
         # TODO: for now a static confirmation page should be ok
+        messages.add_message(request, messages.SUCCESS, 'Request submitted.')
         return http.HttpResponseRedirect(reverse('req:ok'))
 
 
@@ -216,5 +243,23 @@ def request_confirmation(request):
     ]
     if not is_referrer_ok(request, previous):
         return render(request, 'webca/web/requests/referer.html', {})
-    context = {}
+    context = {
+        'title': 'WebCA',
+        'section_title': 'Requests',
+        'section_url': reverse('req:index'),
+        'page_title': 'New request',
+    }
     return render(request, 'webca/web/requests/ok.html', context)
+
+
+def view_examples(request):
+    """
+    Render the examples template.
+    """
+    context = {
+        'title': 'WebCA',
+        'section_title': 'Requests',
+        'section_url': reverse('req:index'),
+        'page_title': 'Examples',
+    }
+    return render(request, 'webca/web/requests/examples.html', context)

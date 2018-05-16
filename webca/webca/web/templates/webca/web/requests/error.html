@@ -1,4 +1,7 @@
-<h3>There was an error</h3>
+{% extends "webca/web/base.html" %}
+{% block content %}
+<h2>There was an error</h2>
 <p>{{ error }}</p>
 <p>You need to start the process from the welcome page.</p>
 <p><a href="{% url 'req:index' %}">Go back</a></p>
+{% endblock content %}

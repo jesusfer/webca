@@ -1,4 +1,6 @@
+{% extends "webca/web/base.html" %}
 {% load webca %}
+{% block content %}
 <h3>New Request</h3>
 {% if form %}
 <p>Here you need to fill in the required details for your new certificate.</p>
@@ -77,7 +79,4 @@
 {% else %}
 <p>There are no templates available.</p>
 {% endif %}
-
-<p>
-    <a href="{% url 'req:index' %}">Back</a>
-</p>
+{% endblock content %}

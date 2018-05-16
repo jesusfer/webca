@@ -1,3 +1,5 @@
+{% extends "webca/web/base.html" %}
+{% block content %}
 <h3>How to generate a certificate request</h3>
 <p>With OpenSSL it's very easy to generate a key pair and a certificate request (CSR) that you can use to request certificates.</p>
 <h4>Steps</h4>
@@ -27,3 +29,4 @@
     <li>You should store your private key securely. If you lose it or it get's compromised, so does your certificate.</li>
     <li>Use a passphrase to store to private key.</li>
 </ul>
+{% endblock content %}
