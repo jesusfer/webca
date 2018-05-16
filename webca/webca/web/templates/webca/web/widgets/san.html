@@ -3,7 +3,15 @@
         <td>
             <input id="san_f_value" type="text" style="width:15em" />
         </td>
-        <td>
+        <td rowspan="2">
+            <table>
+                <tr><td>
+                    <input type="button" style="height:2em" onclick="javascript:san_f_add()" value="Add" />
+                </td></tr>
+                <tr><td>
+                    <input type="button" style="height:2em" onclick="javascript:san_f_remove()" value="Remove" />
+                </td></tr>
+            </table>
         </td>
         <td rowspan="2">
             <select id="san_f_list" name="san" size="10" style="width:15em;height:12em">
@@ -20,11 +28,6 @@
                 <option {% if forloop.first %}selected{% endif %}>{{ prefix }}</option>
                 {% endfor %}
             </select>
-        </td>
-        <td>
-            <input type="button" style="width:2em;height:2em" onclick="javascript:san_f_remove()" value="-" />
-            <br/>
-            <input type="button" style="width:2em;height:2em" onclick="javascript:san_f_add()" value="+" />
         </td>
     </tr>
 </table>

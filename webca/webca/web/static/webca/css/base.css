@@ -4,6 +4,25 @@ body {
     font-size: 10pt;
     font-family: "Roboto","Lucida Grande","DejaVu Sans","Bitstream Vera Sans",Verdana,Arial,sans-serif;
 }
+a {
+    color: #008ae6;
+    text-decoration: none;
+    border-bottom: 1px dotted #008ae6;
+}
+a:visited {
+    color: #008ae6;
+}
+a:hover,
+a:focus {
+   color:orange;
+   border-color: orange;
+}
+
+h1, h2, h3, h4, h5 {
+    font-weight: 400;
+    color: #51a5e1;
+}
+
 #container {
     /* background-color: lightcoral; */
 }
@@ -30,9 +49,11 @@ body {
 }
 #title a,
 #title a:hover,
+#title a:focus,
 #title a:visited {
-    color:unset;
+    color: white;
     text-decoration: unset;
+    border: 0;
 }
 
 #header_tools {
@@ -40,15 +61,12 @@ body {
     float: right;
 }
 #header_tools a {
-    text-decoration-line: none;
-    border-bottom: 1px solid #51a5e1;
+    border-bottom: 1px dotted #51a5e1;
 }
 #header_tools a:visited,
 #breadcrumbs a:visited {
-    color:unset;
+    color:white;
 }
- a:hover,
- a:focus,
 #header_tools a:hover,
 #header_tools a:focus,
 #breadcrumbs a:hover,
@@ -63,12 +81,7 @@ body {
     height: 1.5em;
 }
 #breadcrumbs a {
-    text-decoration-line: none;
     border-bottom: 1px solid #92c7ed;
-}
-
-h1, h2, h3, h4, h5 {
-    font-weight: 400;
 }
 
 /* Messages */
@@ -128,7 +141,7 @@ li {
 
 input, select {
     box-sizing: border-box;
-    padding: 4px;
+    padding: 4px 8px;
     min-width: 60px;
     min-height: 30px;
     border-radius: 5px;
@@ -155,4 +168,51 @@ ul.errorlist li {
     padding: 5px 20px;
     margin: 0;
     list-style-type: none;
+}
+table {
+    width: 100%;
+}
+th {
+    padding:7px;
+    border-top: 1px solid #ddd;
+    border-bottom: 1px solid #ddd;
+    background-color: #e9f4fb;
+    text-align: center;
+}
+td {
+    padding:5px;
+    border-bottom: 1px solid #ddd;
+    text-align: center;
+}
+tr:first-child td {
+    border-top: 1px solid #ddd;
+}
+
+table.no_border td {
+    border: 0;
+}
+
+/* General */
+
+.text_left {
+    text-align: left;
+}
+.text_center {
+    text-align: center
+}
+
+#id_san {
+    width: auto;
+}
+#id_san td {
+    padding: 0;
+    /* background: pink; */
+    border: 0;
+}
+#id_san input,
+#id_san select {
+    width: 100%;
+}
+.csr textarea {
+    width: 100%;
 }

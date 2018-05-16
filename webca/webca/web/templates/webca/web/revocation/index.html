@@ -12,13 +12,13 @@
 {% if certificates %}
 <table>
     <tr>
-        <th>Certificate</th>
+        <th class="text_left">Certificate</th>
         <th>Valid until</th>
         <th>Actions</th>
     </tr>
     {% for cert in certificates %}
     <tr>
-        <td>{{ cert.subject_filename }}</td>
+        <td class="text_left">{{ cert.subject_filename }}</td>
         <td>{{ cert.valid_to|date }}</td>
         <td>
             {% if not cert.is_revoked %}

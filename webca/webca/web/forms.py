@@ -82,7 +82,7 @@ class RequestNewForm(forms.Form):
     )
     csr = forms.CharField(
         widget=forms.Textarea,
-        label='Your CSR in PEM format',
+        label='Paste here your CSR in PEM format',
         validators=[valid_pem_csr],
     )
 
@@ -134,7 +134,7 @@ class RequestNewForm(forms.Form):
         # TODO: logic for subject names missing
         if self.template_obj.required_subject == Template.SUBJECT_DN_PARTIAL:
             # At least common name should be set
-            if not cleaned_data['cn']:
+            if 'cn' not in cleaned_data:
                 # self.add_error('cn', 'This field is required')
                 # self.add_error('email', 'This field is required')
                 raise forms.ValidationError(

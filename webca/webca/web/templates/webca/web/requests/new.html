@@ -7,74 +7,104 @@
 <form action="{% url 'req:submit' %}" method="post">
     {% csrf_token %} {{ form.template.as_hidden }}
     <h4>Certificate type</h4>
-    <p>Name: {{ form.template_obj.name }}</p>
-    <p>Valid for: {{ form.template_obj.days|valid_for }} ({{ form.template_obj.days|valid_until|date }})</p>
-    <h5>Description</h5>
-    <p>{{ form.template_obj.description }}</p>
+    <table>
+        <tr>
+            <th>Name</th>
+            <td>{{ form.template_obj.name }}</td>
+        </tr>
+        <tr>
+            <th>Valid for</th>
+            <td>{{ form.template_obj.days|valid_for }} ({{ form.template_obj.days|valid_until|date }})</td>
+        </tr>
+        <tr>
+            <th>Description</th>
+            <td>{{ form.template_obj.description }}</td>
+        </tr>
+    </table>
     <h4>Certificate name</h4>
     {{ form.non_field_errors }}
     <p>Your certificate must have a name.</p>
-    <p>{{ form.cn.errors }}</p>
-    <p>{{ form.cn.label_tag }}{{ form.cn }}</p>
-    {% if form.template_obj.required_subject == DN %}
-    <p>Please fill <b>all</b> of the following fields:</p>
-    <p>{{ form.country.errors }}</p>
-    <p>{{ form.country.label_tag }}{{ form.country }}</p>
-    <p>{{ form.state.errors }}</p>
-    <p>{{ form.state.label_tag }}{{ form.state }}</p>
-    <p>{{ form.locality.errors }}</p>
-    <p>{{ form.locality.label_tag }}{{ form.locality }}</p>
-    <p>{{ form.org.errors }}</p>
-    <p>{{ form.org.label_tag }}{{ form.org }}</p>
-    <p>{{ form.ou.errors }}</p>
-    <p>{{ form.ou.label_tag }}{{ form.ou }}</p>
-    {% elif form.template_obj.required_subject == DN_PARTIAL %}
-    <p>The following fields are not required and may be left blank but it's highly recommended to fill them in:</p>
-    <p>{{ form.country.errors }}</p>
-    <p>{{ form.country.label_tag }}{{ form.country }}</p>
-    <p>{{ form.state.errors }}</p>
-    <p>{{ form.state.label_tag }}{{ form.state }}</p>
-    <p>{{ form.locality.errors }}</p>
-    <p>{{ form.locality.label_tag }}{{ form.locality }}</p>
-    <p>{{ form.org.errors }}</p>
-    <p>{{ form.org.label_tag }}{{ form.org }}</p>
-    <p>{{ form.ou.errors }}</p>
-    <p>{{ form.ou.label_tag }}{{ form.ou }}</p>
-    {% elif form.template_obj.required_subject == USER %}
-    <p>{{ form.email.errors }}</p>
-    <p>{{ form.email.label_tag }}{{ form.email }}</p>
-    {% endif %}
-    {% if form.san %}
-    With this type of certificate you can add Subject Alternative Names if needed.
-    This allows the certificate to be valid for other names.
-    The common name will be included automatically.
-    {{ form.san.errors }}
-    {{ form.san }}
-    {% endif %}
+    <table>
+        {% if form.cn.errors%}<tr><td colspan="2">{{ form.cn.errors }}</td></tr>{% endif %}
+        <tr>
+            <td>{{ form.cn.label_tag }}</td>
+            <td class="text_left">{{ form.cn }}</td>
+        </tr>
+
+        {% if form.template_obj.required_subject == DN or form.template_obj.required_subject == DN_PARTIAL %}
+            {% if form.template_obj.required_subject == DN %}
+            <tr><td colspan="2" class="text_left"><p>Please fill <b>all</b> of the following fields:</p></td></tr>
+            {% elif form.template_obj.required_subject == DN_PARTIAL %}
+            <tr><td colspan="2" class="text_left"><p>The following fields are not required
+            and may be left blank but it's highly recommended to fill them in:</p></td></tr>
+            {% endif %}
+            {% if form.country.errors%}<tr><td colspan="2">{{ form.country.errors }}</td></tr>{% endif %}
+            <tr>
+                <td>{{ form.country.label_tag }}</td>
+                <td class="text_left">{{ form.country }}</td>
+            </tr>
+            {% if form.state.errors%}<tr><td colspan="2">{{ form.state.errors }}</td></tr>{% endif %}
+            <tr>
+                <td>{{ form.state.label_tag }}</td>
+                <td class="text_left">{{ form.state }}</td>
+            </tr>
+            {% if form.locality.errors%}<tr><td colspan="2">{{ form.locality.errors }}</td></tr>{% endif %}
+            <tr>
+                <td>{{ form.locality.label_tag }}</td>
+                <td class="text_left">{{ form.locality }}</td>
+            </tr>
+            {% if form.org.errors%}<tr><td colspan="2">{{ form.org.errors }}</td></tr>{% endif %}
+            <tr>
+                <td>{{ form.org.label_tag }}</td>
+                <td class="text_left">{{ form.org }}</td>
+            </tr>
+            {% if form.ou.errors%}<tr><td colspan="2">{{ form.ou.errors }}</td></tr>{% endif %}
+            <tr>
+                <td>{{ form.ou.label_tag }}</td>
+                <td class="text_left">{{ form.ou }}</td>
+            </tr>
+        {% elif form.template_obj.required_subject == USER %}
+        {% if form.email.errors%}<tr><td colspan="2">{{ form.email.errors }}</td></tr>{% endif %}
+            <tr>
+                <td>{{ form.email.label_tag }}</td>
+                <td class="text_left">{{ form.email }}</td>
+            </tr>
+        {% endif %}
+        {% if form.san %}
+        <tr><td colspan="2" class="text_left">
+            <p>With this type of certificate you can add Subject Alternative Names if needed.
+                This allows the certificate to be valid for other names.</p>
+        </td></tr>
+        {% if form.san.errors%}<tr><td colspan="2">{{ form.san.errors }}</td></tr>{% endif %}
+        <tr><td colspan="2">{{ form.san }}</td></tr>
+        {% endif %}
+    </table>
     <p>To request a certificate you need to generate a private and public key
         and then send us the public key.<br/>You need to paste here a Base64 encoded PEM certificate request.
         <br/><a target="blank" href="{% url 'req:examples' %}">How do I get one?</a>
     </p>
     <p>For this type of certificate the minimum size of the public key is:</p>
-    <ul>
+    <table style="width:50%">
 {% if KEY_RSA in allowed_key_types %}
-        <li>RSA: {{ form.template_obj.min_bits_rsa }}</li>
+        <tr><th>RSA</th><td>{{ form.template_obj.min_bits_rsa }}</td></tr>
 {% endif %}
 {% if KEY_DSA in allowed_key_types %}
-        <li>DSA: {{ form.template_obj.min_bits_dsa }}</li>
+        <tr><th>DSA</th><td>{{ form.template_obj.min_bits_dsa }}</td></tr>
 {% endif %}
 {% if KEY_EC in allowed_key_types %}
-        <li>EC: {{ form.template_obj.min_bits_ec }}</li>
+        <tr><th>EC</th><td>{{ form.template_obj.min_bits_ec }}</td></tr>
 {% endif %}
-    </ul>
-    <p>{{ form.csr.errors }}</p>
-    <p>{{ form.csr }}</p>
+    </table>
+    <table class="no_border">
+        {% if form.csr.errors%}<tr><td colspan="2">{{ form.csr.errors }}</td></tr>{% endif %}
+        <tr><td class="text_left">{{ form.csr.label_tag }}</td></tr>
+        <tr><td class="text_left csr">{{ form.csr }}</td></tr>
+    </table>
     {% if not form.template_obj.auto_sign %}
     <p>This template requires approval. Once you submit the request, the approval process will begin. Please check back later.</p>
-    {% else %}
     {% endif %}
-    <p></p>
-    <input type="submit" value="Submit" />
+    <p><input type="submit" value="Submit the request" />
+        <input type="button" value="Go back" onclick="javascript:location='{% url 'req:index' %}';"/></p>
 </form>
 {% else %}
 <p>There are no templates available.</p>
