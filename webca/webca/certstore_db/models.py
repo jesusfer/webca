@@ -1,9 +1,12 @@
 """"""
 from cryptography import hazmat
+from django.contrib import messages
 from django.db import models
 from OpenSSL import crypto
 
 from webca.certstore import CertificateExistsError
+from webca.config import constants as parameters
+from webca.config.models import ConfigurationObject as Config
 from webca.crypto import utils as cert_utils
 from webca.crypto.constants import EXT_KEY_USAGE, KEY_USAGE
 from webca.crypto.extensions import ExtendedKeyUsage, KeyUsage, get_extension
@@ -50,6 +53,21 @@ class KeyPair(models.Model):
     def __repr__(self):
         return '<KeyPair %s>' % self.name
 
+    def delete(self, **kwargs):
+        """Prevent removing if this is the certificate in use."""
+        _, keysign_serial = Config.get_value(
+            parameters.CERT_KEYSIGN).split(',')
+        _, crlsign_serial = Config.get_value(
+            parameters.CERT_KEYSIGN).split(',')
+        _, csrsign_serial = Config.get_value(
+            parameters.CERT_CSRSIGN).split(',')
+        serial = self.certificate_set.first().serial
+
+        if serial == keysign_serial or serial == crlsign_serial or serial == csrsign_serial:
+            raise models.ProtectedError(
+                'This certificate is being used and cannot be removed', self)
+        super().delete(**kwargs)
+
     def get_key_type(self):
         """Return the key type as an OpenSSL key type."""
         if self.key_type == KeyPair.TYPE_RSA:
@@ -86,6 +104,7 @@ class KeyPair(models.Model):
 
 
 class Certificate(models.Model):
+    # FIXME: should be a OneToOneField
     keys = models.ForeignKey(
         'KeyPair',
         on_delete=models.CASCADE,
