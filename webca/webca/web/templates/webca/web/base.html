@@ -1,7 +1,7 @@
 {% load static i18n %}<!DOCTYPE html>
 <html>
     <head>
-        <title>{% if page_title %}{{ page_title }} | {% endif %}{{ title }}</title>
+        <title>{% if page_title %}{{ page_title }} | {% else %}{% if section_title %}{{ section_title}} | {% endif %}{% endif %}{{ title }}</title>
         <link rel="stylesheet" type="text/css" href="{% static '/webca/css/base.css' %}">
         {% block head %}{% endblock head %}        
         {% block style %}{% endblock style %}        
