@@ -9,7 +9,7 @@
     <body>
         <div id="container">
             <div id="header">
-                <h1 id="title">{{ title }}</h1>
+                <h1 id="title"><a href="{% url 'webca:index' %}">{{ title }}</a></h1>
                 <div id="header_tools">
                 <p>
                     Hi, {{ user }}.

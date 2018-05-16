@@ -28,6 +28,13 @@ body {
     font-size: 20pt;
     font-weight: normal;
 }
+#title a,
+#title a:hover,
+#title a:visited {
+    color:unset;
+    text-decoration: unset;
+}
+
 #header_tools {
     /* background-color: lightsalmon; */
     float: right;
