@@ -1,30 +1,31 @@
+import importlib
+
 # Check dependencies
 try:
-    import django
-except:
-    print('Django not found. Use "pip install django"')
-    exit(-1)
-
-try:
-    import OpenSSL
-except:
-    print('PyOpenssl not found. Use "pip install pyopenssl"')
-    exit(-1)
-
-try:
     import secrets
-except:
+except ModuleNotFoundError:
     print('"secrets" not found. Are you using Python >= 3.6?')
     exit(-1)
 
-try:
-    import rules
-except:
-    print('"rules" not found.  Use "pip install rules"')
+dependencies = [
+    ('django', 'pip install django'),
+    ('OpenSSL', 'pip install pyopenssl'),
+    ('rules', 'pip install rules'),
+    ('django_ssl_auth', 'pip install django_ssl_auth'),
+]
+
+error = False
+for module, install in dependencies:
+    try:
+        importlib.import_module(module)
+    except ModuleNotFoundError:
+        error = True
+        print('Module {} not found. Please install it ({})'.format(
+            module, install
+        ))
+    except:
+        pass
+
+if error:
+    print('Exiting...')
     exit(-1)
-
-
-# TODO: We could probably do this somewhere else
-from django.contrib import admin
-admin.site.site_header = 'WebCA'
-admin.site.index_title = 'WebCA administration'
