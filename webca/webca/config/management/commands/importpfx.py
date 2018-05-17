@@ -1,9 +1,5 @@
 """
 Command to import a PFX file into a certificate store.
-
---list: list store names
-
---file pfx --store StoreName
 """
 import argparse
 import getpass
@@ -16,7 +12,8 @@ from webca.crypto.utils import int_to_hex
 
 
 class Command(BaseCommand):
-    help = 'Import a PFX into a certificate store to be used in the CA'
+    """This command imports a PFX into a certificate store. Handles PFX with passphrases too."""
+    help = 'Import a PFX into a certificate store to be used in the CA. Handles passphrases too.'
     requires_migrations_checks = True
 
     def add_arguments(self, parser):
