@@ -319,6 +319,9 @@ def _setup_certificates_ca(store):
     Config.set_value(p.CERT_KEYSIGN, '{},{}'.format(
         store.STORE_ID, ca_serial
     ))
+    Config.set_value(p.CERT_CRLSIGN, '{},{}'.format(
+        store.STORE_ID, ca_serial
+    ))
     return ca_key, ca_cert
 
 
