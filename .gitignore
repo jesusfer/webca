@@ -105,5 +105,3 @@ ENV/
 
 # VS Code
 .vscode
-
-settings_local.py
