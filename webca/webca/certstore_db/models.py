@@ -153,8 +153,7 @@ class Certificate(models.Model):
     @classmethod
     def from_certificate(cls, certificate):
         """Create a new Certificate object based on a X509 certificate.
-
-        The new object is not saved by default."""
+        The new object is not saved."""
         serial = cert_utils.int_to_hex(certificate.get_serial_number())
         old = Certificate.objects.filter(serial=serial).count()
         if old:

@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.contrib import admin, messages
 from django.db.models import ProtectedError
 from django.forms import Textarea
@@ -17,7 +18,7 @@ class KeyPairAdmin(admin.ModelAdmin):
 
     def get_actions(self, request):
         actions = super().get_actions(request)
-        if 'delete_selected' in actions:
+        if 'delete_selected' in actions and not settings.DEBUG:
             del actions['delete_selected']
         return actions
 

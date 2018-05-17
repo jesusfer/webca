@@ -46,7 +46,8 @@ class CertStore(metaclass=abc.ABCMeta):
 
     @staticmethod
     def get_by_name(name):
-        """Return an instance of the selected store by `name`."""
+        """Return an instance of the selected store by `name`.
+        Returns `None` if not found."""
         store = [store for store_name,
                  store in CertStore.all() if store_name == name]
         if store:
