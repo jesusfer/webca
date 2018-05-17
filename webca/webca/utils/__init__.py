@@ -2,7 +2,7 @@
 Utils that will be used anywhere in the project.
 """
 import re
-
+from webca.crypto.utils import name_to_components
 
 def dict_as_tuples(dct):
     """Transforms a dict to a choices list of tuples."""
@@ -28,5 +28,13 @@ def subject_display(subject):
     ---------
     `subject` str : OpenSSL subject.
     """
-    subject = subject[1:].replace('/', ', ')
-    return subject
+    name = tuples_as_dict(name_to_components(subject))
+    print(name)
+    output = ""
+    for part in ['CN', 'O', 'OU', 'C', 'ST', 'L']:
+        if part in name:
+            if not output:
+                output = '{}={}'.format(part, name[part])
+            else:
+                output += ', {}={}'.format(part, name[part])
+    return output
