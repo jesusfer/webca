@@ -29,8 +29,10 @@ Outputs:
 
 """
 # pylint: disable=E0611,E0401,C0413,W0611
-import os
 import getpass
+import io
+import os
+import re
 import sys
 
 BASE_DIR = os.path.abspath(os.path.join(
@@ -44,6 +46,8 @@ from webca.config import constants as p
 from webca.crypto import certs
 from webca.crypto import constants as c
 from webca.crypto.utils import int_to_hex
+from webca.utils import dict_as_tuples
+from webca.utils.iso_3166 import ISO_3166_1_ALPHA2_COUNTRY_CODES as iso3166
 
 MSG_DB = """\nA database is needed to store templates, user requests and issued certificates."""
 MSG_DB_CERTS = """\nAnother database is needed to store the CA certificates.
@@ -51,6 +55,7 @@ It should a different than the web database."""
 
 
 def setup():
+    """Orchestrate the setup process."""
     print('\n*** Setup of database servers ***')
     config = {}
     config.update(get_database(MSG_DB, 'web_'))
@@ -165,6 +170,7 @@ def _create_settings(config, prefix, template, path):
 
 
 def init_django():
+    """Initialize Django."""
     print('\nInitializing Django...')
     import django
     try:
@@ -185,23 +191,35 @@ def init_django():
 
 
 def setup_certificates():
+    """Setup the CA certificates."""
     print('\nA CA certificate needs to be imported or created.')
-    from webca.config.models import ConfigurationObject as Config
     # List available certificate stores
     stores = CertStore.all()
     print('These are the available certificate stores.')
-    option = 0
-    i = 1
-    while option < 1 or option > len(stores):
-        for name, cls in stores:
-            print('{}. {}'.format(i, name))
-        option = input('Choose a certificate store: ')
-        try:
-            option = int(option)
-        except:
-            option = 0
-    store = stores[option - 1][1]()
-    # Create CSR signing keypair/certificate
+    if len(stores) == 1:
+        name, cls = stores[0]
+        print('The only store available is: %s' % name)
+        store = cls()
+    else:
+        option = 0
+        i = 1
+        while option < 1 or option > len(stores):
+            for name, cls in stores:
+                print('{}. {}'.format(i, name))
+            option = input('Choose a certificate store: ')
+            try:
+                option = int(option)
+            except:
+                option = 0
+        store = stores[option - 1][1]()
+    ca_key, ca_cert = _setup_certificates_ca(store)
+    _setup_certificates_csr(store)
+    _setup_certificates_user(store, ca_key, ca_cert)
+
+
+def _setup_certificates_csr(store):
+    """Create CSR signing keypair/certificate"""
+    from webca.config.models import ConfigurationObject as Config
     name = [
         ('CN', 'Internal CSR Signing'),
         ('O', 'WebCA'),
@@ -212,34 +230,118 @@ def setup_certificates():
     Config.set_value(p.CERT_CSRSIGN, '{},{}'.format(
         store.STORE_ID, int_to_hex(csr_cert.get_serial_number())
     ))
-    # TODO: import CA certificate
+
+
+def _setup_certificates_ca(store):
+    """Set up the CA certificate."""
+    from webca.config.models import ConfigurationObject as Config
     print('\nThe CA needs a certificate. '
           'You must import one or create a self-signed one now.')
     option = 0
     while option not in [1, 2]:
         print('\n1. Import a PFX')
-        print('2. Generate a self-signed Root CA')
+        print('2. Generate a self-signed Root CA using RSA')
         option = input('Choose an option: ')
         try:
             option = int(option)
-        except:
+        except ValueError:
             pass
+
+    ca_key = ca_cert = ca_serial = None
+
     if option == 1:
-        # import_pfx(store) TODO:
-        pass
+        # Import a PFX
+        filename = input('Filename: ')
+        from django.core.management import call_command, CommandError
+        try:
+            out = io.StringIO()
+            call_command('importpfx', filename,
+                         store.__class__.__name__, stdout=out)
+            ca_serial = re.search('serial=(\w+)', out.getvalue()).groups()[0]
+            ca_cert = store.get_certificate(ca_serial)
+            ca_key = store.get_private_key(ca_serial)
+        except CommandError as ex:
+            print('Error importing PFX: %s' % ex)
+            sys.exit()
     else:
-        # generate a self-signed CA TODO:
-        # request bits
-        # request DN
-        # confirm DN
-        pass
-    # TODO: create user authentication certificate
+        # Generate a self-signed CA
+        bits = -1
+        while bits < 2048:
+            try:
+                bits = input('Key size (min 2048 bits): ')
+                if not bits:
+                    bits = 2048
+                else:
+                    bits = int(bits)
+            except ValueError:
+                pass
+        c = -1
+        while c == -1:
+            c = input('Country (2-letters): ').upper()
+            if c and c not in iso3166:
+                c = -1
+        st = input('State: ')
+        l = input('Locality: ')
+        o = input('Organization: ')
+        ou = input('Organizational Unit: ')
+        cn = input('Common name: ')
+
+        print('\nThis is the name of the certificate:')
+        print("""
+        Country: %s
+        State: %s
+        Locality: %s
+        Organization: %s
+        Organizational Unit: %s
+        Common Name: %s""" % (c, st, l, o, ou, cn))
+
+        option = input('Is this OK? (Y/n)').lower()
+        if option == 'n':
+            return _setup_certificates_ca(store)
+        else:
+            name = {}
+            if c:
+                name['C'] = c
+            if st:
+                name['ST'] = st
+            if l:
+                name['L'] = l
+            if o:
+                name['O'] = o
+            if ou:
+                name['OU'] = ou
+            if cn:
+                name['CN'] = cn
+            name = dict_as_tuples(name)
+            ca_key, ca_cert = certs.create_ca_certificate(name, bits)
+            store.add_certificate(ca_key, ca_cert)
+            ca_serial = int_to_hex(ca_cert.get_serial_number())
+    Config.set_value(p.CERT_KEYSIGN, '{},{}'.format(
+        store.STORE_ID, ca_serial
+    ))
+    return ca_key, ca_cert
+
+
+def _setup_certificates_user(store, ca_key, ca_cert):
+    """Create user authentication certificate."""
+    from webca.config.models import ConfigurationObject as Config
+    name = [
+        ('CN', 'User Authencation'),
+        ('O', 'WebCA'),
+    ]
+    user_key, user_cert = certs.create_ca_certificate(
+        name, 2048, pathlen=0, duration=10*365*24*3600,
+        signing_cert=(ca_cert, ca_key))
+    store.add_certificate(user_key, user_cert)
+    Config.set_value(p.CERT_USERSIGN, '{},{}'.format(
+        store.STORE_ID, int_to_hex(user_cert.get_serial_number())
+    ))
 
 
 def install_templates():
     print('\nDo you want some certificate templates to be automatically created?')
-    option = input('Omit this step (y/N): ')
-    if option == 'y':
+    option = input('Continue? (Y/n): ').lower()
+    if option == 'n':
         return
     from django.core import serializers
     data = open(os.path.join(BASE_DIR, 'setup/templates.json'))
