@@ -142,16 +142,19 @@ def create_self_signed(name, key_type=c.KEY_RSA, bits=2048, duration=c.CERT_DURA
     signing_cert = (req, key)
     cert = create_certificate(req, signing_cert, serial, (0, duration))
     return key, cert
-    
+
 
 def create_ca_certificate(name, bits=2048, pathlen=-1, duration=c.CERT_DURATION, signing_cert=None):
     """
     Create a self-signed certificate to be used in a CA.
 
-    Arguments: name     - Distinguished name as a dict of components
-               bits     - Size of the key to generate
-               duration - Time in seconds (default: 5 years)
-    Returns:   The signed certificate in a X509 object
+    Arguments
+    ---------
+    `name` - Distinguished name as a dict of components
+    `bits` - Size of the key to generate
+    `pathlen` - Pathlen value in BasicConstraints
+    `duration` - Time in seconds (default: `constants.CERT_DURATION`)
+    Returns: The signed certificate in a `OpenSSL.crytpo.X509`
     """
     basic_constraints = b'CA:TRUE'
     if pathlen > -1:

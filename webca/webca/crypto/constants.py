@@ -4,8 +4,9 @@ Constants used in the webca.crypto module.
 # Max allowed serial number size is < 20 bits
 SERIAL_BYTES = 16
 
-# Default duration of a certificate in seconds (5 years)
-CERT_DURATION = 60*60*24*365*5
+# Default duration of a certificate in seconds (25 years)
+# The value must be an integer < (1<<31) - 1
+CERT_DURATION = 60*60*24*365*25
 
 # Subject components
 
