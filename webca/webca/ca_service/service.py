@@ -26,6 +26,9 @@ from webca.web.models import (Certificate, CRLLocation, Request, Revoked,
 
 SLEEP = 1
 
+class ServiceError(Exception):
+    pass
+
 class CAService:
     """Polling service that processes requests from end users."""
 
@@ -64,6 +67,8 @@ class CAService:
             store.get_certificate(csrsign_serial),
             store.get_private_key(csrsign_serial),
         )
+        if not self.certsign[0] or not self.crlsign[0] or not self.csrsign[0]:
+            raise ServiceError('The CA certificates are not correctly configured.')
 
     def run(self):
         """Start the service."""
