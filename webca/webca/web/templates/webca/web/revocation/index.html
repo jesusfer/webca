@@ -1,5 +1,6 @@
 {% extends "webca/web/base.html" %}
 {% load webca %}
+
 {% block content %}
 <h2>Revoke a certificate</h2>
 <p>In this section you can start the process to revoke a certificate.</p>
@@ -8,8 +9,8 @@
     <b>Please note that it will take some time to revoke the certificate.</b>
 </p>
 <h3>Your certificates</h3>
-<p>These are the certificates that may be revoked. Only revocable certificates are shown.</p>
 {% if certificates %}
+<p>These are the certificates that may be revoked. Only revocable certificates are shown.</p>
 <table>
     <tr>
         <th class="text_left">Certificate</th>
