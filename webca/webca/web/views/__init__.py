@@ -2,6 +2,7 @@
 General view classes.
 """
 
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import HttpResponse, HttpResponseRedirect
 from django.views import View
 from django.shortcuts import render, reverse
@@ -20,6 +21,10 @@ class WebCAView(View):
             'page_title': None,
         }
 
+
+class WebCAAuthView(LoginRequiredMixin, WebCAView):
+    """Class that views should inherit when they need authenticated access."""
+    pass
 
 class IndexView(WebCAView):
     """Welcome page."""

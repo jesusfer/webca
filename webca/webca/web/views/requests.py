@@ -5,6 +5,7 @@ from urllib.parse import urlparse
 
 from django import http
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
 from django.db.models import Q
 from django.shortcuts import render
@@ -14,7 +15,7 @@ from webca.crypto import constants as c
 from webca.crypto.utils import export_certificate, export_csr
 from webca.web.forms import RequestNewForm, TemplateSelectorForm
 from webca.web.models import Certificate, Request, Template
-from webca.web.views import WebCAView
+from webca.web.views import WebCAAuthView
 
 
 def is_referrer_ok(request, allowed):
@@ -27,6 +28,7 @@ def is_referrer_ok(request, allowed):
     return True
 
 
+@login_required
 def view_certificate(request, request_id):
     """
     Displays a certificate as text or the CSR if there is no certificate issued.
@@ -46,6 +48,7 @@ def view_certificate(request, request_id):
     return http.HttpResponse(content, content_type='text/plain')
 
 
+@login_required
 def download_certificate(request, request_id, pem=True):
     """Downloads a certificate from a request."""
     try:
@@ -54,12 +57,12 @@ def download_certificate(request, request_id, pem=True):
             Q(user=request.user),
         )
     except Request.DoesNotExist:
-        return http.HttpResponseRedirect(reverse('req:index'))
+        return http.HttpResponseRedirect(reverse('request:index'))
 
     try:
         x509 = request.certificate.get_certificate()
     except Certificate.DoesNotExist:
-        return http.HttpResponseRedirect(reverse('req:index'))
+        return http.HttpResponseRedirect(reverse('request:index'))
 
     if pem:
         content = export_certificate(x509, pem=True)
@@ -79,7 +82,40 @@ def download_certificate(request, request_id, pem=True):
     return response
 
 
-class IndexView(WebCAView):
+@login_required
+def request_confirmation(request):
+    """
+    Confirmation that a request has been successfully created.
+    """
+    previous = [
+        reverse('request:submit'),
+        reverse('request:new'),
+    ]
+    if not is_referrer_ok(request, previous):
+        return render(request, 'webca/web/requests/referer.html', {})
+    context = {
+        'title': 'WebCA',
+        'section_title': 'Requests',
+        'section_url': reverse('request:index'),
+        'page_title': 'New request',
+    }
+    return render(request, 'webca/web/requests/ok.html', context)
+
+
+def view_examples(request):
+    """
+    Render the examples template.
+    """
+    context = {
+        'title': 'WebCA',
+        'section_title': 'Requests',
+        'section_url': reverse('request:index'),
+        'page_title': 'Examples',
+    }
+    return render(request, 'webca/web/requests/examples.html', context)
+
+
+class IndexView(WebCAAuthView):
     """Index view for the requests section."""
     form_class = TemplateSelectorForm
 
@@ -104,14 +140,14 @@ class IndexView(WebCAView):
         return render(request, 'webca/web/requests/index.html', self.context)
 
 
-class NewView(WebCAView):
+class NewView(WebCAAuthView):
     """Create a request for a certificate using a template."""
 
     def __init__(self, *args, **kwargs):
         super().__init__()
         self.context.update({
             'section_title': 'Requests',
-            'section_url': reverse('req:index'),
+            'section_url': reverse('request:index'),
             'page_title': 'New request',
         })
 
@@ -125,7 +161,7 @@ class NewView(WebCAView):
     def post(self, request, *args, **kwargs):
         """Start a new request for a given template."""
         previous = [
-            reverse('req:index'),
+            reverse('request:index'),
         ]
         if not is_referrer_ok(request, previous):
             return render(request, 'webca/web/requests/referer.html', {})
@@ -134,7 +170,7 @@ class NewView(WebCAView):
             template_choices=request.user.templates,
         )
         if not template_form.is_valid():
-            return http.HttpResponseRedirect(reverse('req:index'))
+            return http.HttpResponseRedirect(reverse('request:index'))
         template_id = int(template_form.cleaned_data['template'])
         template = [x for x in request.user.templates if x.id == template_id][0]
         initial = {
@@ -158,14 +194,14 @@ class NewView(WebCAView):
         return render(request, 'webca/web/requests/new.html', self.context)
 
 
-class SubmitView(WebCAView):
+class SubmitView(WebCAAuthView):
     """Process a request submission."""
 
     def __init__(self, *args, **kwargs):
         super().__init__()
         self.context.update({
             'section_title': 'Requests',
-            'section_url': reverse('req:index'),
+            'section_url': reverse('request:index'),
             'page_title': 'New request',
         })
 
@@ -179,8 +215,8 @@ class SubmitView(WebCAView):
     def post(self, request, *args, **kwargs):
         """POST method."""
         previous = [
-            reverse('req:new'),
-            reverse('req:submit'),
+            reverse('request:new'),
+            reverse('request:submit'),
         ]
         if not is_referrer_ok(request, previous):
             return render(request, 'webca/web/requests/referer.html', {})
@@ -231,36 +267,4 @@ class SubmitView(WebCAView):
             return render(request, 'webca/web/requests/new.html', self.context)
         # TODO: for now a static confirmation page should be ok
         messages.add_message(request, messages.SUCCESS, 'Request submitted.')
-        return http.HttpResponseRedirect(reverse('req:ok'))
-
-
-def request_confirmation(request):
-    """
-    Confirmation that a request has been successfully created.
-    """
-    previous = [
-        reverse('req:submit'),
-        reverse('req:new'),
-    ]
-    if not is_referrer_ok(request, previous):
-        return render(request, 'webca/web/requests/referer.html', {})
-    context = {
-        'title': 'WebCA',
-        'section_title': 'Requests',
-        'section_url': reverse('req:index'),
-        'page_title': 'New request',
-    }
-    return render(request, 'webca/web/requests/ok.html', context)
-
-
-def view_examples(request):
-    """
-    Render the examples template.
-    """
-    context = {
-        'title': 'WebCA',
-        'section_title': 'Requests',
-        'section_url': reverse('req:index'),
-        'page_title': 'Examples',
-    }
-    return render(request, 'webca/web/requests/examples.html', context)
+        return http.HttpResponseRedirect(reverse('request:ok'))

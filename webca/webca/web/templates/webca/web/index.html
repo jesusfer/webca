@@ -9,7 +9,7 @@
 {% if user.is_authenticated %}
 <p>These are the actions available:</p>
 <ul>
-    <li><a href="{% url 'req:index' %}">Request a certificate</a></li>
+    <li><a href="{% url 'request:index' %}">Request a certificate</a></li>
     <li><a href="{% url 'revoke:index' %}">Revoke a certificate</a></li>
 </ul>
 {% else %}

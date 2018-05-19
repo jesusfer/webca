@@ -7,7 +7,7 @@
 <h2>New Request</h2>
 {% if form %}
 <p>Here you need to fill in the required details for your new certificate.</p>
-<form action="{% url 'req:submit' %}" method="post">
+<form action="{% url 'request:submit' %}" method="post">
     {% csrf_token %} {{ form.template.as_hidden }}
     <h3>Certificate type</h3>
     <table class="details">
@@ -85,7 +85,7 @@
     <h3>Public key</h3>
     <p>To request a certificate you need to generate a private and public key
         and then send us the public key.<br/>You need to paste here a Base64 encoded PEM certificate request.
-        <br/><a target="blank" href="{% url 'req:examples' %}">How do I get one?</a>
+        <br/><a target="blank" href="{% url 'request:examples' %}">How do I get one?</a>
     </p>
     <p>For this type of certificate the minimum size of the public key is:</p>
     <table class="details">
@@ -108,7 +108,7 @@
     <p>This template requires approval. Once you submit the request, the approval process will begin. Please check back later.</p>
     {% endif %}
     <p><input type="submit" value="Submit the request" />
-        <input type="button" value="Go back" onclick="javascript:location='{% url "req:index" %}';"/></p>
+        <input type="button" value="Go back" onclick="javascript:location='{% url "request:index" %}';"/></p>
 </form>
 {% else %}
 <p>There are no templates available.</p>

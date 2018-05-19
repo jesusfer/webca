@@ -24,7 +24,7 @@ request_patterns = ([
     path('ok/', requests.request_confirmation, name='ok'),
 
     path('examples/', requests.view_examples, name='examples'),
-], 'req')
+], 'request')
 
 revoke_patterns = ([
     path('', revocation.IndexView.as_view(), name='index'),

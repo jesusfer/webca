@@ -9,10 +9,10 @@ from django.urls import reverse
 
 from webca.web.forms import RevocationForm
 from webca.web.models import Certificate, Request, Revoked
-from webca.web.views import WebCAView
+from webca.web.views import WebCAAuthView
 
 
-class IndexView(WebCAView):
+class IndexView(WebCAAuthView):
     """Welcome page for the revocation process."""
     template = 'webca/web/revocation/index.html'
 
@@ -35,7 +35,7 @@ class IndexView(WebCAView):
         return render(request, self.template, self.context)
 
 
-class RevocationView(WebCAView):
+class RevocationView(WebCAAuthView):
     """Process the revocation of a certificate."""
     template = 'webca/web/revocation/revocation.html'
     form_class = RevocationForm
