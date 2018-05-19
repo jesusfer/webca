@@ -95,8 +95,9 @@ class IndexView(WebCAView):
         request_list = Request.objects.filter(user=request.user)
         self.context.update({
             'request_list': request_list,
+            'templates': request.user.templates,
             'templates_form': self.form_class(
-                template_choices=request.user.templates
+                template_choices=request.user.templates,
             ),
             'issued': Request.STATUS_ISSUED,
         })

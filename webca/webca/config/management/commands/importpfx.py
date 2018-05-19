@@ -7,8 +7,10 @@ import getpass
 from django.core.management.base import BaseCommand, CommandError
 from OpenSSL import crypto
 
+#pylint: disable=E0611, E0401
 from webca.certstore import CertificateExistsError, CertStore
 from webca.crypto.utils import int_to_hex
+#pylint: enable=E0611, E0401
 
 
 class Command(BaseCommand):

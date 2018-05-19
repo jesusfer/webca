@@ -26,10 +26,13 @@ class TemplateSelectorForm(forms.Form):
 
     def __init__(self, *args, **kwargs):
         """Pass template_choices to limit the choices in the template selector."""
-        template_choices = kwargs.pop('template_choices', None)
+        template_choices = kwargs.pop('template_choices', [])
         super().__init__(*args, **kwargs)
-        self.fields['template'].choices = Template.get_form_choices(
-            template_choices)
+        templates = Template.get_form_choices(template_choices)
+        if templates:
+            self.fields['template'].choices = templates
+        else:
+            self.fields['template'].choices = [('', 'There are no available templates')]
 
 
 class RequestNewForm(forms.Form):
@@ -89,12 +92,9 @@ class RequestNewForm(forms.Form):
     def __init__(self, template, template_choices=None, san_current=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.template_obj = template
-
+        template_choices = template_choices or []
         # if the form is built with some templates, we only show those
-        if template_choices:
             templates = Template.get_form_choices(template_choices)
-        else:
-            templates = Template.get_form_choices()
         self.fields['template'].choices = templates
 
         if self.template_obj.san_type == Template.SAN_SHOWN:

@@ -505,14 +505,9 @@ class Template(models.Model):
         return list(Template.objects.filter(enabled=True))
 
     @staticmethod
-    def get_form_choices(selected=None):
-        """Return a list of templates in a list of tuples to be used as field choices.
-        If `selected` is None, then return all enabled templates."""
-        if selected:
-            templates = selected
-        else:
-            templates = Template.get_enabled()
-        return [(t.id, t.name) for t in templates]
+    def get_form_choices(selected):
+        """Convert a list of templates to a list of tuples to be used as field choices."""
+        return [(t.id, t.name) for t in selected]
 
 
 class Revoked(models.Model):

@@ -8,7 +8,7 @@
 <h2>Request a certificate</h2>
 <p>In this section you can start the process to request a certificate.</p>
 <p>To begin, choose a type of certificate below:</p>
-{% if templates_form %}
+{% if templates %}
 <form action="{% url 'req:new' %}" method="post">
     {% csrf_token %} {{ templates_form }}
     <input type="submit" value="Start" />
@@ -16,8 +16,8 @@
 {% else %}
 <p>Sorry, you cannot request any certificate yet.</p>
 {% endif %}
-{% if request_list %}
 <h3>Your requests</h3>
+{% if request_list %}
 <p>These are the requests that you have made already.</p>
 <table>
     <tr>
