@@ -142,7 +142,7 @@ class NewView(WebCAView):
         }
         request_form = RequestNewForm(
             template=template,
-            initial=initial
+            initial=initial,
         )
         self.context.update({
             'DN': Template.SUBJECT_DN,

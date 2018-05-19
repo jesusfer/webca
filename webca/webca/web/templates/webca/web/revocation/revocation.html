@@ -1,31 +1,31 @@
 {% extends "webca/web/base.html" %}
 {% load webca %}
 {% block content %}
-<h3>Revoke a certificate</h3>
+<h2>Revoke a certificate</h2>
 <div>
     <p>You are about to revoke the following certificate:</p>
-    <table>
+    <table class="details">
         <tr>
-            <td>Subject</td>
+            <th>Subject</th>
             <td> {{ certificate.get_certificate|subject }}</td>
         </tr>
         <tr>
-            <td>Valid from</td>
+            <th>Valid from</th>
             <td> {{ certificate.valid_from|date }}</td>
         </tr>
         <tr>
-            <td>Valid to</td>
+            <th>Valid to</th>
             <td> {{ certificate.valid_to|date }}</td>
         </tr>
         <tr>
-            <td>Type</td>
+            <th>Type</th>
             <td> {{ certificate.get_template }}</td>
         </tr>
     </table>
     <p>Please choose a revocation reason below and confirm the revocation:</p>
     <form action="{% url 'revoke:revoke_update' certificate.id %}" method="POST">
         {% csrf_token %}
-        <table>
+        <table class="no_border revocation_table">
             {% if form.non_field_errors %}
             <tr>
                 <td>{{ form.non_field_errors }}</td>
@@ -51,6 +51,9 @@
             <tr>
                 <td><b>{{ form.confirm.label }}</b></td>
                 <td>{{ form.confirm }}</td>
+            </tr>
+            <tr>
+                <td colspan="2">&nbsp;</td>
             </tr>
             <tr>
                 <td><input type="submit" value="Revoke the certificate"/></td>

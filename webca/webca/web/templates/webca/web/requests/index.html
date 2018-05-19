@@ -1,9 +1,13 @@
 {% extends "webca/web/base.html" %}
 {% load webca %}
+
 {% block style %}
 <style>
 </style>
 {% endblock style %}
+
+{% block content_class %}two_cols{% endblock content_class %}
+
 {% block content %}
 <h2>Request a certificate</h2>
 <p>In this section you can start the process to request a certificate.</p>
@@ -16,10 +20,11 @@
 {% else %}
 <p>Sorry, you cannot request any certificate yet.</p>
 {% endif %}
-<h3>Your requests</h3>
+<br/>
+<h2>Your requests</h2>
 {% if request_list %}
 <p>These are the requests that you have made already.</p>
-<table>
+<table class="requests_table">
     <tr>
         <th>Request</th>
         <th>Type</th>

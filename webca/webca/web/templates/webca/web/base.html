@@ -34,11 +34,13 @@
                     {% endfor %}</ul>
                 {% endif %}
             {% endblock messages %}
-            <div id="content_container">
-                <div id="content">{% block content %}{% endblock content %}</div>
-                {% if show_sidebar %}
-                <div id="sidebar">{% block sidebar %}{% endblock sidebar %}</div>
-                {% endif %}
+            <div id="outer_container">
+                <div id="inner_container" class="{% block content_class %}one_col{% endblock content_class %}">
+                    <div id="content">{% block content %}{% endblock content %}</div>
+                    {% if show_sidebar %}
+                    <div id="sidebar">{% block sidebar %}{% endblock sidebar %}</div>
+                    {% endif %}
+                </div>
             </div>
         </div>
     </body>

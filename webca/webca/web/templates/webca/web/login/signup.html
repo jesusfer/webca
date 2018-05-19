@@ -8,7 +8,7 @@
 {{ form.non_field_errors }}
 {{ form.errors }}
 <form action="{% if form.code %}{% url 'auth:login' %}{% else %}{% url 'auth:signup' %}{% endif %}" method="POST">{% csrf_token %}
-    <table>
+    <table class="no_border full_width">
         <caption>Your email</caption>
         {% if form.code %}
         <tr><td>{{ form.email|add_class:"longer text_center"|attr:"disabled" }}{{ form.email.as_hidden }}</td></tr>

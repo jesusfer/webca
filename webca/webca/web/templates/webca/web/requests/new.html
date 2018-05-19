@@ -1,13 +1,16 @@
 {% extends "webca/web/base.html" %}
-{% load webca %}
+{% load webca widget_tweaks %}
+
+{% comment %} {% block content_class %}two_cols{% endblock content_class %} {% endcomment %}
+
 {% block content %}
-<h3>New Request</h3>
+<h2>New Request</h2>
 {% if form %}
 <p>Here you need to fill in the required details for your new certificate.</p>
 <form action="{% url 'req:submit' %}" method="post">
     {% csrf_token %} {{ form.template.as_hidden }}
-    <h4>Certificate type</h4>
-    <table>
+    <h3>Certificate type</h3>
+    <table class="details">
         <tr>
             <th>Name</th>
             <td>{{ form.template_obj.name }}</td>
@@ -21,14 +24,14 @@
             <td>{{ form.template_obj.description }}</td>
         </tr>
     </table>
-    <h4>Certificate name</h4>
+    <h3>Certificate name</h3>
     {{ form.non_field_errors }}
     <p>Your certificate must have a name.</p>
-    <table>
+    <table class="no_border">
         {% if form.cn.errors%}<tr><td colspan="2">{{ form.cn.errors }}</td></tr>{% endif %}
         <tr>
             <td>{{ form.cn.label_tag }}</td>
-            <td class="text_left">{{ form.cn }}</td>
+            <td class="text_left">{{ form.cn|add_class:"longer" }}</td>
         </tr>
 
         {% if form.template_obj.required_subject == DN or form.template_obj.required_subject == DN_PARTIAL %}
@@ -41,33 +44,33 @@
             {% if form.country.errors%}<tr><td colspan="2">{{ form.country.errors }}</td></tr>{% endif %}
             <tr>
                 <td>{{ form.country.label_tag }}</td>
-                <td class="text_left">{{ form.country }}</td>
+                <td class="text_left">{{ form.country|add_class:"longer" }}</td>
             </tr>
             {% if form.state.errors%}<tr><td colspan="2">{{ form.state.errors }}</td></tr>{% endif %}
             <tr>
                 <td>{{ form.state.label_tag }}</td>
-                <td class="text_left">{{ form.state }}</td>
+                <td class="text_left">{{ form.state|add_class:"longer" }}</td>
             </tr>
             {% if form.locality.errors%}<tr><td colspan="2">{{ form.locality.errors }}</td></tr>{% endif %}
             <tr>
                 <td>{{ form.locality.label_tag }}</td>
-                <td class="text_left">{{ form.locality }}</td>
+                <td class="text_left">{{ form.locality|add_class:"longer" }}</td>
             </tr>
             {% if form.org.errors%}<tr><td colspan="2">{{ form.org.errors }}</td></tr>{% endif %}
             <tr>
                 <td>{{ form.org.label_tag }}</td>
-                <td class="text_left">{{ form.org }}</td>
+                <td class="text_left">{{ form.org|add_class:"longer" }}</td>
             </tr>
             {% if form.ou.errors%}<tr><td colspan="2">{{ form.ou.errors }}</td></tr>{% endif %}
             <tr>
                 <td>{{ form.ou.label_tag }}</td>
-                <td class="text_left">{{ form.ou }}</td>
+                <td class="text_left">{{ form.ou|add_class:"longer" }}</td>
             </tr>
         {% elif form.template_obj.required_subject == USER %}
         {% if form.email.errors%}<tr><td colspan="2">{{ form.email.errors }}</td></tr>{% endif %}
             <tr>
                 <td>{{ form.email.label_tag }}</td>
-                <td class="text_left">{{ form.email }}</td>
+                <td class="text_left">{{ form.email|add_class:"longer" }}</td>
             </tr>
         {% endif %}
         {% if form.san %}
@@ -79,12 +82,13 @@
         <tr><td colspan="2">{{ form.san }}</td></tr>
         {% endif %}
     </table>
+    <h3>Public key</h3>
     <p>To request a certificate you need to generate a private and public key
         and then send us the public key.<br/>You need to paste here a Base64 encoded PEM certificate request.
         <br/><a target="blank" href="{% url 'req:examples' %}">How do I get one?</a>
     </p>
     <p>For this type of certificate the minimum size of the public key is:</p>
-    <table style="width:50%">
+    <table class="details">
 {% if KEY_RSA in allowed_key_types %}
         <tr><th>RSA</th><td>{{ form.template_obj.min_bits_rsa }}</td></tr>
 {% endif %}
@@ -95,16 +99,16 @@
         <tr><th>EC</th><td>{{ form.template_obj.min_bits_ec }}</td></tr>
 {% endif %}
     </table>
-    <table class="no_border">
+    <table class="no_border csr">
         {% if form.csr.errors%}<tr><td colspan="2">{{ form.csr.errors }}</td></tr>{% endif %}
         <tr><td class="text_left">{{ form.csr.label_tag }}</td></tr>
-        <tr><td class="text_left csr">{{ form.csr }}</td></tr>
+        <tr><td class="text_left csr">{{ form.csr|attr:"rows:10"|attr:"width:40" }}</td></tr>
     </table>
     {% if not form.template_obj.auto_sign %}
     <p>This template requires approval. Once you submit the request, the approval process will begin. Please check back later.</p>
     {% endif %}
     <p><input type="submit" value="Submit the request" />
-        <input type="button" value="Go back" onclick="javascript:location='{% url 'req:index' %}';"/></p>
+        <input type="button" value="Go back" onclick="javascript:location='{% url "req:index" %}';"/></p>
 </form>
 {% else %}
 <p>There are no templates available.</p>
