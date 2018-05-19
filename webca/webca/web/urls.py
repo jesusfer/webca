@@ -8,7 +8,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.urls import include, path
 
-from webca.web.views import IndexView, requests, revocation, logout_user
+from webca.web.views import IndexView, requests, revocation, auth
 
 request_patterns = ([
     path('', requests.IndexView.as_view(), name='index'),
@@ -36,11 +36,17 @@ revoke_patterns = ([
 
 app_patterns = ([
     path('', IndexView.as_view(), name='index'),
-    path('auth/logout/', logout_user, name='logout'),
 ], 'webca')
+
+auth_patterns = ([
+    path('signup/', auth.SignupView.as_view(), name='signup'),
+    path('login/', auth.LoginView.as_view(), name='login'),
+    path('logout/', auth.logout_user, name='logout'),
+], 'auth')
 
 urlpatterns = [
     path('', include(app_patterns)),
+    path('auth/', include(auth_patterns)),
     path('request/', include(request_patterns)),
     path('revoke/', include(revoke_patterns)),
     # FIXME: STATIC only for dev

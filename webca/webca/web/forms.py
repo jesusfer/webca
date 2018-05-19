@@ -94,7 +94,7 @@ class RequestNewForm(forms.Form):
         self.template_obj = template
         template_choices = template_choices or []
         # if the form is built with some templates, we only show those
-            templates = Template.get_form_choices(template_choices)
+        templates = Template.get_form_choices(template_choices)
         self.fields['template'].choices = templates
 
         if self.template_obj.san_type == Template.SAN_SHOWN:
@@ -170,4 +170,15 @@ class RevocationForm(forms.Form):
 
     confirm = forms.BooleanField(
         label='I understand that revocation is a one-way process and cannot be undone',
+    )
+
+
+class SignupForm(forms.Form):
+    email = forms.EmailField(
+        label='Your email',
+    )
+
+class LoginForm(SignupForm):
+    code = forms.CharField(
+        label='The code received in your inbox',
     )

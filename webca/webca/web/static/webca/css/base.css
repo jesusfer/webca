@@ -84,6 +84,7 @@ h1, h2, h3, h4, h5 {
 }
 #breadcrumbs a {
     border-bottom: 1px solid #92c7ed;
+    color: white;
 }
 
 /* Messages */
@@ -160,6 +161,9 @@ select:focus {
     border-color: #51a5e1;
     border-radius: 0;
     outline-color: #51a5e1;
+}
+input.longer {
+    width: 400px;
 }
 ul.errorlist {
     padding:0;

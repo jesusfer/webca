@@ -1,7 +1,6 @@
 """Models for the public web."""
-import pytz
 from django.conf import settings
-from django.contrib.auth.models import Group
+from django.contrib.auth.models import Group, User
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_email
 from django.db import models
@@ -18,6 +17,20 @@ from webca.web.fields import (ExtendedKeyUsageField, KeyUsageField,
 
 # TODO: consider the action to take when a FK is deleted.
 # We should not delete anything so that we can keep track of everyting, probably
+
+
+class CAUser(models.Model):
+    """Extension to the User model."""
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='ca_user',
+    )
+    code = models.CharField(
+        max_length=40,
+        blank=True,
+        help_text='One-time login code',
+    )
 
 
 class Request(models.Model):

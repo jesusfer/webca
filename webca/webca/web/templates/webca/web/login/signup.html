@@ -1,0 +1,25 @@
+{% extends "webca/web/base.html" %}
+{% load widget_tweaks %}
+
+{% block content %}
+<h1>Welcome!</h1>
+<p>Please enter your email below to get an access code to access the service.</p>
+<br/>
+{{ form.non_field_errors }}
+{{ form.errors }}
+<form action="{% if form.code %}{% url 'auth:login' %}{% else %}{% url 'auth:signup' %}{% endif %}" method="POST">{% csrf_token %}
+    <table>
+        <caption>Your email</caption>
+        {% if form.code %}
+        <tr><td>{{ form.email|add_class:"longer text_center"|attr:"disabled" }}{{ form.email.as_hidden }}</td></tr>
+        <tr><td>{{ form.code|add_class:"longer text_center" }}</td></tr>        
+            {% if form.code.errors %}
+            {{ form.code.errors }}
+            {% endif %}
+        {% else %}
+        <tr><td>{{ form.email|add_class:"longer text_center" }}</td></tr>
+        {% endif %}
+        <tr><td><input type="submit" value="Send code" /></td></tr>
+    </table>
+</form>
+{% endblock content %}

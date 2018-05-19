@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'webca.config.apps.ConfigConfig',
     'webca.web.apps.WebConfig',
     'rules.apps.AutodiscoverRulesConfig',
+    'widget_tweaks',
 ]
 
 MIDDLEWARE = [
@@ -108,6 +109,8 @@ AUTHENTICATION_BACKENDS = (
     'rules.permissions.ObjectPermissionBackend',
     'django.contrib.auth.backends.ModelBackend',
 )
+
+LOGIN_URL = 'auth:signup'
 
 # Internationalization
 # https://docs.djangoproject.com/en/2.0/topics/i18n/
