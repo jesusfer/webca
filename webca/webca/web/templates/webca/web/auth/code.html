@@ -5,18 +5,16 @@
 <h1>Welcome!</h1>
 <p>Please enter your email below to get an access code to access the service.</p>
 <br/>
-{{ form.non_field_errors }}
-{{ form.errors }}
 <form action="{% if form.code %}{% url 'auth:code_submit' %}{% else %}{% url 'auth:code' %}{% endif %}" method="POST">{% csrf_token %}
     <table class="no_border full_width">
         <caption>Your email</caption>
+        {% if form.email.errors %}
+        <tr><td style="width:400px">{{ form.email.errors }}</td></tr>
+        {% endif %}
         {% if form.code %}
         <tr><td>{{ form.email|add_class:"longest text_center"|attr:"disabled" }}{{ form.email.as_hidden }}</td></tr>
         <tr><td>A one time login code has been sent to the email above. Please write it in the next box to continue.</td></tr>
         <tr><td>{{ form.code|add_class:"longest text_center" }}</td></tr>        
-            {% if form.code.errors %}
-            {{ form.code.errors }}
-            {% endif %}
         {% else %}
         <tr><td>{{ form.email|add_class:"longest text_center" }}</td></tr>
         {% endif %}

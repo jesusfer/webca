@@ -16,9 +16,11 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import get_user_model, login
 from django.contrib.auth.views import logout
+from django.core.mail import send_mail
 from django.shortcuts import render, reverse
+from django.template.loader import render_to_string
 
-from webca.web.forms import EmailLoginForm, KeysLoginForm, CodeLoginForm
+from webca.web.forms import CodeLoginForm, EmailLoginForm, KeysLoginForm
 from webca.web.views import WebCAAuthView, WebCAView
 
 User = get_user_model()
@@ -46,7 +48,8 @@ def set_code(email):
             user.ca_user.code,
             user.username,
         ))
-    return user.ca_user.save()
+    user.ca_user.save()
+    return user.ca_user.code
 
 
 def is_code_valid(email, code):
@@ -85,15 +88,28 @@ class CodeLoginView(WebCAView):
         """Process a signup form."""
         form = EmailLoginForm(request.POST)
         if form.is_valid():
-            set_code(form.cleaned_data['email'])
             initial = {
                 'email': form.cleaned_data['email'],
             }
             login_form = CodeLoginForm(initial=initial)
-            self.context.update({
-                'form': login_form,
-            })
-            return render(request, self.template, self.context)
+            code = set_code(form.cleaned_data['email'])
+            mail_body = render_to_string(settings.AUTH_CODE_BODY_TEMPLATE, {'code':code})
+            try:
+                send_mail(
+                    settings.AUTH_CODE_MAIL_SUBJECT,
+                    mail_body,
+                    settings.AUTH_CODE_FROM,
+                    [form.cleaned_data['email']],
+                    fail_silently=False,
+                )
+                self.context.update({
+                    'form': login_form,
+                })
+                return render(request, self.template, self.context)
+            except Exception as exc:
+                print(exc)
+                messages.add_message(
+                    request, messages.ERROR, 'There was an error sending the email')
         self.context.update({
             'form': form,
         })
@@ -158,6 +174,7 @@ class KeysSetupView(WebCAAuthView):
         return http.HttpResponse()
 
 class KeysLoginView(WebCAView):
+    """Process a keys login."""
     
     def get(self, request, *args, **kwargs):
         """Try to log the user in with a key pair."""

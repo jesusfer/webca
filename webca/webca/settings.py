@@ -155,5 +155,18 @@ LOGGING = {
     },
 }
 
+# Code authentication
+AUTH_CODE_MAIL_SUBJECT = 'WebCA Authentication code'
+AUTH_CODE_BODY_TEMPLATE = 'webca/web/auth/code_email.html'
+AUTH_CODE_FROM = 'webca@webca.net'
+
+# Email setup
+EMAIL_HOST = ''
+EMAIL_PORT = '25'
+EMAIL_HOST_USER = ''
+EMAIL_HOST_PASSWORD = ''
+EMAIL_USE_TLS = True
+EMAIL_USE_SSL = False
+
 from webca import settings_local
 DATABASES.update(settings_local.DATABASES)
