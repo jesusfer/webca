@@ -28,9 +28,7 @@
     <tr>
         <th>Request</th>
         <th>Type</th>
-        <th>Approval</th>
         <th>Status</th>
-        <th>Certificate status</th>
         <th>Download</th>
         <th>Notes</th>
     </tr>
@@ -40,9 +38,7 @@
             <a target="blank" href="{% url 'request:view_cert' req.id %}">{{ req }}</a>
         </td>
         <td>{{ req.template.name }}</td>
-        <td>{% if req.template.auto_sign %}&nbsp;{% else %}{{ req.approved|approval }}{% endif %}</td>
-        <td>{{ req.get_status_display }}</td>        
-        <td>{% if req.certificate %}{{ req.certificate|status }}{% else %}&nbsp;{% endif %}</td>
+        <td>{{ req.extended_status }}</td>
         <td>{% ifequal req.status issued %}
             <a href="{% url 'request:download_pem' req.id %}">PEM</a>&nbsp;<a href="{% url 'request:download_crt' req.id %}">DER</a>
             {% else %}&nbsp;{% endifequal %}</td>

@@ -197,6 +197,30 @@ class Request(models.Model):
         """Return the request as a OpenSSL.crypto.X509Req object."""
         return crypto.load_certificate_request(crypto.FILETYPE_PEM, self.csr)
 
+    @property
+    def extended_status(self):
+        """Return the extended status of this request.
+        1. Processing
+        2. Pending approval
+        3. Approved
+        4. Rejected
+        5. Issued
+        6. Expired
+        7. Revoked
+        8. Error
+        """
+        if self.status == self.STATUS_ISSUED and self.certificate.is_expired:
+            return 'Expired'
+        if self.status == self.STATUS_ISSUED and self.certificate.is_revoked:
+            return 'Revoked'
+        if self.status == self.STATUS_PROCESSING and not self.approved:
+            return 'Pending approval'
+        if self.status == self.STATUS_PROCESSING and self.approved:
+            return 'Approved'
+        if (self.status == self.STATUS_PROCESSING or self.status == self.STATUS_ISSUED or
+            self.status == self.STATUS_ERROR or self.status == self.STATUS_REJECTED):
+            return self.get_status_display()
+
 
 class Certificate(models.Model):
     """An issued certificate."""
