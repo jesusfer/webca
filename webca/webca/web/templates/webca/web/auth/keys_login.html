@@ -1,0 +1,28 @@
+{% extends "webca/web/base.html" %}
+{% load static %}
+
+{% block head %}
+<script type="text/javascript" src="{% static 'webca/js/OpenCrypto.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'webca/js/jquery-3.3.1.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'webca/js/keyslogin.js' %}"></script>
+{% endblock head %}
+
+{% block content %}
+<h1>Logging in...</h1>
+<script type="text/javascript">
+    const code_login = "{% url 'auth:code' %}";
+    login();
+</script>
+<div id="several_keys">
+    <p>It looks like there are several keys installed in the browser. Choose one to continue.</p>
+    <select></select>
+    <input type="button" value="Continue" onclick="javascript:selectKey()"/>
+</div>
+<div id="passphrase">
+    <p>The stored key is encrypted, so yu need to provide a passphrase to decrypt it to log in.</p>
+    <ul class="errorlist" style="display:none"><li id="error"></li></ul>
+    <br/>
+    <input id="id_passphrase" type="password" placeholder="Type the passphrase here" class="longer"/>
+    <input type="button" value="Decrypt and log in" onclick="javascript:decryptKeys()" />
+</div>
+{% endblock content %}

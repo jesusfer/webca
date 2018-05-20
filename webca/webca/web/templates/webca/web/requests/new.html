@@ -31,7 +31,7 @@
         {% if form.cn.errors%}<tr><td colspan="2">{{ form.cn.errors }}</td></tr>{% endif %}
         <tr>
             <td>{{ form.cn.label_tag }}</td>
-            <td class="text_left">{{ form.cn|add_class:"longer" }}</td>
+            <td class="text_left">{{ form.cn|add_class:"longest" }}</td>
         </tr>
 
         {% if form.template_obj.required_subject == DN or form.template_obj.required_subject == DN_PARTIAL %}
@@ -44,33 +44,33 @@
             {% if form.country.errors%}<tr><td colspan="2">{{ form.country.errors }}</td></tr>{% endif %}
             <tr>
                 <td>{{ form.country.label_tag }}</td>
-                <td class="text_left">{{ form.country|add_class:"longer" }}</td>
+                <td class="text_left">{{ form.country|add_class:"longest" }}</td>
             </tr>
             {% if form.state.errors%}<tr><td colspan="2">{{ form.state.errors }}</td></tr>{% endif %}
             <tr>
                 <td>{{ form.state.label_tag }}</td>
-                <td class="text_left">{{ form.state|add_class:"longer" }}</td>
+                <td class="text_left">{{ form.state|add_class:"longest" }}</td>
             </tr>
             {% if form.locality.errors%}<tr><td colspan="2">{{ form.locality.errors }}</td></tr>{% endif %}
             <tr>
                 <td>{{ form.locality.label_tag }}</td>
-                <td class="text_left">{{ form.locality|add_class:"longer" }}</td>
+                <td class="text_left">{{ form.locality|add_class:"longest" }}</td>
             </tr>
             {% if form.org.errors%}<tr><td colspan="2">{{ form.org.errors }}</td></tr>{% endif %}
             <tr>
                 <td>{{ form.org.label_tag }}</td>
-                <td class="text_left">{{ form.org|add_class:"longer" }}</td>
+                <td class="text_left">{{ form.org|add_class:"longest" }}</td>
             </tr>
             {% if form.ou.errors%}<tr><td colspan="2">{{ form.ou.errors }}</td></tr>{% endif %}
             <tr>
                 <td>{{ form.ou.label_tag }}</td>
-                <td class="text_left">{{ form.ou|add_class:"longer" }}</td>
+                <td class="text_left">{{ form.ou|add_class:"longest" }}</td>
             </tr>
         {% elif form.template_obj.required_subject == USER %}
         {% if form.email.errors%}<tr><td colspan="2">{{ form.email.errors }}</td></tr>{% endif %}
             <tr>
                 <td>{{ form.email.label_tag }}</td>
-                <td class="text_left">{{ form.email|add_class:"longer" }}</td>
+                <td class="text_left">{{ form.email|add_class:"longest" }}</td>
             </tr>
         {% endif %}
         {% if form.san %}

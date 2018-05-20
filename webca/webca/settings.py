@@ -26,7 +26,10 @@ SECRET_KEY = '%d5^+u$x-qqpkdx-ffn8bk2$off=l$_*5lg%jh8===b*&(ktev'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['127.0.0.1']
+ALLOWED_HOSTS = [
+    '127.0.0.1',
+    'www.webca.net',
+]
 
 
 # Application definition
@@ -43,6 +46,7 @@ INSTALLED_APPS = [
     'webca.web.apps.WebConfig',
     'rules.apps.AutodiscoverRulesConfig',
     'widget_tweaks',
+    'sslserver',
 ]
 
 MIDDLEWARE = [
@@ -110,7 +114,7 @@ AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
 )
 
-LOGIN_URL = 'auth:signup'
+LOGIN_URL = 'auth:keys_login'
 
 # Internationalization
 # https://docs.djangoproject.com/en/2.0/topics/i18n/
@@ -145,7 +149,7 @@ LOGGING = {
     'loggers': {
         'rules': {
             'handlers': ['console'],
-            'level': 'DEBUG',
+            'level': 'ERROR',
             'propagate': True,
         },
     },

@@ -31,6 +31,35 @@ class CAUser(models.Model):
         blank=True,
         help_text='One-time login code',
     )
+    keys = models.TextField(
+        blank=True,
+        help_text="Public keys",
+    )
+
+    class Meta:
+        verbose_name = 'User profile'
+
+    def __str__(self):
+        return 'CAUser: %s' % self.user.email
+
+    def add_key(self, key):
+        """Add a new public key of this user."""
+        # FUTURE: the number of keys may be limited
+        if self.keys:
+            self.keys += ',' + key
+        else:
+            self.keys = key
+        self.save()
+    
+    @property
+    def public_keys(self):
+        """Return the list of keys associated with this user."""
+        return self.keys.split(',')
+    
+    @property
+    def public_keys_count(self):
+        """Return the number of public keys this user has."""
+        return len(self.keys)
 
 
 class Request(models.Model):
@@ -461,15 +490,10 @@ class Template(models.Model):
             True,
             ','.join(self.key_usage).encode('ascii')
         ))
-        # 3. Validation
-        # TODO: CRL
-        # extensions.append(crypto.X509Extension(
-        #     b'crlDistributionPoints',
-        #     False,
-        #     b'URI:http://test.net/test.crl'
-        # ))
 
+        # 3. Validation
         # TODO: OCSP
+
         # 2. Extras
         # extended key usage
         eku = [x for x in self.ext_key_usage if x]

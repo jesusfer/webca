@@ -173,12 +173,18 @@ class RevocationForm(forms.Form):
     )
 
 
-class SignupForm(forms.Form):
+class EmailLoginForm(forms.Form):
+    """Form with an email field."""
     email = forms.EmailField(
         label='Your email',
     )
 
-class LoginForm(SignupForm):
+class CodeLoginForm(EmailLoginForm):
+    """Form with an email field and a code field."""
     code = forms.CharField(
         label='The code received in your inbox',
     )
+
+class KeysLoginForm(EmailLoginForm):
+    """Form with an email field and a text field to store a digital signature."""
+    signed = forms.CharField()

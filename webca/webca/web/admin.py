@@ -5,9 +5,10 @@ from django.http import HttpResponse
 from OpenSSL import crypto
 
 from webca.ca_admin.admin import admin_site
-from webca.web.models import (Certificate, CRLLocation, Request, Revoked,
-                              Template)
+from webca.web.models import (CAUser, Certificate, CRLLocation, Request,
+                              Revoked, Template)
 
+admin_site.register(CAUser)
 
 @admin.register(Request, site=admin_site)
 class RequestAdmin(admin.ModelAdmin):

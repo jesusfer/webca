@@ -1,0 +1,46 @@
+{% extends 'webca/web/base.html' %}
+{% load static %}
+
+{% block head %}
+<script type="text/javascript" src="{% static 'webca/js/OpenCrypto.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'webca/js/jquery-3.3.1.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'webca/js/keyslogin.js' %}"></script>
+<script type="text/javascript">
+    const user_email = "{{ user.email }}";
+    const post_url = "{% url 'auth:keys_setup' %}";
+</script>
+{% endblock head %}
+
+{% block onload %}findKeys();{% endblock onload %}
+
+{% block content %}
+<h2>Keys login</h2>
+<p>Instead of having to get a code by email every time you need to log in, your browser can be setup to generate a pair of signing
+    keys and store them in the browser. Then the public key is stored in your profile in our server so that we can check
+    that it's really you. Your private key never leaves the browser.
+</p>
+
+<h3>Current settings</h3>
+<table id="keys_setup">
+    <tr>
+        <th>Keys present?</th>
+        <td id="user_message">Loading...</td>
+    </tr>
+    <tr>
+        <th>Create keys</th>
+        <td>
+            <input id="create_button" type="button" value="Start" onclick="javascript:getPassword()" />
+            <div id="passphrase">
+                <input id="id_passphrase" type="password" placeholder="Type a passphrase to encrypt the keys" class="longer"/>
+                <input type="button" value="Create" onclick="javascript:setupKeys()" />
+            </div>
+        </td>
+    </tr>
+    <tr>
+        <th>Remove keys</th>
+        <td>
+            <input id="remove_button" type="button" value="Remove" onclick="javascript:removeKeys()" />
+        </td>
+    </tr>
+</table>
+{% endblock content %}

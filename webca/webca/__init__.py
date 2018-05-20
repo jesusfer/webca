@@ -13,6 +13,7 @@ dependencies = [
     ('rules', 'pip install rules'),
     ('django_ssl_auth', 'pip install django_ssl_auth'),
     ('widget_tweaks', 'pip install django-widget-tweaks'),
+    ('sslserver', 'pip install django-sslserver'),
 ]
 
 error = False
