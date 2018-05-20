@@ -15,6 +15,7 @@ from django import http
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import get_user_model, login
+from django.contrib.auth.models import Group
 from django.contrib.auth.views import logout
 from django.core.mail import send_mail
 from django.shortcuts import render, reverse
@@ -24,6 +25,7 @@ from webca.web.forms import CodeLoginForm, EmailLoginForm, KeysLoginForm
 from webca.web.views import WebCAAuthView, WebCAView
 
 User = get_user_model()
+AllUsersGroup = Group.objects.get(pk=1)
 
 def logout_user(request, *args, **kwargs):
     """Log a user out."""
@@ -40,6 +42,7 @@ def set_code(email):
         )
         user.is_active = False
         user.backend = 'django.contrib.auth.backends.ModelBackend'
+        user.groups.add(AllUsersGroup)
         user.save()
         # request.session['first_visit']=True
     user.ca_user.code = secrets.token_hex(16)
@@ -95,13 +98,13 @@ class CodeLoginView(WebCAView):
             code = set_code(form.cleaned_data['email'])
             mail_body = render_to_string(settings.AUTH_CODE_BODY_TEMPLATE, {'code':code})
             try:
-                send_mail(
-                    settings.AUTH_CODE_MAIL_SUBJECT,
-                    mail_body,
-                    settings.AUTH_CODE_FROM,
-                    [form.cleaned_data['email']],
-                    fail_silently=False,
-                )
+                # send_mail(
+                #     settings.AUTH_CODE_MAIL_SUBJECT,
+                #     mail_body,
+                #     settings.AUTH_CODE_FROM,
+                #     [form.cleaned_data['email']],
+                #     fail_silently=False,
+                # )
                 self.context.update({
                     'form': login_form,
                 })
