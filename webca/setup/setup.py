@@ -67,6 +67,9 @@ def setup():
     setup_certificates()
     # TODO: setup_crl_publishing() Ask for path to publish and frequency
     install_templates()
+    # TODO: setup_user_groups()
+    # TODO: add a super user (admin)
+    # TODO: setup_email()
 
 
 """
@@ -214,6 +217,7 @@ def setup_certificates():
         store = stores[option - 1][1]()
     ca_key, ca_cert = _setup_certificates_ca(store)
     _setup_certificates_csr(store)
+    # FUTURE: this doesn't make sense anymore. we are not using client cert auth now
     _setup_certificates_user(store, ca_key, ca_cert)
 
 

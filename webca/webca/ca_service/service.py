@@ -227,7 +227,12 @@ class CAService:
         """Check if there is a CRL to sign."""
         value = Config.get_value(
             parameters.CRL_CONFIG) or json.dumps(new_crl_config())
-        crl_config = json.loads(value)
+        try:
+            crl_config = json.loads(value)
+        except json.decoder.JSONDecodeError as exc:
+            # This should not happen
+            print('Error loading CRL config!! -> %s' % exc)
+            return
         now = timezone.now()
         next = now - timedelta(days=1)
         if crl_config['last_update']:

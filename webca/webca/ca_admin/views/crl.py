@@ -189,3 +189,22 @@ class CRLStatusView(View):
         print(form.errors)
         messages.add_message(request, messages.ERROR, 'Please check below')
         return TemplateResponse(request, self.template, context)
+
+
+class CRLRefreshView(View):
+
+    def get(self, request, *args, **kwargs):
+        return HttpResponseRedirect(reverse('admin:crl_status'))
+
+    def post(self, request, *args, **kwargs):
+        value = Config.get_value(CRL_CONFIG) or json.dumps(new_crl_config())
+        try:
+            crl_config = json.loads(value)
+            crl_config.update({
+                'last_update': 0
+            })
+            Config.set_value(CRL_CONFIG, json.dumps(crl_config))
+            messages.add_message(request, messages.INFO, 'The CRL will be refreshed shortly')
+        except:
+            messages.add_message(request, messages.ERROR, 'The CRL will be refreshed shortly')
+        return HttpResponseRedirect(reverse('admin:crl_status'))

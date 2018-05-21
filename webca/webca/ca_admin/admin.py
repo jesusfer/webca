@@ -41,6 +41,7 @@ class AdminSite(admin.AdminSite):
                  name='crl_status'),
             path('crl/status/update/', self.admin_view(crl.CRLStatusView.as_view()),
                  {'update': True}, name='crl_status_update'),
+            path('crl/refresh/', self.admin_view(crl.CRLRefreshView.as_view()), name='crl_refresh'),
         ]
         return urls
 

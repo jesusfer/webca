@@ -6,6 +6,7 @@
 <style>
     table {
         width: 100%;
+        margin: 20px 0;
     }
     #content-main td:first-of-type {
         width: 30%;
@@ -13,8 +14,14 @@
     #crl_settings input {
         text-align: right;
     }
-    .module li {
-        list-style-type: circle;
+    td.crl_button {
+        text-align: center;
+    }
+    input {
+        box-sizing: border-box;
+    }
+    input.days {
+        width: 5em;
     }
 </style>
 {% endblock %}
@@ -67,7 +74,7 @@
                 {% endif %}
                 <tr>
                     <td><p>Publish a complete CRL every</p></td>
-                    <td><input name="{{ form.days.name }}" value="{{ form.days.value }}"/> days</td>
+                    <td><input class="days" name="{{ form.days.name }}" value="{{ form.days.value }}"/> days</td>
                 </tr>
                 {% comment "Delta CRL not supported yet" %}
                 {% if form.delta_days.errors %}
@@ -86,7 +93,16 @@
                     <td><input name="{{ form.path.name }}" type="text" style="width: 100%;text-align:left" value="{{ form.path.value }}"/></td>
                 </tr>
                 <tr>
-                    <td colspan="2"><input type="submit" value="Update settings"/></td>
+                    <td class="crl_button" colspan="2"><input type="submit" value="Update settings"/></td>
+                </tr>
+            </table>
+        </form>
+        <form action="{% url 'admin:crl_refresh' %}" method="POST">{% csrf_token %}
+            <table>
+                <caption>Force CRL refresh</caption>
+                <tr>
+                    <td class="crl_button" style="vertical-align:middle"><p>You can force the CRL to be refreshed here</p></td>
+                    <td class="crl_button"><input type="submit" value="Force CRL update"/></td>
                 </tr>
             </table>
         </form>
