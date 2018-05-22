@@ -20,7 +20,7 @@ from webca.config.models import ConfigurationObject as Config
 from webca.crypto import utils as cert_utils
 from webca.crypto import certs, crl
 from webca.crypto.constants import REV_REASON
-from webca.crypto.extensions import build_cdp, build_san
+from webca.crypto import extensions as crypto_extensions
 from webca.web.models import (Certificate, CRLLocation, Request, Revoked,
                               Template)
 
@@ -145,14 +145,17 @@ class CAService:
         if subject_email:
             san.append('email:%s' % subject_email)
         if san:
-            ext = build_san(','.join(san))
+            ext = crypto_extensions.build_san(','.join(san))
             extensions.append(ext)
         # Now build the CDP extension.
         crl_locations = CRLLocation.get_locations()
         if crl_locations:
-            ext = build_cdp(crl_locations.values_list('url', flat=True))
+            ext = crypto_extensions.build_cdp(crl_locations.values_list('url', flat=True))
             extensions.append(ext)
-
+        # Add the OCSP extension
+        if settings.OCSP_URL:
+            ext = crypto_extensions.json_to_extension('{"name":"authorityInfoAccess", "critical":false, "value":"OCSP;URI:%s"}' % settings.OCSP_URL)
+            extensions.append(ext)
         # Validate stuff
         # Key size. Template requirements might have changed since the request was done
         key_type = cert_utils.public_key_type(request.get_csr())

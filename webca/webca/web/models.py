@@ -515,9 +515,6 @@ class Template(models.Model):
             ','.join(self.key_usage).encode('ascii')
         ))
 
-        # 3. Validation
-        # TODO: OCSP
-
         # 2. Extras
         # extended key usage
         eku = [x for x in self.ext_key_usage if x]
@@ -601,6 +598,8 @@ class Revoked(models.Model):
 
 
 class CRLLocation(models.Model):
+    """Represents a URL that points to a CRL location."""
+    
     url = models.URLField(
         help_text='URL for this location',
     )

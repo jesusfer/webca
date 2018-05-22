@@ -45,7 +45,8 @@ from webca.certstore import CertStore
 from webca.config import constants as p
 from webca.crypto import certs
 from webca.crypto import constants as c
-from webca.crypto.utils import int_to_hex
+from webca.crypto.utils import int_to_hex, new_serial
+from webca.crypto.extensions import json_to_extension
 from webca.utils import dict_as_tuples
 from webca.utils.iso_3166 import ISO_3166_1_ALPHA2_COUNTRY_CODES as iso3166
 
@@ -60,12 +61,15 @@ def setup():
     config = {}
     config.update(get_database(MSG_DB, 'web_'))
     config.update(get_database(MSG_DB_CERTS, 'certs_'))
+    ocsp_url = get_ocsp_url()
     if input('Modify settings?'):
-        create_settings(config)
+        create_settings(config, ocsp_url)
+
     init_django()
     print('\n*** Setup of CA certificates ***')
     setup_certificates()
     # TODO: setup_crl_publishing() Ask for path to publish and frequency
+    # it could be set by default to the static dir and then let the user configure that
     install_templates()
     # TODO: setup_user_groups()
     # TODO: add a super user (admin)
@@ -145,20 +149,39 @@ DATABASES['certstore_db'] = {
 }
 """
 
+ALLOWED_HOSTS = """
+ALLOWED_HOSTS = ['{}']
+"""
 
-def create_settings(config):
+OCSP_URL = """
+# OCSP
+OCSP_URL = 'http://{}/'
+
+"""
+
+def get_ocsp_url():
+    """Get OCSP responder URL."""
+    host = input('\nType the hostname of the OCSP responder. Requests will go to http://<host>/:')
+    if not host:
+        host = 'ocsp.webca.net'
+    return host
+
+def create_settings(config, ocsp_url):
     """Write settings files."""
     web_path = os.path.join(BASE_DIR, 'webca', 'settings_local.py')
-    admin_path = os.path.join(
-        BASE_DIR, 'webca', 'ca_admin', 'settings_local.py')
-    service_path = os.path.join(
-        BASE_DIR, 'webca', 'ca_service', 'settings_local.py')
-    _create_settings(config, 'web_', DB_DEFAULT, web_path)
-    _create_settings(config, 'certs_', DB_CERTS, admin_path)
-    _create_settings(config, 'certs_', DB_CERTS, service_path)
+    admin_path = os.path.join(BASE_DIR, 'webca', 'ca_admin', 'settings_local.py')
+    service_path = os.path.join(BASE_DIR, 'webca', 'ca_service', 'settings_local.py')
+    ocsp_path = os.path.join(BASE_DIR, 'webca', 'ca_ocsp', 'settings_local.py')
+    _create_db_settings(config, 'web_', DB_DEFAULT, web_path)
+    _create_db_settings(config, 'certs_', DB_CERTS, admin_path)
+    _create_db_settings(config, 'certs_', DB_CERTS, service_path)
+    _create_db_settings(config, 'certs_', DB_CERTS, ocsp_path)
+    _generic_settings(admin_path, OCSP_URL.format(ocsp_url))
+    _generic_settings(service_path, OCSP_URL.format(ocsp_url))
+    _generic_settings(ocsp_path, ALLOWED_HOSTS.format(ocsp_url))
 
 
-def _create_settings(config, prefix, template, path):
+def _create_db_settings(config, prefix, template, path):
     print('Writing ' + path)
     settings_local = open(path, 'w', encoding='utf-8')
     settings_local.writelines(template % {
@@ -169,6 +192,12 @@ def _create_settings(config, prefix, template, path):
         'password': config[prefix+'password'],
         'port': config[prefix+'port'],
     })
+    settings_local.close()
+
+
+def _generic_settings(path, value):
+    settings_local = open(path, 'a+', encoding='utf-8')
+    settings_local.writelines(value)
     settings_local.close()
 
 
@@ -219,6 +248,7 @@ def setup_certificates():
     _setup_certificates_csr(store)
     # FUTURE: this doesn't make sense anymore. we are not using client cert auth now
     _setup_certificates_user(store, ca_key, ca_cert)
+    _setup_certificates_ocsp(store, ca_key, ca_cert)
 
 
 def _setup_certificates_csr(store):
@@ -342,6 +372,26 @@ def _setup_certificates_user(store, ca_key, ca_cert):
     store.add_certificate(user_key, user_cert)
     Config.set_value(p.CERT_USERSIGN, '{},{}'.format(
         store.STORE_ID, int_to_hex(user_cert.get_serial_number())
+    ))
+
+
+def _setup_certificates_ocsp(store, ca_key, ca_cert):
+    """Create OCSP signing certificate."""
+    from webca.config.models import ConfigurationObject as Config
+    name = [
+        ('CN', 'OCSP Signing'),
+        ('O', 'WebCA'),
+    ]
+    ocsp_key = certs.create_key_pair(c.KEY_RSA, 2048)
+    extensions = [
+        json_to_extension('{"name":"keyUsage","critical":true,"value":"digitalSignature"}'),
+        json_to_extension('{"name":"extendedKeyUsage","critical":false,"value":"OCSPSigning"}'),
+    ]
+    ocsp_csr = certs.create_cert_request(ocsp_key, name, extensions)
+    ocsp_cert = certs.create_certificate(ocsp_csr, (ca_cert, ca_key), new_serial(), (0, 10*365*24*3600))
+    store.add_certificate(ocsp_key, ocsp_cert)
+    Config.set_value(p.CERT_OCSPSIGN, '{},{}'.format(
+        store.STORE_ID, int_to_hex(ocsp_cert.get_serial_number())
     ))
 
 

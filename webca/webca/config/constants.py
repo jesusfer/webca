@@ -11,6 +11,8 @@ CERT_KEYSIGN = 'keysign-c96a8d20-9746-4a95-8d91-17c762b78cf5'
 CERT_CRLSIGN = 'crlsign-c3da02d3-3abf-467a-9f6d-666256eb606f'
 # Parameter name to identify the serial of the certificate to use to sign user authentication certificates
 CERT_USERSIGN = 'usersign-8867be72-25a5-469b-a9a6-78c842389a12'
+# Parameter name to identify the serial of the certificate to use to sign OCSP responses
+CERT_OCSPSIGN = 'ocspsign-0391129c-6571-4b01-b385-502993f59918'
 
 # Serial of a dummy certificate used to generate CSRs
 # Needed for the certificate creation process

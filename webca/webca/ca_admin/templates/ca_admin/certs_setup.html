@@ -42,7 +42,7 @@
 <div class="breadcrumbs">
 <a href="{% url 'admin:index' %}">{% trans 'Home' %}</a>
 &rsaquo;
-CA certificates
+Setup CA certificates
 </div>
 {% endblock %}
 
@@ -91,7 +91,26 @@ CA certificates
                 </td></tr>
                 <tr><td><input name="{{ form.submit_crl.name }}" type="submit" value="Make active"/></td></tr>
             </table>
-            <h3>User authentication certificate</h3>
+            <h3>OCSP response signing certificate</h3>
+            <p>The active certificate will be used to sign the responses in the OCSP responder.
+                It must be in the same validation path as the CA certificate above.</p>
+            <table>
+                <caption>Available certificates</caption>
+                {% if form.ocsp.errors %}
+                <tr><td colspan="2" class="errors">{{ form.ocsp.errors }}</td></tr>
+                {% endif %}
+                <tr><td>
+                    <select name="{{ form.ocsp.name }}" size="5" {% if ocsp_certificates|length_is:'0' %}disabled{% endif %}>
+                        {% for value,cert in ocsp_certificates %}
+                        <option value="{{ value }}" {{ value|selected:ocspsign }}>{{ cert|subject }}{{ value|active:ocspsign }}</option>
+                        {% empty %}
+                        <option>No certificates available</option>                            
+                        {% endfor %}
+                    </select>
+                </td></tr>
+                <tr><td><input name="{{ form.submit_ocsp.name }}" type="submit" value="Make active"/></td></tr>
+            </table>
+            {% comment %}<h3>User authentication certificate</h3>
             <p>The active certificate will be used to sign the user authentication certificates created by this Certification Authority.
                 It must be in the same validation path as the CA certificate above.</p>
             <table>
@@ -109,7 +128,7 @@ CA certificates
                     </select>
                 </td></tr>
                 <tr><td><input name="{{ form.submit_user.name }}" type="submit" value="Make active"/></td></tr>
-            </table>
+            </table>{% endcomment %}
         </form>
     </div>
 </div>

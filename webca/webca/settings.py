@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/2.0/ref/settings/
 """
 
 import os
+from webca import settings_local
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -168,5 +169,6 @@ EMAIL_HOST_PASSWORD = ''
 EMAIL_USE_TLS = True
 EMAIL_USE_SSL = False
 
-from webca import settings_local
-DATABASES.update(settings_local.DATABASES)
+# Local settings
+if hasattr(settings_local, 'DATABASES'):
+    DATABASES.update(settings_local.DATABASES)

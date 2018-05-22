@@ -1,3 +1,6 @@
+"""
+CA certificates views.
+"""
 from cryptography import hazmat
 from django import forms
 from django.contrib import messages
@@ -9,7 +12,7 @@ from django.views import View
 from OpenSSL import crypto
 
 from webca.ca_admin import admin
-from webca.ca_admin.templatetags.ca_admin import serial, subject
+from webca.ca_admin.templatetags import ca_admin as admin_tags
 from webca.certstore import CertificateExistsError, CertStore
 from webca.config import constants as parameters
 from webca.config.models import ConfigurationObject as Config
@@ -19,14 +22,15 @@ from webca.crypto.utils import (asn1_to_datetime, components_to_name,
                                 private_key_type)
 from webca.utils import subject_display
 
-
 class CertificatesView(View):
+    """Render a page to see the installed certificates and details about them."""
     template = 'ca_admin/certs_view.html'
 
     def get(self, request, *args, **kwargs):
+        """Render a page to see the installed certificates and details about them."""
         context = dict(
             admin.admin_site.each_context(request),
-            title='CA Certificates',
+            title='Installed Certificates',
         )
         if 'serial' in kwargs.keys():
             store, serial = kwargs.pop('serial').split('-')
@@ -52,6 +56,29 @@ class CertificatesView(View):
                                 'valid_until': asn1_to_datetime(cert.get_notAfter().decode('utf-8')),
                                 c.KEY_USAGE[c.KU_KEYCERTSIGN]: False,
                                 c.KEY_USAGE[c.KU_CRLSIGN]: False,
+                                c.EXT_KEY_USAGE[c.EKU_OCSPSIGNING]: False,
+                            }
+                        else:
+                            cert = certs[serial]
+                        cert[usage_name] = True
+                        certs[serial] = cert
+                for usage in [c.EKU_OCSPSIGNING]:
+                    usage_name = c.EXT_KEY_USAGE[usage]
+                    for cert in store().get_certificates(ext_key_usage=[usage]):
+                        serial = int_to_hex(cert.get_serial_number())
+                        if serial not in certs.keys():
+                            # TODO: this is ugly!
+                            subject = subject_display(components_to_name(
+                                cert.get_subject().get_components()))
+                            cert = {
+                                'store': name,
+                                'serial': serial,
+                                'subject': subject,
+                                'valid_from': asn1_to_datetime(cert.get_notBefore().decode('utf-8')),
+                                'valid_until': asn1_to_datetime(cert.get_notAfter().decode('utf-8')),
+                                c.KEY_USAGE[c.KU_KEYCERTSIGN]: False,
+                                c.KEY_USAGE[c.KU_CRLSIGN]: False,
+                                c.EXT_KEY_USAGE[c.EKU_OCSPSIGNING]: False,
                             }
                         else:
                             cert = certs[serial]
@@ -64,19 +91,23 @@ class CertificatesView(View):
 class CertificateSetupForm(forms.Form):
     ca = forms.ChoiceField(required=False)
     crl = forms.ChoiceField(required=False)
-    user = forms.ChoiceField(required=False)
+    ocsp = forms.ChoiceField(required=False)
+    # user = forms.ChoiceField(required=False)
     submit_ca = forms.CharField(required=False)
     submit_crl = forms.CharField(required=False)
-    submit_user = forms.CharField(required=False)
+    submit_ocsp = forms.CharField(required=False)
+    # submit_user = forms.CharField(required=False)
 
-    def __init__(self, ca=None, crl=None, user=None, *args, **kwargs):
+    def __init__(self, ca=None, crl=None, ocsp=None, user=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
         ca = ca or []
         crl = crl or []
-        user = user or []
+        ocsp = ocsp or []
+        # user = user or []
         self.fields['ca'].choices = ca
         self.fields['crl'].choices = crl
-        self.fields['user'].choices = user
+        self.fields['ocsp'].choices = ocsp
+        # self.fields['user'].choices = user
 
     def clean(self):
         cleaned_data = super().clean()
@@ -85,47 +116,58 @@ class CertificateSetupForm(forms.Form):
 
 class CertificateSetupView(View):
     form_class = CertificateSetupForm
-    template = 'ca_admin/certificates.html'
+    template = 'ca_admin/certs_setup.html'
 
     def get_context(self, request, **kwargs):
         """Get a default context."""
         keysign = Config.get_value(parameters.CERT_KEYSIGN)
         crlsign = Config.get_value(parameters.CERT_CRLSIGN)
-        usersign = Config.get_value(parameters.CERT_USERSIGN)
+        ocspsign = Config.get_value(parameters.CERT_OCSPSIGN)
+        # usersign = Config.get_value(parameters.CERT_USERSIGN)
 
         initial = {
             'ca': keysign,
             'crl': crlsign,
-            'user': usersign,
+            'ocsp': ocspsign,
+            # 'user': usersign,
         }
         # list of tuples ('store_id,serial', certificate)
         ca_certificates = []
         for store in CertStore.stores():
             for cert in store.get_ca_certificates():
-                value = '{},{}'.format(store.STORE_ID, serial(cert))
+                value = '{},{}'.format(store.STORE_ID, admin_tags.serial(cert))
                 ca_certificates.append((value, cert))
 
         crl_certificates = []
         for store in CertStore.stores():
             for cert in store.get_crl_certificates():
-                value = '{},{}'.format(store.STORE_ID, serial(cert))
+                value = '{},{}'.format(store.STORE_ID, admin_tags.serial(cert))
                 crl_certificates.append((value, cert))
+
+        ocsp_certificates = []
+        for store in CertStore.stores():
+            for cert in store.get_ocsp_certificates():
+                value = '{},{}'.format(store.STORE_ID, admin_tags.serial(cert))
+                ocsp_certificates.append((value, cert))
 
         context = dict(
             admin.admin_site.each_context(request),
-            title='CA Certificates',
+            title='Setup certificates',
             stores=CertStore.all(),
             ca_certificates=ca_certificates,
             crl_certificates=crl_certificates,
-            user_certificates=ca_certificates,
+            ocsp_certificates=ocsp_certificates,
+            # user_certificates=ca_certificates,
             keysign=keysign,
             crlsign=crlsign,
-            usersign=usersign,
+            ocspsign=ocspsign,
+            # usersign=usersign,
             initial=initial,
             form=self.form_class(
                 ca=ca_certificates,
                 crl=crl_certificates,
-                user=ca_certificates,
+                ocsp=ocsp_certificates,
+                # user=ca_certificates,
                 initial=initial,
             )
         )
@@ -144,6 +186,7 @@ class CertificateSetupView(View):
         form = self.form_class(
             ca=context['ca_certificates'],
             crl=context['crl_certificates'],
+            ocsp=context['ocsp_certificates'],
             user=context['user_certificates'],
             data=request.POST,
             initial=context['initial'],
@@ -153,21 +196,21 @@ class CertificateSetupView(View):
                 if 'submit_ca' in form.changed_data and 'ca' in form.changed_data:
                     ca = form.cleaned_data['ca']
                     Config.set_value(parameters.CERT_KEYSIGN, ca)
-                    messages.add_message(
-                        request, messages.INFO, 'Changes saved')
+                    messages.add_message(request, messages.INFO, 'Changes saved')
                 elif 'submit_crl' in form.changed_data and 'crl' in form.changed_data:
                     crl = form.cleaned_data['crl']
                     Config.set_value(parameters.CERT_CRLSIGN, crl)
-                    messages.add_message(
-                        request, messages.INFO, 'Changes saved')
+                    messages.add_message(request, messages.INFO, 'Changes saved')
+                elif 'submit_ocsp' in form.changed_data and 'ocsp' in form.changed_data:
+                    ocsp = form.cleaned_data['ocsp']
+                    Config.set_value(parameters.CERT_OCSPSIGN, ocsp)
+                    messages.add_message(request, messages.INFO, 'Changes saved')
                 elif 'submit_user' in form.changed_data and 'user' in form.changed_data:
                     user = form.cleaned_data['user']
                     Config.set_value(parameters.CERT_USERSIGN, user)
-                    messages.add_message(
-                        request, messages.INFO, 'Changes saved')
+                    messages.add_message(request, messages.INFO, 'Changes saved')
                 else:
-                    messages.add_message(
-                        request, messages.WARNING, 'No changes done')
+                    messages.add_message(request, messages.WARNING, 'No changes done')
             url = reverse('admin:certs_setup')
             return HttpResponseRedirect(url)
         return TemplateResponse(request, self.template, context)
@@ -190,6 +233,7 @@ OPTIONS = [
 
 
 class AddStep1Form(forms.Form):
+    """Form to choose what to do next."""
     option = forms.ChoiceField(
         widget=forms.RadioSelect,
         choices=OPTIONS,
@@ -198,6 +242,7 @@ class AddStep1Form(forms.Form):
 
 
 class AddStep2PFX(AddStep1Form):
+    """Form to upload a PFX file."""
     file = forms.FileField(
         label='PFX file',
     )
@@ -233,6 +278,7 @@ class AddStep2PFX(AddStep1Form):
 
 
 class AddCertificateView(View):
+    """Add a certificate to a store."""
     STEP_CHOOSE = 1
     STEP_CREATE = 2
     STEP_CONFIRM = 3

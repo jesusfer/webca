@@ -4,7 +4,7 @@ have to inherit so that can provide the same features.
 """
 import abc
 
-from webca.crypto.constants import KU_KEYCERTSIGN, KU_CRLSIGN
+from webca.crypto.constants import KU_KEYCERTSIGN, KU_CRLSIGN, EKU_OCSPSIGNING
 
 
 class CertificateExistsError(Exception):
@@ -94,3 +94,7 @@ class CertStore(metaclass=abc.ABCMeta):
     def get_crl_certificates(self):
         """Return the  certificates that can sign CRLs."""
         return self.get_certificates(key_usage=[KU_CRLSIGN])
+
+    def get_ocsp_certificates(self):
+        """Return the  certificates that can sign OCSP responses."""
+        return self.get_certificates(ext_key_usage=[EKU_OCSPSIGNING])

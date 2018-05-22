@@ -8,7 +8,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.urls import include, path
 
-from webca.web.views import IndexView, requests, revocation, auth
+from webca.web.views import IndexView, auth, requests, revocation
 
 request_patterns = ([
     path('', requests.IndexView.as_view(), name='index'),
@@ -16,7 +16,7 @@ request_patterns = ([
     path('view/<int:request_id>/', requests.view_certificate, name='view_cert'),
     path('download/<int:request_id>/pem/', requests.download_certificate, name='download_pem'),
     path('download/<int:request_id>/crt/', requests.download_certificate,
-        {'pem': False}, name='download_crt'),
+         {'pem': False}, name='download_crt'),
 
     path('new/', requests.NewView.as_view(), name='new'),
     path('submit/', requests.SubmitView.as_view(), name='submit'),
@@ -48,5 +48,7 @@ urlpatterns = [
     path('auth/', include(auth_patterns)),
     path('request/', include(request_patterns)),
     path('revoke/', include(revoke_patterns)),
-    # FIXME: STATIC only for dev
-] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+]
+# STATIC only when DEBUG
+if getattr(settings, 'DEBUG', None):
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

@@ -14,7 +14,9 @@
 {% endblock style %}
 
 {% block left_column %}
-<h2>Installed certificates</h2>
+<p>These certificates will be used to sign user requests and other operations in the Certification Authority.
+    Click on a certificate name to see a text version.</p>
+<h2>Available certificates</h2>
 {% if text %}
 <input type="button" onclick="javascript:history.back()" value="Back"/>
 <br/>
@@ -22,7 +24,6 @@
 {{ text }}    
 </code>
 {% else %}
-<p>These certificates will be used to sign user requests and other operations in the Certification Authority.</p>
 <div class="module">
 <table>
     <tr>
@@ -30,8 +31,9 @@
         <th>Serial</th>
         <th>Valid from</th>
         <th>Valid until</th>
-        <th>Key Sign</th>
+        <th>Cert Sign</th>
         <th>CRL Sign</th>
+        <th>OCSP Sign</th>
     </tr>
     {% for serial,cert in certificates.items %}
         <tr>
@@ -41,6 +43,7 @@
             <td>{{ cert.valid_until|date }}</td>
             <td>{{ cert.keyCertSign|boolean_icon }}</td>
             <td>{{ cert.cRLSign|boolean_icon }}</td>
+            <td>{{ cert.OCSPSigning|boolean_icon }}</td>
         </tr>    
     {% empty %}
     <tr>

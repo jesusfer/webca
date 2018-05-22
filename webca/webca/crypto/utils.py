@@ -145,7 +145,7 @@ def check_key_usage(key_type, key_usage, ca=False):
 
 
 def export_certificate(certificate, pem=True, text=False):
-    """Exports a X509 certificate in PEM format."""
+    """Exports a X509 certificate in several formats."""
     if text:
         return crypto.dump_certificate(crypto.FILETYPE_TEXT, certificate).decode('utf-8')
     if pem:
@@ -153,9 +153,13 @@ def export_certificate(certificate, pem=True, text=False):
     return crypto.dump_certificate(crypto.FILETYPE_ASN1, certificate)
 
 
-def export_private_key(key):
-    """Exports a private key in PEM format."""
-    return crypto.dump_privatekey(crypto.FILETYPE_PEM, key).decode('utf-8')
+def export_private_key(key, pem=True, text=False):
+    """Exports a private key in several formats."""
+    if text:
+        return crypto.dump_privatekey(crypto.FILETYPE_TEXT, key).decode('utf-8')
+    if pem:
+        return crypto.dump_privatekey(crypto.FILETYPE_PEM, key).decode('utf-8')
+    return crypto.dump_privatekey(crypto.FILETYPE_ASN1, key)
 
 
 def export_public_key(key):

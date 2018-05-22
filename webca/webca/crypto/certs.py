@@ -161,7 +161,7 @@ def create_ca_certificate(name, bits=2048, pathlen=-1, duration=c.CERT_DURATION,
         basic_constraints += (', pathlen:%d' % pathlen).encode('ascii')
     ca_extensions = [
         crypto.X509Extension(b'basicConstraints', True, basic_constraints),
-        crypto.X509Extension(b'keyUsage', True, b'keyCertSign,cRLSign')
+        crypto.X509Extension(b'keyUsage', True, b'keyCertSign,cRLSign'),
     ]
     serial = new_serial()
     ca_key = create_key_pair(c.KEY_RSA, bits)
