@@ -11,14 +11,14 @@
             <div id="header">
                 <h1 id="title"><a href="{% url 'webca:index' %}">{{ title }}</a></h1>
                 <div id="header_tools">
-                <p>{% if user.is_authenticated %}
-                    Hi, {{ user.email }} / <a href="{% url 'auth:keys_setup' %}">Setup key login</a> / <a href="{% url 'auth:logout' %}">Log out</a>.
-                    {% else %}
-                    <a href="{% url 'auth:keys' %}">Log in</a>.
-                {% endif %}</p>
+                    <p>{% if user.is_authenticated %}
+                        Hi, {{ user.email }} / <a href="{% url 'auth:keys_setup' %}">Setup key login</a> / <a href="{% url 'auth:logout' %}">Log out</a>.
+                        {% else %}
+                        <a href="{% url 'auth:keys' %}">Log in</a>.
+                    {% endif %}</p>
                 {% block header_tools %}
                 {% endblock header_tools %}
-            </div>
+                </div>
             </div>
             {% block breadcrumbs %}
             <div id="breadcrumbs">

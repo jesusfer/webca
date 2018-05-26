@@ -108,7 +108,7 @@ function precheck() {
     }
     catch (error) {
         hasTextEncoder = false;
-        // Create this just so Edge can sign
+        // Create this just so Edge can sign the authentication message
         window.TextEncoder = class TextEncoder {
             constructor(encoding) {}
             encode(str){
@@ -160,6 +160,7 @@ function cb_findKeys(event) {
     }
 }
 
+// Create the key pair and store it in IndexedDB
 function cb_createKeys(event) {
     const db = event.target.result;
     db.onerror = event => {
@@ -220,6 +221,8 @@ function cb_createKeys(event) {
 
 }
 
+// Remove the keys
+// TODO: it may be interesting to notify the web application so that it can remove the public key too
 function cb_removeKeys(event) {
     const db = event.target.result;
     db.onerror = event => {
@@ -234,6 +237,9 @@ function cb_removeKeys(event) {
     store.delete(user_email);
 }
 
+// Call the login endpoint with the signed message so that the application can authenticate the user
+// The message is the user's email. The server will validate the signed message because it's got
+// the public key corresponding to the private key.
 function doLogin(email, key) {
     const crypto = new OpenCrypto();
     var message = crypto.stringToArrayBuffer(email);
@@ -245,19 +251,21 @@ function doLogin(email, key) {
         key,
         message,
     )
-    .catch(error =>{
+    .catch(error => {
         output("Couldn't create the signed message");
     })
     .then(signed => {
         const crypto = new OpenCrypto();
         const base64 = crypto.arrayBufferToBase64(signed);
         return $.post('', {'email':email, 'signed':base64})
-    }) // Errors logging in are saved in the parent
+    }) // Login errors are handled in the parent function
 }
 
 var keyPair = undefined;
 var choosenEmail = undefined;
 
+// Prepare the login screen by checking the installed key pairs
+// and showing the passphrase box if needed
 function cb_login(event) {
     const db = event.target.result;
     db.onerror = event => {
@@ -327,6 +335,7 @@ function cb_login(event) {
     }
 }
 
+// If the selected key has a passphrase, then decrypt it and call the login function 
 function decryptKeys() {
     $('.errorlist').hide();
     const crypto = new OpenCrypto();
@@ -349,6 +358,7 @@ function decryptKeys() {
     })
 }
 
+// Check if there are keys installed in the browser.
 function findKeys() {
     if (!precheck()) { return }
     var request = window.indexedDB.open("WebCA", dbVersion);
@@ -357,6 +367,7 @@ function findKeys() {
     request.onsuccess = cb_findKeys;
 }
 
+// The browser supports encrypting the passphrase, show the passphrase box
 function getPassword() {
     if (hasTextEncoder) {
         document.getElementById('create_button').style.display = 'none';
@@ -367,6 +378,7 @@ function getPassword() {
     }
 }
 
+// Create the keys and store them in the browser
 function setupKeys() {
     if (!precheck()) { return }
     var request = window.indexedDB.open("WebCA", dbVersion);
@@ -375,6 +387,8 @@ function setupKeys() {
     request.onsuccess = cb_createKeys;
 }
 
+
+// Remove the keys from this browser, but only for the logged in user
 function removeKeys() {
     if (!precheck()) { return }
     var request = window.indexedDB.open("WebCA", dbVersion);
@@ -383,6 +397,7 @@ function removeKeys() {
     request.onsuccess = cb_removeKeys;
 }
 
+// Start the login stuff
 function login() {
     if (!precheck()) { 
         window.location = code_login;
@@ -394,6 +409,7 @@ function login() {
     request.onsuccess = cb_login;
 }
 
+// Start the process if there are several keys installed
 function selectKey() {
     choosenEmail = $('#several_keys select')[0].selectedOptions[0].value;
     login();

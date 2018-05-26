@@ -61,14 +61,17 @@ def setup():
     config = {}
     config.update(get_database(MSG_DB, 'web_'))
     config.update(get_database(MSG_DB_CERTS, 'certs_'))
-    ocsp_url = get_ocsp_url()
-    if input('Modify settings?'):
-        create_settings(config, ocsp_url)
-
+    hosts = get_host_names()
+    print("""\nReview the options above, they are needed to continue.\n""")
+    option = input('Continue? (Y/n)').lower()
+    if option == 'n':
+        sys.exit(-1)
+    create_settings(config, hosts)
     init_django()
     print('\n*** Setup of CA certificates ***')
     setup_certificates()
-    # TODO: setup_crl_publishing() Ask for path to publish and frequency
+    # TODO: Ask for path to publish and frequency
+    setup_crl_publishing()
     # it could be set by default to the static dir and then let the user configure that
     install_templates()
     # TODO: setup_user_groups()
@@ -150,7 +153,7 @@ DATABASES['certstore_db'] = {
 """
 
 ALLOWED_HOSTS = """
-ALLOWED_HOSTS = ['{}']
+ALLOWED_HOSTS = {}
 """
 
 OCSP_URL = """
@@ -159,14 +162,25 @@ OCSP_URL = 'http://{}/'
 
 """
 
-def get_ocsp_url():
-    """Get OCSP responder URL."""
-    host = input('\nType the hostname of the OCSP responder. Requests will go to http://<host>/:')
-    if not host:
-        host = 'ocsp.webca.net'
-    return host
 
-def create_settings(config, ocsp_url):
+def get_host_names():
+    """Get the required host names for ALLOWED_HOSTS"""
+    print("""
+As a security measure, the web applications need to know the host names that will be used by the users to access them.
+We need to configure the host for the public web and another for the admin web.
+
+The OCSP reponder also needs a hostname. Requests will go to http://<ocsp_host>/
+""")
+    web_host = input('Public web host: ').lower()
+    admin_host = input('Admin web host: ').lower()
+    ocsp_host = input('OCSP host:').lower()
+    option = input('\nAre these correct? (Y/n)').lower()
+    if option == 'n':
+        return get_host_names()
+    return {'web':web_host, 'admin':admin_host, 'ocsp':ocsp_host}
+
+
+def create_settings(config, hosts):
     """Write settings files."""
     web_path = os.path.join(BASE_DIR, 'webca', 'settings_local.py')
     admin_path = os.path.join(BASE_DIR, 'webca', 'ca_admin', 'settings_local.py')
@@ -176,9 +190,12 @@ def create_settings(config, ocsp_url):
     _create_db_settings(config, 'certs_', DB_CERTS, admin_path)
     _create_db_settings(config, 'certs_', DB_CERTS, service_path)
     _create_db_settings(config, 'certs_', DB_CERTS, ocsp_path)
-    _generic_settings(admin_path, OCSP_URL.format(ocsp_url))
-    _generic_settings(service_path, OCSP_URL.format(ocsp_url))
-    _generic_settings(ocsp_path, ALLOWED_HOSTS.format(ocsp_url))
+
+    _generic_settings(web_path, ALLOWED_HOSTS.format([hosts['web']]))
+    _generic_settings(admin_path, ALLOWED_HOSTS.format([hosts['admin']]))
+    _generic_settings(admin_path, OCSP_URL.format(hosts['ocsp']))
+    _generic_settings(service_path, OCSP_URL.format(hosts['ocsp']))
+    _generic_settings(ocsp_path, ALLOWED_HOSTS.format([hosts['ocsp']]))
 
 
 def _create_db_settings(config, prefix, template, path):
@@ -291,7 +308,7 @@ def _setup_certificates_ca(store):
             out = io.StringIO()
             call_command('importpfx', filename,
                          store.__class__.__name__, stdout=out)
-            ca_serial = re.search('serial=(\w+)', out.getvalue()).groups()[0]
+            ca_serial = re.search(r'serial=(\w+)', out.getvalue()).groups()[0]
             ca_cert = store.get_certificate(ca_serial)
             ca_key = store.get_private_key(ca_serial)
         except CommandError as ex:
@@ -395,6 +412,15 @@ def _setup_certificates_ocsp(store, ca_key, ca_cert):
     ))
 
 
+def setup_crl_publishing():
+    """Do some minimal CRL configuration.
+    We just need to create the default configuration.
+    
+    The CRLs will be published every 15 days and the location will be the STATIC folder.
+    """
+
+
+
 def install_templates():
     print('\nDo you want some certificate templates to be automatically created?')
     option = input('Continue? (Y/n): ').lower()
@@ -404,12 +430,14 @@ def install_templates():
     data = open(os.path.join(BASE_DIR, 'setup/templates.json'))
     templates = serializers.deserialize('json', data)
     for template in templates:
-        print(template.object.name)
         template.save()
+        print('Created: %s' % template.object.name)
 
 
 if __name__ == '__main__':
     try:
         setup()
     except KeyboardInterrupt:
+        print('\n\n**** Setup is NOT complete ****', file=sys.stderr)
+        print('**** Please run this script again ****\n', file=sys.stderr)
         sys.exit(-1)

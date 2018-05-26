@@ -172,3 +172,6 @@ EMAIL_USE_SSL = False
 # Local settings
 if hasattr(settings_local, 'DATABASES'):
     DATABASES.update(settings_local.DATABASES)
+
+if hasattr(settings_local, 'ALLOWED_HOSTS'):
+    ALLOWED_HOSTS.extend(settings_local.ALLOWED_HOSTS)

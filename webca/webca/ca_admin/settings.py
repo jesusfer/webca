@@ -26,6 +26,9 @@ TEMPLATES[0]['OPTIONS']['libraries'] = {
 if hasattr(settings_local, 'DATABASES'):
     DATABASES.update(settings_local.DATABASES)
 
+if hasattr(settings_local, 'ALLOWED_HOSTS'):
+    ALLOWED_HOSTS.extend(settings_local.ALLOWED_HOSTS)
+
 OCSP_URL = ''
 if hasattr(settings_local, 'OCSP_URL'):
     OCSP_URL = settings_local.OCSP_URL
