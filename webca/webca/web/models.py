@@ -239,6 +239,7 @@ class Certificate(models.Model):
     serial = models.CharField(
         max_length=100,
         help_text='Serial number of the certificate as an hex string',
+        db_index=True,
     )
     subject = models.CharField(
         max_length=255,
