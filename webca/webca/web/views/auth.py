@@ -24,8 +24,23 @@ from django.template.loader import render_to_string
 from webca.web.forms import CodeLoginForm, EmailLoginForm, KeysLoginForm
 from webca.web.views import WebCAAuthView, WebCAView
 
-User = get_user_model()
-AllUsersGroup = Group.objects.get(pk=1)
+
+class Cache:
+    """Class to cache models and objects"""
+    User = None
+    All_Users_Group = None
+
+
+def user_model():
+    """Get the cached User model."""
+    if Cache.User is None:
+        Cache.User = get_user_model()
+    return Cache.User
+
+def default_group():
+    if Cache.All_Users_Group is None:
+        Cache.All_Users_Group = Group.objects.get(pk=1)
+    return Cache.All_Users_Group
 
 def logout_user(request, *args, **kwargs):
     """Log a user out."""
@@ -34,15 +49,15 @@ def logout_user(request, *args, **kwargs):
 
 def set_code(email):
     """Store the unique code in the user profile, creating the user if it's the first time."""
-    user = User.objects.filter(email=email).first()
+    user = user_model().objects.filter(email=email).first()
     if not user:
-        user = User.objects.create_user(
+        user = user_model().objects.create_user(
             username=sha256(email.encode('utf8')).hexdigest(),
             email=email,
         )
         user.is_active = False
         user.backend = 'django.contrib.auth.backends.ModelBackend'
-        user.groups.add(AllUsersGroup)
+        user.groups.add(default_group())
         user.save()
         # request.session['first_visit']=True
     user.ca_user.code = secrets.token_hex(16)
@@ -57,7 +72,7 @@ def set_code(email):
 
 def is_code_valid(email, code):
     """Check if the unique code is valid for a user."""
-    user = User.objects.filter(email=email).first()
+    user = user_model().objects.filter(email=email).first()
     if not user:
         raise ValueError('email')
     stored_code = user.ca_user.code
@@ -192,7 +207,7 @@ class KeysLoginView(WebCAView):
         if form.is_valid():
             email = form.cleaned_data['email']
             signed = form.cleaned_data['signed']
-            user = User.objects.filter(email=email).first()
+            user = user_model().objects.filter(email=email).first()
             if user:
                 for key in user.ca_user.public_keys:
                     public_key = load_pem_public_key(key.encode('utf8'), default_backend())
