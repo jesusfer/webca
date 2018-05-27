@@ -25,25 +25,6 @@ def revoke_certificate(certificate,
     return rev
 
 
-def create_crl_pyopenssl(revoked_list, next_update_days, issuer):
-    """Create a CRL using just pyopenssl.
-
-    Cannot use extensions with this function.
-    """
-    issuer_cert, issuer_key = issuer
-    crl = crypto.CRL()
-    for revoked in revoked_list:
-        crl.add_revoked(revoked)
-    this_update = datetime.utcnow()
-    next_update = this_update + timedelta(days=next_update_days)
-    crl.set_lastUpdate(datetime_to_asn1(this_update))
-    crl.set_nextUpdate(datetime_to_asn1(next_update))
-    crl.set_version(1)  # for v2
-
-    _crl = crl.to_cryptography()
-    return crl
-
-
 # is_delta=False, delta_number=None, crl_locations=None
 def create_crl(revoked_list, days, issuer, number):
     """Create a CRL using cryptography's API and then convert it to pyopenssl.

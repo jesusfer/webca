@@ -113,13 +113,13 @@ class CodeLoginView(WebCAView):
             code = set_code(form.cleaned_data['email'])
             mail_body = render_to_string(settings.AUTH_CODE_BODY_TEMPLATE, {'code':code})
             try:
-                # send_mail(
-                #     settings.AUTH_CODE_MAIL_SUBJECT,
-                #     mail_body,
-                #     settings.AUTH_CODE_FROM,
-                #     [form.cleaned_data['email']],
-                #     fail_silently=False,
-                # )
+                send_mail(
+                    settings.AUTH_CODE_MAIL_SUBJECT,
+                    mail_body,
+                    settings.AUTH_CODE_FROM,
+                    [form.cleaned_data['email']],
+                    fail_silently=False,
+                )
                 self.context.update({
                     'form': login_form,
                 })

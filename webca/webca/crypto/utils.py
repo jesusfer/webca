@@ -52,6 +52,8 @@ def components_to_name(components):
         components - list of (b'name', b'value') or ('name', 'value')
     """
     subject = ''
+    if not components:
+        return subject
     decode = getattr(components[0][0], 'decode', None)
     for name, value in components:
         if decode:
@@ -76,6 +78,8 @@ def datetime_to_asn1(when=datetime.utcnow()):
 
 def asn1_to_datetime(when):
     """Convert a ASN.1 datetime to datetime offset-aware object."""
+    if isinstance(when, bytes):
+        when = when.decode('utf8')
     when = when[0:-1] + '+0000'
     datetime_object = datetime.strptime(when, ASN1_FMT + '%z')
     return datetime_object
@@ -89,7 +93,7 @@ def private_key_type(x509object):
     """Return the type of key used in a private key.
     Arguments
     ---------
-    `x509object` - an `OpenSSL.crypto.PKCS12`
+    `x509object` - an `OpenSSL.crypto.PKCS12` or `OpenSSL.crypto.PKey`
 
     Returns: one of `webca.crypto.constants.KEY_TYPE`
     """
@@ -143,8 +147,7 @@ def check_key_usage(key_type, key_usage, ca=False):
 # Output helpers #
 ##################
 
-
-def export_certificate(certificate, pem=True, text=False):
+def export_certificate(certificate, pem=True, text=False): # pragma: no cover
     """Exports a X509 certificate in several formats."""
     if text:
         return crypto.dump_certificate(crypto.FILETYPE_TEXT, certificate).decode('utf-8')
@@ -153,7 +156,7 @@ def export_certificate(certificate, pem=True, text=False):
     return crypto.dump_certificate(crypto.FILETYPE_ASN1, certificate)
 
 
-def export_private_key(key, pem=True, text=False):
+def export_private_key(key, pem=True, text=False): # pragma: no cover
     """Exports a private key in several formats."""
     if text:
         return crypto.dump_privatekey(crypto.FILETYPE_TEXT, key).decode('utf-8')
@@ -162,34 +165,34 @@ def export_private_key(key, pem=True, text=False):
     return crypto.dump_privatekey(crypto.FILETYPE_ASN1, key)
 
 
-def export_public_key(key):
+def export_public_key(key): # pragma: no cover
     """Exports a public key in PEM format."""
     return crypto.dump_publickey(crypto.FILETYPE_PEM, key).decode('utf-8')
 
 
-def export_crl(crl, text=False):
+def export_crl(crl, text=False): # pragma: no cover
     """Exports a CRL in PEM format."""
     if text:
         return crypto.dump_crl(crypto.FILETYPE_TEXT, crl).decode('utf-8')
     return crypto.dump_crl(crypto.FILETYPE_PEM, crl).decode('utf-8')
 
 
-def export_csr(csr, text=False):
+def export_csr(csr, text=False): # pragma: no cover
     """Export a CSR as text."""
     if text:
         return crypto.dump_certificate_request(crypto.FILETYPE_TEXT, csr).decode('utf-8')
     return crypto.dump_certificate_request(crypto.FILETYPE_PEM, csr).decode('utf-8')
 
 
-def import_csr(csr):
+def import_csr(csr): # pragma: no cover
     """Import a PEM CSR to a OpenSSL.crypto.X509Req."""
     return crypto.load_certificate_request(crypto.FILETYPE_PEM, csr)
 
 
-def print_certificate(certificate):
+def print_certificate(certificate): # pragma: no cover
     print(crypto.dump_certificate(
         crypto.FILETYPE_TEXT, certificate).decode('utf-8'))
 
 
-def print_crl(crl):
+def print_crl(crl): # pragma: no cover
     print(crypto.dump_crl(crypto.FILETYPE_TEXT, crl).decode('utf-8'))
