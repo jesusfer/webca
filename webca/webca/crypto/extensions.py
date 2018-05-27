@@ -62,24 +62,24 @@ class KeyUsage(MultiValueExtension):
         if extension.oid.dotted_string != '2.5.29.15':
             raise ValueError('extension')
         usage = KeyUsage()
-        if extension.value.digital_signature:
+        if extension.digital_signature:
             usage = usage.digitalSignature()
-        if extension.value.content_commitment:
+        if extension.content_commitment:
             usage = usage.nonRepudiation()
-        if extension.value.key_encipherment:
+        if extension.key_encipherment:
             usage = usage.keyEncipherment()
-        if extension.value.data_encipherment:
+        if extension.data_encipherment:
             usage = usage.dataEncipherment()
-        if extension.value.key_agreement:
+        if extension.key_agreement:
             usage = usage.keyAgreement()
             # For these to work, key_agreement must be True
-            if extension.value.encipher_only:
+            if extension.encipher_only:
                 usage = usage.encipherOnly()
-            if extension.value.decipher_only:
+            if extension.decipher_only:
                 usage = usage.decipherOnly()
-        if extension.value.key_cert_sign:
+        if extension.key_cert_sign:
             usage = usage.keyCertSign()
-        if extension.value.crl_sign:
+        if extension.crl_sign:
             usage = usage.cRLSign()
         return usage
 
@@ -102,7 +102,7 @@ class ExtendedKeyUsage(MultiValueExtension):
         if extension.oid.dotted_string != '2.5.29.37':
             raise ValueError('extension')
         eku = ExtendedKeyUsage()
-        for oid in extension.value:
+        for oid in extension:
             eku = getattr(eku, oid._name)()
         return eku
 

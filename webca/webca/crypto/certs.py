@@ -154,7 +154,7 @@ def create_ca_certificate(name, bits=2048, pathlen=-1, duration=c.CERT_DURATION,
     `bits` - Size of the key to generate
     `pathlen` - Pathlen value in BasicConstraints
     `duration` - Time in seconds (default: `constants.CERT_DURATION`)
-    Returns: The signed certificate in a `OpenSSL.crytpo.X509`
+    Returns: The signed certificate in a `OpenSSL.crypto.X509`
     """
     basic_constraints = b'CA:TRUE'
     if pathlen > -1:
