@@ -2,6 +2,8 @@
 import traceback
 from base64 import b64decode
 from datetime import datetime
+from urllib.parse import unquote
+import binascii
 
 from asn1crypto.ocsp import OCSPRequest
 from asn1crypto.util import timezone
@@ -96,11 +98,22 @@ class OCSPResponder(View):
         """
         slug = kwargs.pop('slug', '')
         if not slug:
-            return HttpResponseBadRequest()
+            return self._ocsp_error('malformed_request')
         try:
-            return self.process_ocsp_request(request, b64decode(slug))
+            req = b64decode(unquote(slug))
+            return self.process_ocsp_request(request, req)
+        except binascii.Error as error:
+            # print('OCSP Responder GET error: {} - {}'.format(
+            #         type(error),
+            #         error
+            #     ))
+            # traceback.print_exc(error)
+            return self._ocsp_error('malformed_request')
         except ValueError as error:
-            print('OCSP Responder error: %s' % error)
+            # print('OCSP Responder GET error: {} - {}'.format(
+            #         type(error),
+            #         error
+            #     ))
             # traceback.print_exc(error)
             return self._ocsp_error('internal_error')
 
@@ -116,19 +129,22 @@ class OCSPResponder(View):
         try:
             return self.process_ocsp_request(request, request.body)
         except ValueError as error:
-            print('OCSP Responder error: %s' % error)
+            # print('OCSP Responder POST error: {} - {}'.format(
+            #         type(error),
+            #         error
+            #     ))
             # traceback.print_exc(error)
             return self._ocsp_error('internal_error')
 
     def process_ocsp_request(self, request, raw):
         """
         Response types:
-            'successful',
-            'malformed_request',
-            'internal_error',
-            'try_later',
-            'sign_required',
-            'unauthorized'
+            - "successful" - when the response includes information about the certificate
+            - "malformed_request" - when the request could not be understood
+            - "internal_error" - when an internal error occured with the OCSP responder
+            - "try_later" - when the OCSP responder is temporarily unavailable
+            - "sign_required" - when the OCSP request must be signed
+            - "unauthorized" - when the responder is not the correct responder for the certificate
         """
         ocsp = OCSPRequest.load(raw)
         # FUTURE: check the issuer key hash to make sure it's for us
@@ -149,7 +165,7 @@ class OCSPResponder(View):
                     if not cert:
                         # FIXME: To return unknown we need to pass the cert details.
                         # builder = OCSPResponseBuilder('successful', None, 'unknown')
-                        return self._ocsp_error('internal_error')
+                        return self._ocsp_error('unauthorized')
                     else:
                         der = crypto_utils.export_certificate(cert.get_certificate(), pem=False)
                         subject_cert = asymmetric.load_certificate(der)
@@ -164,12 +180,13 @@ class OCSPResponder(View):
                 builder.certificate_issuer = self.issuer_cert
                 ocsp_response = builder.build(self.ocsp_key, self.ocsp_cert)
                 # FUTURE: cache this so it doesn't have to be loaded every time
-                return HttpResponse(ocsp_response.dump())
+                return HttpResponse(ocsp_response.dump(), content_type='application/ocsp-response')
         # Didn't get any serial??
         return self._ocsp_error('malformed_request')
 
     def _ocsp_error(self, error):
         """Return an `error` OCSPResponse."""
+        # print('OCSP Responder error: %s' % error)
         builder = OCSPResponseBuilder(error)
-        ocsp_response = builder.build(self.ocsp_key, self.ocsp_cert)
-        return HttpResponse(ocsp_response.dump())
+        ocsp_response = builder.build()#self.ocsp_key, self.ocsp_cert)
+        return HttpResponse(ocsp_response.dump(), content_type='application/ocsp-response')

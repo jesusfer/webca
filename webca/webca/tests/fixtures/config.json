@@ -1,0 +1,50 @@
+[
+{
+  "model": "config.configurationobject",
+  "pk": 4,
+  "fields": {
+    "name": "csrsign-2ea16b24-3350-44ea-a1ba-7d546d4941b4",
+    "value": "9a16e500-cc97-48e4-9b62-4e41d91c2607,ead4390b800a3ea472781bc2916178fa"
+  }
+},
+{
+  "model": "config.configurationobject",
+  "pk": 6,
+  "fields": {
+    "name": "usersign-8867be72-25a5-469b-a9a6-78c842389a12",
+    "value": "9a16e500-cc97-48e4-9b62-4e41d91c2607,3b246e08ad69f986257475d594e0034b"
+  }
+},
+{
+  "model": "config.configurationobject",
+  "pk": 7,
+  "fields": {
+    "name": "keysign-c96a8d20-9746-4a95-8d91-17c762b78cf5",
+    "value": "9a16e500-cc97-48e4-9b62-4e41d91c2607,f63db9a5307f3d410864eee6c90dad5c"
+  }
+},
+{
+  "model": "config.configurationobject",
+  "pk": 11,
+  "fields": {
+    "name": "crlsign-c3da02d3-3abf-467a-9f6d-666256eb606f",
+    "value": "9a16e500-cc97-48e4-9b62-4e41d91c2607,f63db9a5307f3d410864eee6c90dad5c"
+  }
+},
+{
+  "model": "config.configurationobject",
+  "pk": 13,
+  "fields": {
+    "name": "crlconfig-b953912c-e962-4c0e-b75b-d7faa23c78f2",
+    "value": "{\"path\": \"d:\\\\temp\\\\test.crl\", \"last_update\": 1526922621.881865, \"next_update\": 1528132221.881865, \"days\": 14, \"delta_last_update\": \"\", \"delta_next_update\": \"\", \"delta_days\": 1, \"sequence\": 4, \"status\": \"OK\"}"
+  }
+},
+{
+  "model": "config.configurationobject",
+  "pk": 14,
+  "fields": {
+    "name": "ocspsign-0391129c-6571-4b01-b385-502993f59918",
+    "value": "9a16e500-cc97-48e4-9b62-4e41d91c2607,7bdeaca7dcb023e1b750b54101fee569"
+  }
+}
+]

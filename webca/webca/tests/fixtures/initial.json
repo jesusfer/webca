@@ -1,0 +1,568 @@
+[
+{
+  "model": "auth.group",
+  "pk": 1,
+  "fields": {
+    "name": "All users",
+    "permissions": []
+  }
+},
+{
+  "model": "auth.group",
+  "pk": 2,
+  "fields": {
+    "name": "CA requesters",
+    "permissions": []
+  }
+},
+{
+  "model": "auth.group",
+  "pk": 4,
+  "fields": {
+    "name": "Operators",
+    "permissions": [
+      7,
+      8,
+      11,
+      46,
+      29,
+      19,
+      20,
+      22,
+      23,
+      24
+    ]
+  }
+},
+{
+  "model": "auth.user",
+  "pk": 1,
+  "fields": {
+    "password": "pbkdf2_sha256$100000$KIkioLb2uBKr$i7TQmVMpsZenHImNRmJi59hTvo6FbqcnjE/RL1p1CNI=",
+    "last_login": "2018-05-26T10:40:19.195Z",
+    "is_superuser": true,
+    "username": "admin",
+    "first_name": "",
+    "last_name": "",
+    "email": "admin@webca.net",
+    "is_staff": true,
+    "is_active": true,
+    "date_joined": "2018-04-29T22:38:29Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "pk": 2,
+  "fields": {
+    "password": "pbkdf2_sha256$100000$vPg4kZJ8tCVC$tvpoa6QoiiCOPn+j3zIxcjJ7ahf2U1w5Djubq1zhD0U=",
+    "last_login": "2018-05-14T18:59:51Z",
+    "is_superuser": false,
+    "username": "oper",
+    "first_name": "",
+    "last_name": "",
+    "email": "",
+    "is_staff": true,
+    "is_active": true,
+    "date_joined": "2018-05-02T16:12:21Z",
+    "groups": [
+      1,
+      4
+    ],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "pk": 8,
+  "fields": {
+    "password": "!16guuvo1WfXizu4LNdQ4SbN0hWK9iQFHAnFWPxB2",
+    "last_login": "2018-05-20T18:26:11.603Z",
+    "is_superuser": false,
+    "username": "f660ab912ec121d1b1e928a0bb4bc61b15f5ad44d5efdc4e1c92a25e99b8e44a",
+    "first_name": "",
+    "last_name": "",
+    "email": "test@test.com",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2018-05-18T23:39:27Z",
+    "groups": [
+      4
+    ],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "pk": 9,
+  "fields": {
+    "password": "!B4CYQOsvFCqsYH2QfGHvwwGqSKPJ9lgZ5vyhcc3k",
+    "last_login": "2018-05-19T00:08:10.330Z",
+    "is_superuser": false,
+    "username": "71761f375722b76c84ac72fd61ca7dffe9205dcbd5f599925fb38985216f8937",
+    "first_name": "",
+    "last_name": "",
+    "email": "bla@bla.com",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2018-05-19T00:08:03.068Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "pk": 10,
+  "fields": {
+    "password": "!CRde4uSsmzpW7v3Cras5HPLHn4QPK5tvdYFKsMGB",
+    "last_login": "2018-05-20T20:26:28.399Z",
+    "is_superuser": false,
+    "username": "9ce0afdb99c2abbbb728175fe2b12b5f6fdce19cc515b7deea77c47b6088ce09",
+    "first_name": "",
+    "last_name": "",
+    "email": "jesusfs@gmail.com",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2018-05-20T20:23:14.353Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "pk": 11,
+  "fields": {
+    "password": "!HPs3xZ62Szk2mFmO3riJj6KwMplSdGT5OHlQVQgf",
+    "last_login": null,
+    "is_superuser": false,
+    "username": "ab5a6f4535741a7c7e96ea02550542d8e18fb921b6b205e437040c54d913769e",
+    "first_name": "",
+    "last_name": "",
+    "email": "asda@asdasdasd.com",
+    "is_staff": false,
+    "is_active": false,
+    "date_joined": "2018-05-20T20:30:14.004Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "pk": 12,
+  "fields": {
+    "password": "!gTgcWBohghvhVRMGo6uMIJidYK7xH010ZTXnoAx2",
+    "last_login": null,
+    "is_superuser": false,
+    "username": "71fa2c8173da90a4129f121272cfeeafdb1fe955d9f16342e51eb7e1ba4a8b40",
+    "first_name": "",
+    "last_name": "",
+    "email": "sda@asda.com",
+    "is_staff": false,
+    "is_active": false,
+    "date_joined": "2018-05-20T21:04:06Z",
+    "groups": [
+      1
+    ],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "pk": 13,
+  "fields": {
+    "password": "!ulpqY5ww43PZjrDeCrTK9uiGStpQOPIej9OIp9aj",
+    "last_login": "2018-05-20T22:03:48.760Z",
+    "is_superuser": false,
+    "username": "0abca3225c4605d440d0ef99e5207cc0b682c64ea13f3c120266786c7b5675a9",
+    "first_name": "",
+    "last_name": "",
+    "email": "asdasdasad@asdasdqweqsdas.com",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2018-05-20T22:02:44.985Z",
+    "groups": [
+      1
+    ],
+    "user_permissions": []
+  }
+},
+{
+  "model": "config.configurationobject",
+  "pk": 4,
+  "fields": {
+    "name": "csrsign-2ea16b24-3350-44ea-a1ba-7d546d4941b4",
+    "value": "9a16e500-cc97-48e4-9b62-4e41d91c2607,ead4390b800a3ea472781bc2916178fa"
+  }
+},
+{
+  "model": "config.configurationobject",
+  "pk": 6,
+  "fields": {
+    "name": "usersign-8867be72-25a5-469b-a9a6-78c842389a12",
+    "value": "9a16e500-cc97-48e4-9b62-4e41d91c2607,3b246e08ad69f986257475d594e0034b"
+  }
+},
+{
+  "model": "config.configurationobject",
+  "pk": 7,
+  "fields": {
+    "name": "keysign-c96a8d20-9746-4a95-8d91-17c762b78cf5",
+    "value": "9a16e500-cc97-48e4-9b62-4e41d91c2607,f63db9a5307f3d410864eee6c90dad5c"
+  }
+},
+{
+  "model": "config.configurationobject",
+  "pk": 11,
+  "fields": {
+    "name": "crlsign-c3da02d3-3abf-467a-9f6d-666256eb606f",
+    "value": "9a16e500-cc97-48e4-9b62-4e41d91c2607,f63db9a5307f3d410864eee6c90dad5c"
+  }
+},
+{
+  "model": "config.configurationobject",
+  "pk": 13,
+  "fields": {
+    "name": "crlconfig-b953912c-e962-4c0e-b75b-d7faa23c78f2",
+    "value": "{\"path\": \"d:\\\\temp\\\\test.crl\", \"last_update\": 1526922621.881865, \"next_update\": 1528132221.881865, \"days\": 14, \"delta_last_update\": \"\", \"delta_next_update\": \"\", \"delta_days\": 1, \"sequence\": 4, \"status\": \"OK\"}"
+  }
+},
+{
+  "model": "config.configurationobject",
+  "pk": 14,
+  "fields": {
+    "name": "ocspsign-0391129c-6571-4b01-b385-502993f59918",
+    "value": "9a16e500-cc97-48e4-9b62-4e41d91c2607,7bdeaca7dcb023e1b750b54101fee569"
+  }
+},
+{
+  "model": "web.causer",
+  "pk": 2,
+  "fields": {
+    "user": 1,
+    "code": "",
+    "keys": "-----BEGIN PUBLIC KEY-----\r\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAunfUh9EpeFXnKzF5a3vJ\r\ndg201q21TKtL34lJ/oiAvovKmfHNk9TP3eEpzSor2klJ+2Xwz6/Z4DGlI4HNeoMy\r\nivnTV6yjmnvMTK73Jq436kX5YYLB+GgyBZZsq7BP48lu3D05JiWWLJ8djFgjxZZy\r\nyJuLB0Ok0srpAFgR9VE/yjZeR0GlVihFQ7pE8QKvscl9+8WrJnB8bNJFU0CLABYz\r\nNAwiF7cfWHTzZ3y8g6L9QAT351uirp1tRPcUgL29vpLhQeZ1uqfAgbhj1cUqlfph\r\nytBQrdwZVUSayuXK1dR6UxLpRYquAKI+UvpTn/1V22BXX4jgZAkw+Ca4p+vYYjZe\r\ntwIDAQAB\r\n-----END PUBLIC KEY-----,-----BEGIN PUBLIC KEY-----\r\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAjGD4NymE05cQEmjweqk4\r\nPUuLJEQyNsUWhinoW/Gkjt+ykcpQx/tsrBnENHXJ9qKIxquNow2DmkmPjsKEXB/w\r\n5gBfqOnSf+f/w2LXy2ebUaoo6m45ILAN1Q0F8933P0RyQZYK6zt9g4mm87fCaUQS\r\nM9RfKlM9+LLQNL2+1yYn+zxXfdZdeDP1+pv+k+pI/qL1mwxPPEV7UwrDys7Nq9Fw\r\nQIpcGhSUHPHZ0wx7pJ6PT25kTrX15BsIQrmj++IDvxoEynXKm2amqLtetdZ23TFH\r\nEhHhFJ6DCeyKpXg2NjZUG9SoooWGfqjCOFKhOP+IruDdAwrcYRDS2m5a6EGvxpG0\r\nSQIDAQAB\r\n-----END PUBLIC KEY-----,-----BEGIN PUBLIC KEY-----\r\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAvEj+SD4yDh/w+qw7AcWg\r\naIE8/ur3hY/IDpLDh/Q9DXufzVvT8J+1y8aF3QXnmH2fL77wDgIxOqITIbUQbAb+\r\nO9ZMwipWmoZV1fGc4oy1eM26ct2eJF5Pl/DNZ/xMbRbYp7klT4H0bR9E7oSobqHo\r\nWnrOkOp61mOReywbSfGnzEeBusA95jcwqsSEB3Fqkz6y77tyMtgwV7p++sdkdgvX\r\nU7HKS/rQM18zb8T7JoNzCzgwxeGbU1dVzNLNct5HOjAmd7a/YhMazCRxqNPbzscU\r\nEtXZGrF8EHN9fsvok+8A243zFfkBAWxTEJxtz38wVGmGjjZlqIg7ATv3ezGtI8xn\r\n+QIDAQAB\r\n-----END PUBLIC KEY-----,-----BEGIN PUBLIC KEY-----\r\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEApayy2PYj8aXEAa5KeqWI\r\nWUY/KRv4TP9kq6wd0NOyxvbw2wm8FmhsjVb72syjaDz5d19MH6DRSyTnFJ1GQf4k\r\nsvEK4TrhxCPZDsg5kz1XbQUIHMZcgjdBXP1QqcDf2eGElZeZzETmioV0SkfJOY8K\r\nDEVIEcBMx7GZce/wLRWTgYkBAxGQHzkhUcOuZQCayX6OZ0zldBzALiEclKi6cC6q\r\nvdONVgL0B5tCE8CoWC+LqyzCiRm6NGCG5SDCczJs1PszHLu489WGi/YaflDlFFil\r\nDQwFc31u+ODseT8AbF2yo5sXsfDoA9expWtFPL1WmGyH+SUzKNJ+Omabs1WJFwhf\r\n1QIDAQAB\r\n-----END PUBLIC KEY-----,-----BEGIN PUBLIC KEY-----\r\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAt843VN84XWT4Pw3IFc3g\r\nGy4rN4BzeAnQJl/gf47a1sKflbtM8NllHsUi2zNA/puoKBAX5Ax7pinMm2iI4u0g\r\nVZWZjQbPYKKyd4ma1GMM40MhkfZeJ3hO+dQPQcVm8ZGX8hBskMgRs4JWAUeouF7f\r\nk5yscpxwxvnxUQBxGA5V09nxJcKCSpDt0aSJOAGHm2fCTfRMQsdebRxvvLT6WTOY\r\nACaZipg1EmWHyIEAHvAChhcqTLQuuGWvjQhCA5ZEHHY45eH8K981CcuI/a+q/jxW\r\nZlm3Qb+2p7lmD82pyskDSxBroYNb0btagSMB68/awpTSOZEIHAXTfK+SwaLjvao/\r\nIwIDAQAB\r\n-----END PUBLIC KEY-----"
+  }
+},
+{
+  "model": "web.causer",
+  "pk": 5,
+  "fields": {
+    "user": 8,
+    "code": "",
+    "keys": "-----BEGIN PUBLIC KEY-----\r\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAzlsNK/ajO/WCyLnAjoND\r\noiH/swL0DrfN/EHVX1bsudmWaCfDqG9tlVNGglgAIo4b7TRax1ZBSH5L3rB6i3TT\r\n2k6jPVLgJbUL0ydnsJ/+nWaDRi3tSywhTkHWNZlzEQRDMdSROJn7YtR/HPc+AnJs\r\n2r30+ikaBZoLQPGhE6sci19gMNoGsKbCtPmgn4pAIsVSnA575L6lAwGvTRFcsP45\r\ntSWOPp4rO5CLF03OW0QVa8G8itvR4P4AJCbXd3p2wArxGTxw8DTcGR0gkewrSP2b\r\nIGr45M36mjLx6zbTaLNczIOC/8j2jv+hZz7fcvvQkCqLX7Z+eh5rPa0swgifH70y\r\n2QIDAQAB\r\n-----END PUBLIC KEY-----,-----BEGIN PUBLIC KEY-----\r\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA1r+H25VX1JPHprx2GL6y\r\nTXJ0uWI7mAH3XEV1DGKmD7jvZ+YXV28uxMTHUGC3Ra9rEepSHuy4KXcirvwOfqKT\r\nmduoskJI92vAAgD7Ng/D7spjICnMxR+ObCc/vEuFVoLRFoWcZ6S4nG7MKSd7Q0Jh\r\nHwrh39QJa6hftbrfB/qnXoL4xEDFBD6BwDaaY5fm1IlkYYmYc2jnK6YViPzkKhM3\r\nf2+rs6A6agMsXpAradrcriKwRnj1f3BgZa8f7QzpGaD5PzWUAXImBRiedWx2riOI\r\n9N7xmWO+vP24WDv+6sRJNAt746Uv+KasANPkSdDUcB0bW6EnWG+rU+Px2HhVNm+i\r\nwwIDAQAB\r\n-----END PUBLIC KEY-----,-----BEGIN PUBLIC KEY-----\r\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAuzxo+GpAdjleHHiOHNgp\r\nRT1Q86fgcdgob2yNv806mjPrXtFgsNTILeWLFHyStzV/ghbaXwO2Tf3VrIg4A6Yg\r\nO0y5hqCQckufavqWqU5UfW17fMr6wAmvnVLtwnhUYSWSn+g52oy12yFJGY+6430m\r\nI7A4wPdq1cmA4wJyECJDf2rr1ymJSmHLa4ROifeJQhHUHD7lzaoU1coOoTIy8Q0j\r\nUCv2/3JjSW63xgVvcmZQ9yBR+FrQ+LvMaJR0uQPIpME5bV30sTWDaG0eLpHxvXIi\r\nv+2c6d1hKntXkiOVjPnyeQXqi4Yx2f+rGCeFxg52yW6vwSr8DZiiE4qBN6rorQbz\r\n4QIDAQAB\r\n-----END PUBLIC KEY-----,-----BEGIN PUBLIC KEY-----\r\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAw+zv6NLqU8fmxOFoPPF0\r\nHzKClMXG2tVeIjFrhkMpWvjQTfrdIKV3LZGBUDtOekqjFZn+YzVw2jm7jIAscK6I\r\nuWT12OxOFbd5REKM4U3DXPIXOEwjnryT2GX4T/yWNB3GuT85v8/L8drAwZG3nmE/\r\nJK2aDinYELpt5PiAqS/vqYAVQQueg9MNOQbYnN6tFC9vS6jFyM/KORRVkiPdBs79\r\nEGAIvSpDGVboeRem/Y9ZL3XusTVBVyroN4VzU7bPJxyUMkESKHI4Q90i3dySTs7O\r\nFFr2iTQOF1HAQ2wIj7GeVnEuKdrUY3DWd6aM8onzSjdD2Ap7ss7Ie8am7aF7gx09\r\noQIDAQAB\r\n-----END PUBLIC KEY-----,-----BEGIN PUBLIC KEY-----\r\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAttJ0uJGine68tn1PAh/V\r\nKTwW/J5mWTocYezWhN3bJEZskzC/sECpT25H53yeLvw8HYjlupmByW0CKalu07Ce\r\nRUeGwIqZie+TOzmkx4OTMyfToDMA/K+H04W/ilIvHqFpvVkmcj3iA/QbqUG3is45\r\n3eCpOAqNhnCdtOC4aj5U+ClTWfeMN5k20cp+iIa4yqxs/0d+rUjISCTer35W6qlq\r\nTxpQa3RPceZor0NozPV2tCHimBkl4y0YTgiRAjos/eE2If4QmcabjVsNB5aE7fzI\r\nk88VQrLHHsXw6zwVmkHVpXZzhO8nRXgTpfzO8Y3MYCRee0SXnm1FE6MYPMwxQqYc\r\n4QIDAQAB\r\n-----END PUBLIC KEY-----,-----BEGIN PUBLIC KEY-----\r\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEArbrJozoPPAIudPOGO0hb\r\nqHFbBt3bUGMHwkKtBw2j+vHEVrmQ0fdUVMYEXLMSueEF6jJW7XnJJ3H57bwRYamJ\r\n2rcwcMJOw3boVQ6GmMyv6wE3T6A8/xhwzg+vtUTA9mVI5U/Lp+7Gzf3YGsknUBy4\r\nfDHJOS/jEbsx1qph7DKZx1xSO8p1bL3ZhDvjzFocLFoZFlX47IuNAsmWQYs0Wlri\r\nHm4sAl8CJkBhIUwHRNHT0M9sS4WA8Y78ppRFt4tECvAm1LdMpqedXeNq+mlchNRV\r\ntuRAw0u3xnVTRDOEWF2/pVo2Vx1PmfigY8cgH0F2Pp+UhtYIPs9/UFzUPkt8eiAE\r\nCQIDAQAB\r\n-----END PUBLIC KEY-----,-----BEGIN PUBLIC KEY-----\r\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA6HDyTQ1MuGTjH1jZ00Eu\r\nwALTUipB0cmi7rxKKV/4yzbgXClxN/yyTeFw8aCb27SAKt3bUrseVjxflw4K+Slf\r\nkVPePas91MDUb4qL4rleDvtsPwExMhN2zMa/ol3XXGNZbKKe7OWdG6dVmjZfHE/J\r\noK0AzPhM2RbvBWXEYDlO0sqwmB5rqQE+dRLvtxZi57w7trybXpX0yTFDWqM6ID9M\r\nW7hG79e85mY6H1W9P8JARQ00rWNKZZiDnyVS17huuBYdPd2gpxNJJpgLFL38BTAV\r\nKM90qMbFb6zL8rufRZJP4NEVLhn4PBFcRZJeexvzLWp3gho5kx5PlzMNzHe8extR\r\n2QIDAQAB\r\n-----END PUBLIC KEY-----"
+  }
+},
+{
+  "model": "web.causer",
+  "pk": 6,
+  "fields": {
+    "user": 9,
+    "code": "",
+    "keys": ""
+  }
+},
+{
+  "model": "web.causer",
+  "pk": 7,
+  "fields": {
+    "user": 10,
+    "code": "",
+    "keys": "-----BEGIN PUBLIC KEY-----\r\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAt4zI+2GrHzH1wpZON1Yz\r\nmSoPL5/a0a7kQYgcjgRPE/jC24xXBRRi4Xajcw8cgNyHkZWluPTVfhHXXrdhUijO\r\nqBzn+uFIUjuElqMqw/QSP0cy0HaOybKJhhwyphnPzytebGPyU8rWTVdo4z1B+Ibl\r\nOQ8wvSDpCrayzzP1V2ghBuLL/Rw5NLuP77fAYRZPFP67+K3KUPsk9N84k4CEuBNx\r\ngPoYYGPcXCSWRG7BsJZ888SOuJUI1AGnxzX+H0WqD0mfAm5jFhxh8NX8Q1MtX3ay\r\nmr3krk2ainprHG4++J9G4pQwyJPCukFRyTJFlU8BfPkWVoP5Sja0mh5bzr/iPeRv\r\n1wIDAQAB\r\n-----END PUBLIC KEY-----"
+  }
+},
+{
+  "model": "web.causer",
+  "pk": 8,
+  "fields": {
+    "user": 11,
+    "code": "d1d92508ba5ba401161371aacb423af2",
+    "keys": ""
+  }
+},
+{
+  "model": "web.causer",
+  "pk": 9,
+  "fields": {
+    "user": 12,
+    "code": "f4da0047941a6931e2197d2a36e73474",
+    "keys": ""
+  }
+},
+{
+  "model": "web.causer",
+  "pk": 10,
+  "fields": {
+    "user": 13,
+    "code": "",
+    "keys": ""
+  }
+},
+{
+  "model": "web.causer",
+  "pk": 11,
+  "fields": {
+    "user": 2,
+    "code": "",
+    "keys": ""
+  }
+},
+{
+  "model": "web.request",
+  "pk": 107,
+  "fields": {
+    "user": 1,
+    "subject": "/CN=OCSP Valid",
+    "csr": "-----BEGIN CERTIFICATE REQUEST-----\r\nMIHgMIGIAgEAMCYxFDASBgNVBAMMC1Jvb3QgRUMgMjU2MQ4wDAYDVQQKDAVXZWJD\r\nQTBZMBMGByqGSM49AgEGCCqGSM49AwEHA0IABF2BBmjY7JA/AszEW93+/PdUVunC\r\nsa0ZiWv67zaQC61dTQl8GtOEzH2k+5cBp1BczMQpm4HsOuXI4T0RY8Dw1fKgADAK\r\nBggqhkjOPQQDAgNHADBEAiBr/isGadLn2h3H1WZWtZazZ62fH0y3wYxh39nnJCe1\r\n1QIgUeFaSyfi/8/fXN5bbsPMZ0xhjJ0zZj5ZSGu4TLKMQhQ=\r\n-----END CERTIFICATE REQUEST-----",
+    "template": 5,
+    "status": 2,
+    "reject_reason": "",
+    "approved": true,
+    "san": "",
+    "admin_comment": ""
+  }
+},
+{
+  "model": "web.request",
+  "pk": 108,
+  "fields": {
+    "user": 1,
+    "subject": "/CN=OCSP Revoked",
+    "csr": "-----BEGIN CERTIFICATE REQUEST-----\r\nMIHgMIGIAgEAMCYxFDASBgNVBAMMC1Jvb3QgRUMgMjU2MQ4wDAYDVQQKDAVXZWJD\r\nQTBZMBMGByqGSM49AgEGCCqGSM49AwEHA0IABF2BBmjY7JA/AszEW93+/PdUVunC\r\nsa0ZiWv67zaQC61dTQl8GtOEzH2k+5cBp1BczMQpm4HsOuXI4T0RY8Dw1fKgADAK\r\nBggqhkjOPQQDAgNHADBEAiBr/isGadLn2h3H1WZWtZazZ62fH0y3wYxh39nnJCe1\r\n1QIgUeFaSyfi/8/fXN5bbsPMZ0xhjJ0zZj5ZSGu4TLKMQhQ=\r\n-----END CERTIFICATE REQUEST-----",
+    "template": 5,
+    "status": 2,
+    "reject_reason": "",
+    "approved": true,
+    "san": "",
+    "admin_comment": ""
+  }
+},
+{
+  "model": "web.certificate",
+  "pk": 79,
+  "fields": {
+    "user": 1,
+    "csr": 107,
+    "x509": "-----BEGIN CERTIFICATE-----\nMIIDBjCCAe6gAwIBAgIRAKayYIxslV0YoUguBjCRdcowDQYJKoZIhvcNAQELBQAw\nFjEUMBIGA1UEAwwLV2ViIENBIFJvb3QwHhcNMTgwNTIyMTMyNjExWhcNMTgwNjIx\nMTMyNjExWjAVMRMwEQYDVQQDDApPQ1NQIFZhbGlkMFkwEwYHKoZIzj0CAQYIKoZI\nzj0DAQcDQgAEXYEGaNjskD8CzMRb3f7891RW6cKxrRmJa/rvNpALrV1NCXwa04TM\nfaT7lwGnUFzMxCmbgew65cjhPRFjwPDV8qOCARkwggEVMAwGA1UdEwEB/wQCMAAw\nDgYDVR0PAQH/BAQDAgeAMB0GA1UdJQQWMBQGCCsGAQUFBwMBBggrBgEFBQcDAjAz\nBgNVHR8ELDAqMCigJqAkhiJodHRwOi8vY3JsLm51Ymxhci5uZXQvY3JsL3Jvb3Qu\nY3JsMDIGCCsGAQUFBwEBBCYwJDAiBggrBgEFBQcwAYYWaHR0cDovL29jc3Aud2Vi\nY2EubmV0LzAdBgNVHQ4EFgQU61ZzWK3pYE8Xhir6WB3Taf/j5x4wTgYDVR0jBEcw\nRYAUx7oImTKuer4p0TZyPl/0n0gPaPOhGqQYMBYxFDASBgNVBAMMC1dlYiBDQSBS\nb290ghEA9j25pTB/PUEIZO7myQ2tXDANBgkqhkiG9w0BAQsFAAOCAQEAfkG+RdKS\nhSq8ZSUDMnLVyW/MjYcdAnJpsjSycYmoT8WBmXzLvzs8Tfthh/aT5w5MqPPfl33n\nVMIa6kAj3z9LoNbTwy6S3W00jbOWdFrytUxZCOVVVRt7fPMEyKwSH7+XRZm+E1b9\nzmZJb/HlBaRTRckEZW444dwm8X2QHjGdcJCsQ9BNrdOtdOHvLZP+TrviweavxCEU\nnUtama2ObhzOjyBnZExJXlMa86QZJYlyoMeM2OObNiXHJJ7VeOFrY/0+zbG8LkOH\nq1qDIDLe1CSzrw9mKuJi6NnbKS2atBBntQN0yAwqb54pLTDwqqor8Sybjv//3fI5\neWUOSi6BGS4llA==\n-----END CERTIFICATE-----\n",
+    "serial": "221578034377984887419532563643305653706",
+    "subject": "/CN=OCSP Valid",
+    "valid_from": "2018-05-22T13:26:11.296Z",
+    "valid_to": "2018-06-21T13:26:11.296Z"
+  }
+},
+{
+  "model": "web.certificate",
+  "pk": 80,
+  "fields": {
+    "user": 1,
+    "csr": 108,
+    "x509": "-----BEGIN CERTIFICATE-----\nMIIDBzCCAe+gAwIBAgIQIJoc3w1Y1bmyjFqt5hXfzDANBgkqhkiG9w0BAQsFADAW\nMRQwEgYDVQQDDAtXZWIgQ0EgUm9vdDAeFw0xODA1MjIxMzI2MjZaFw0xODA2MjEx\nMzI2MjZaMBcxFTATBgNVBAMMDE9DU1AgUmV2b2tlZDBZMBMGByqGSM49AgEGCCqG\nSM49AwEHA0IABF2BBmjY7JA/AszEW93+/PdUVunCsa0ZiWv67zaQC61dTQl8GtOE\nzH2k+5cBp1BczMQpm4HsOuXI4T0RY8Dw1fKjggEZMIIBFTAMBgNVHRMBAf8EAjAA\nMA4GA1UdDwEB/wQEAwIHgDAdBgNVHSUEFjAUBggrBgEFBQcDAQYIKwYBBQUHAwIw\nMwYDVR0fBCwwKjAooCagJIYiaHR0cDovL2NybC5udWJsYXIubmV0L2NybC9yb290\nLmNybDAyBggrBgEFBQcBAQQmMCQwIgYIKwYBBQUHMAGGFmh0dHA6Ly9vY3NwLndl\nYmNhLm5ldC8wHQYDVR0OBBYEFOtWc1it6WBPF4Yq+lgd02n/4+ceME4GA1UdIwRH\nMEWAFMe6CJkyrnq+KdE2cj5f9J9ID2jzoRqkGDAWMRQwEgYDVQQDDAtXZWIgQ0Eg\nUm9vdIIRAPY9uaUwfz1BCGTu5skNrVwwDQYJKoZIhvcNAQELBQADggEBAGuVDFXo\nAs4wkB2SnojexYL/Kj1TX5VoIyM9QhBk5LJmAEJWnvFqqlbRIWhejqSUwHSqFWkB\nd4Kt+sM/6i3wnZAn9iIDkZTIWQ0OMPMxCX8cKLwXVlKonjEpUaEBUk60T3Mgw5Zo\nJzyBU22c8hPr4m9PzjnS43S2Kdina1Ev91KMoNARj/xC6tEnuWzGKNrTtBK4xLjM\nEYZWLg5mUdObPfcAKc01kkcC9vkSYojbyvWfShwqaEF0pBgAplY41VM6uQVoyVBU\nP4TD31+4W0moKRfIPgMVRLWBIVTLlDA5ueYGNUm7+6BcDnqMqdPdVhrSuTo5Mt+4\nTqM41g+xNRlyMZA=\n-----END CERTIFICATE-----\n",
+    "serial": "43335495160811514204812512316928417740",
+    "subject": "/CN=OCSP Revoked",
+    "valid_from": "2018-05-22T13:26:26.505Z",
+    "valid_to": "2018-06-21T13:26:26.505Z"
+  }
+},
+{
+  "model": "web.template",
+  "pk": 1,
+  "fields": {
+    "name": "Certification Authority 25y",
+    "description": "",
+    "days": 30,
+    "enabled": true,
+    "version": 33,
+    "auto_sign": false,
+    "min_bits_rsa": 4096,
+    "min_bits_dsa": 1024,
+    "min_bits_ec": 256,
+    "required_subject": 1,
+    "san_type": 1,
+    "allowed_san": "None",
+    "basic_constraints": 1,
+    "pathlen": -1,
+    "key_usage": "keyCertSign,cRLSign",
+    "ext_key_usage_critical": false,
+    "ext_key_usage": "",
+    "crl_points": "",
+    "aia": "",
+    "extensions": "",
+    "allowed_groups": [
+      2
+    ]
+  }
+},
+{
+  "model": "web.template",
+  "pk": 3,
+  "fields": {
+    "name": "CRL Signing 5y",
+    "description": "End Entity certificate used for CRL signing.",
+    "days": 30,
+    "enabled": true,
+    "version": 19,
+    "auto_sign": true,
+    "min_bits_rsa": 2048,
+    "min_bits_dsa": 1024,
+    "min_bits_ec": 256,
+    "required_subject": 2,
+    "san_type": 1,
+    "allowed_san": "None",
+    "basic_constraints": 2,
+    "pathlen": -1,
+    "key_usage": "cRLSign",
+    "ext_key_usage_critical": false,
+    "ext_key_usage": "",
+    "crl_points": "",
+    "aia": "",
+    "extensions": "",
+    "allowed_groups": [
+      2
+    ]
+  }
+},
+{
+  "model": "web.template",
+  "pk": 4,
+  "fields": {
+    "name": "Intermediate CA 10y",
+    "description": "",
+    "days": 30,
+    "enabled": true,
+    "version": 20,
+    "auto_sign": true,
+    "min_bits_rsa": 2048,
+    "min_bits_dsa": 1024,
+    "min_bits_ec": 256,
+    "required_subject": 1,
+    "san_type": 1,
+    "allowed_san": "None",
+    "basic_constraints": 1,
+    "pathlen": 0,
+    "key_usage": "keyCertSign,cRLSign",
+    "ext_key_usage_critical": false,
+    "ext_key_usage": "",
+    "crl_points": "",
+    "aia": "",
+    "extensions": "",
+    "allowed_groups": [
+      2
+    ]
+  }
+},
+{
+  "model": "web.template",
+  "pk": 5,
+  "fields": {
+    "name": "Web Server 2y",
+    "description": "",
+    "days": 30,
+    "enabled": true,
+    "version": 13,
+    "auto_sign": true,
+    "min_bits_rsa": 2048,
+    "min_bits_dsa": 1024,
+    "min_bits_ec": 256,
+    "required_subject": 4,
+    "san_type": 2,
+    "allowed_san": "DNS",
+    "basic_constraints": 2,
+    "pathlen": -1,
+    "key_usage": "digitalSignature",
+    "ext_key_usage_critical": false,
+    "ext_key_usage": "serverAuth,clientAuth",
+    "crl_points": "",
+    "aia": "",
+    "extensions": "",
+    "allowed_groups": [
+      1
+    ]
+  }
+},
+{
+  "model": "web.template",
+  "pk": 6,
+  "fields": {
+    "name": "User certificate 2y",
+    "description": "",
+    "days": 30,
+    "enabled": true,
+    "version": 9,
+    "auto_sign": true,
+    "min_bits_rsa": 2048,
+    "min_bits_dsa": 1024,
+    "min_bits_ec": 256,
+    "required_subject": 3,
+    "san_type": 1,
+    "allowed_san": "None",
+    "basic_constraints": 2,
+    "pathlen": -1,
+    "key_usage": "digitalSignature,keyEncipherment,dataEncipherment",
+    "ext_key_usage_critical": false,
+    "ext_key_usage": "clientAuth,emailProtection",
+    "crl_points": "",
+    "aia": "",
+    "extensions": "",
+    "allowed_groups": [
+      4
+    ]
+  }
+},
+{
+  "model": "web.template",
+  "pk": 7,
+  "fields": {
+    "name": "Partial DN",
+    "description": "",
+    "days": 15,
+    "enabled": true,
+    "version": 5,
+    "auto_sign": false,
+    "min_bits_rsa": 2048,
+    "min_bits_dsa": 1024,
+    "min_bits_ec": 256,
+    "required_subject": 4,
+    "san_type": 1,
+    "allowed_san": "None",
+    "basic_constraints": 2,
+    "pathlen": -1,
+    "key_usage": "digitalSignature",
+    "ext_key_usage_critical": false,
+    "ext_key_usage": "",
+    "crl_points": "",
+    "aia": "",
+    "extensions": "",
+    "allowed_groups": []
+  }
+},
+{
+  "model": "web.revoked",
+  "pk": 14,
+  "fields": {
+    "certificate": 80,
+    "date": "2018-05-22T13:28:46.417Z",
+    "reason": 2
+  }
+},
+{
+  "model": "web.crllocation",
+  "pk": 1,
+  "fields": {
+    "url": "http://crl.nublar.net/crl/int.crl",
+    "deleted": true,
+    "certificates": []
+  }
+},
+{
+  "model": "web.crllocation",
+  "pk": 3,
+  "fields": {
+    "url": "http://crl.nublar.net/crl/root.crl",
+    "deleted": false,
+    "certificates": [
+      79,
+      80
+    ]
+  }
+}
+]

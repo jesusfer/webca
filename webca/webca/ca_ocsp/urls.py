@@ -18,5 +18,5 @@ from webca.ca_ocsp.views import OCSPResponder
 
 urlpatterns = [
     path('', OCSPResponder.as_view()),
-    path('<slug>', OCSPResponder.as_view()),
+    path('<path:slug>', OCSPResponder.as_view()),
 ]

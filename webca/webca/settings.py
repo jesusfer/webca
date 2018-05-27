@@ -92,6 +92,10 @@ DATABASES = {
     },
 }
 
+FIXTURE_DIRS = [
+    os.path.join(BASE_DIR, 'webca/tests/fixtures'),
+]
+
 # Password validation
 # https://docs.djangoproject.com/en/2.0/ref/settings/#auth-password-validators
 
