@@ -31,6 +31,7 @@ Outputs:
 # pylint: disable=E0611,E0401,C0413,W0611
 import getpass
 import io
+import json
 import os
 import re
 import sys
@@ -43,6 +44,7 @@ os.environ["DJANGO_SETTINGS_MODULE"] = "webca.ca_admin.settings"
 
 from webca.certstore import CertStore
 from webca.config import constants as p
+from webca.config import new_crl_config
 from webca.crypto import certs
 from webca.crypto import constants as c
 from webca.crypto.utils import int_to_hex, new_serial
@@ -70,13 +72,11 @@ def setup():
     init_django()
     print('\n*** Setup of CA certificates ***')
     setup_certificates()
-    # TODO: Ask for path to publish and frequency
     setup_crl_publishing()
-    # it could be set by default to the static dir and then let the user configure that
     install_templates()
-    # TODO: setup_user_groups()
-    # TODO: add a super user (admin)
-    # TODO: setup_email()
+    setup_user_groups()
+    setup_super_user()
+    setup_email()
 
 
 """
@@ -108,7 +108,7 @@ def get_database(reason, prefix):
     port = input('Port: ')
 
     config = {
-        prefix+'engine': engine,
+        prefix+'engine': _get_engine(engine),
         prefix+'server': server,
         prefix+'name': name,
         prefix+'user': user,
@@ -119,6 +119,8 @@ def get_database(reason, prefix):
 
 
 def _get_engine(number):
+    if not isinstance(number, int):
+        number = int(number)
     if number == 1:
         return 'django.db.backends.sqlite3'
     elif number == 2:
@@ -177,14 +179,16 @@ The OCSP reponder also needs a hostname. Requests will go to http://<ocsp_host>/
     option = input('\nAre these correct? (Y/n)').lower()
     if option == 'n':
         return get_host_names()
-    return {'web':web_host, 'admin':admin_host, 'ocsp':ocsp_host}
+    return {'web': web_host, 'admin': admin_host, 'ocsp': ocsp_host}
 
 
 def create_settings(config, hosts):
     """Write settings files."""
     web_path = os.path.join(BASE_DIR, 'webca', 'settings_local.py')
-    admin_path = os.path.join(BASE_DIR, 'webca', 'ca_admin', 'settings_local.py')
-    service_path = os.path.join(BASE_DIR, 'webca', 'ca_service', 'settings_local.py')
+    admin_path = os.path.join(
+        BASE_DIR, 'webca', 'ca_admin', 'settings_local.py')
+    service_path = os.path.join(
+        BASE_DIR, 'webca', 'ca_service', 'settings_local.py')
     ocsp_path = os.path.join(BASE_DIR, 'webca', 'ca_ocsp', 'settings_local.py')
     _create_db_settings(config, 'web_', DB_DEFAULT, web_path)
     _create_db_settings(config, 'certs_', DB_CERTS, admin_path)
@@ -234,7 +238,14 @@ def init_django():
     from django.core.management import call_command
     from django.core.exceptions import ImproperlyConfigured
     try:
-        call_command("migrate", interactive=False)
+        call_command('migrate', interactive=False)
+    except ImproperlyConfigured as ex:
+        print('Error setting up databases: {}'.format(ex))
+    try:
+        call_command('migrate', 'certstore_db',
+                     database='certstore_db',
+                     settings='webca.ca_admin.settings',
+                     interactive=False)
     except ImproperlyConfigured as ex:
         print('Error setting up databases: {}'.format(ex))
 
@@ -401,11 +412,14 @@ def _setup_certificates_ocsp(store, ca_key, ca_cert):
     ]
     ocsp_key = certs.create_key_pair(c.KEY_RSA, 2048)
     extensions = [
-        json_to_extension('{"name":"keyUsage","critical":true,"value":"digitalSignature"}'),
-        json_to_extension('{"name":"extendedKeyUsage","critical":false,"value":"OCSPSigning"}'),
+        json_to_extension(
+            '{"name":"keyUsage","critical":true,"value":"digitalSignature"}'),
+        json_to_extension(
+            '{"name":"extendedKeyUsage","critical":false,"value":"OCSPSigning"}'),
     ]
     ocsp_csr = certs.create_cert_request(ocsp_key, name, extensions)
-    ocsp_cert = certs.create_certificate(ocsp_csr, (ca_cert, ca_key), new_serial(), (0, 10*365*24*3600))
+    ocsp_cert = certs.create_certificate(
+        ocsp_csr, (ca_cert, ca_key), new_serial(), (0, 10*365*24*3600))
     store.add_certificate(ocsp_key, ocsp_cert)
     Config.set_value(p.CERT_OCSPSIGN, '{},{}'.format(
         store.STORE_ID, int_to_hex(ocsp_cert.get_serial_number())
@@ -415,10 +429,23 @@ def _setup_certificates_ocsp(store, ca_key, ca_cert):
 def setup_crl_publishing():
     """Do some minimal CRL configuration.
     We just need to create the default configuration.
-    
+
     The CRLs will be published every 15 days and the location will be the STATIC folder.
     """
+    from django.conf import settings
+    from webca.config.models import ConfigurationObject as Config
+    from webca.web.models import CRLLocation
+    print("\n\nCRL publishing setup.\n\nA URL where the CRL will be published is needed.")
+    crl_url = input("CRL location: ")
+    # TODO: Validate the URL
+    crl = CRLLocation(url=crl_url)
+    crl.save()
 
+    config = new_crl_config()
+    config['path'] = settings.STATIC_ROOT
+    Config.set_value(p.CRL_CONFIG, json.dumps(config))
+    print("Default CRL publishing freq: 15 days")
+    print("Default CRL publishing path: %s" % config['path'])
 
 
 def install_templates():
@@ -432,6 +459,33 @@ def install_templates():
     for template in templates:
         template.save()
         print('Created: %s' % template.object.name)
+
+
+def setup_user_groups():
+    """Create the default groups"""
+    from django.contrib.auth.models import Group
+    group = Group(name="All Users")
+    group.save()
+    group = Group(name="Operators")
+    group.save()
+
+
+def setup_super_user():
+    from django.core.management import call_command
+    from django.core.exceptions import ImproperlyConfigured
+    print("A super user/administrator needs to be created.")
+    try:
+        call_command("createsuperuser", interactive=True)
+    except ImproperlyConfigured as ex:
+        print('Error setting up databases: {}'.format(ex))
+
+
+def setup_email():
+    from django.conf import settings
+    print("\nAn email server must be setup so that users can authenticate.")
+    print("Review the EMAIL settings in the settings file and update them: {}".format(
+        os.path.join(settings.BASE_DIR, 'webca', 'settings.py')
+    ))
 
 
 if __name__ == '__main__':

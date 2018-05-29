@@ -1,5 +1,6 @@
 import json
 
+from cryptography import x509
 from OpenSSL import crypto
 
 from webca.crypto.constants import EXT_KEY_USAGE, KEY_USAGE
@@ -46,6 +47,7 @@ class MultiValueExtension(object):
             self._add(value)
         return self
 
+
 class KeyUsage(MultiValueExtension):
     """The keyUsage extension.
 
@@ -59,6 +61,8 @@ class KeyUsage(MultiValueExtension):
     @staticmethod
     def from_extension(extension):
         """Build an object from a cryptography.x509.Extension."""
+        if isinstance(extension, x509.extensions.Extension):
+            extension = extension.value
         if extension.oid.dotted_string != '2.5.29.15':
             raise ValueError('extension')
         usage = KeyUsage()
@@ -99,6 +103,8 @@ class ExtendedKeyUsage(MultiValueExtension):
     @staticmethod
     def from_extension(extension):
         """Build an object from a cryptography.x509.Extension."""
+        if isinstance(extension, x509.extensions.Extension):
+            extension = extension.value
         if extension.oid.dotted_string != '2.5.29.37':
             raise ValueError('extension')
         eku = ExtendedKeyUsage()
