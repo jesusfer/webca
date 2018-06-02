@@ -328,6 +328,10 @@ table.revocation_table td {
     display: none;
 }
 
+#passphrase span {
+    font-weight: bold;
+}
+
 #several_keys {
     display: none;
 }

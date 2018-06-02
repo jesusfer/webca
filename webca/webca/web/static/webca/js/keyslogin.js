@@ -308,6 +308,7 @@ function cb_login(event) {
             if(hasTextEncoder) {
                 if(keyPair.private.search('ENCRYPTED') >= 0) {
                     $('#passphrase').show();
+                    $('#key_for')[0].innerText = keyPair.email;
                     return;
                 }
             }
