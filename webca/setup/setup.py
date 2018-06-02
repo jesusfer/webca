@@ -76,9 +76,9 @@ def setup():
     setup_user_groups()
     setup_super_user()
     install_templates()
+    collect_static()
+    review_secret_key()
     setup_email()
-    # TODO: Run collectstatic and warn about pointing the web server to that folder at /static/
-    # TODO: Review all settings.py files and generate a new SECRET_KEY
 
 
 """
@@ -480,16 +480,49 @@ def setup_super_user():
     try:
         call_command("createsuperuser", interactive=True)
     except ImproperlyConfigured as ex:
-        print('Error setting up databases: {}'.format(ex))
+        print('Error creating the super user: {}'.format(ex))
 
 
 def setup_email():
+    """Display Email configuration warning."""
     from django.conf import settings
     print("\nAn email server must be setup so that users can authenticate.")
     print("Review the EMAIL settings in the settings file and update them: {}".format(
         os.path.join(settings.BASE_DIR, 'webca', 'settings.py')
     ))
 
+
+def collect_static():
+    """Run collectstatic"""
+    from django.conf import settings
+    from django.core.management import call_command
+    from django.core.exceptions import ImproperlyConfigured
+    print("\nNow the static files of the web applications will be copied to a folder.")
+    try:
+        call_command("collectstatic", interactive=False)
+    except ImproperlyConfigured as ex:
+        print('Error collecting static files: {}'.format(ex))
+    print('\nYou need to make your web server serve the files in the folder "{}" in the '
+          'following URL of your web applications: {}'.format(settings.STATIC_ROOT, settings.STATIC_URL))
+
+
+def review_secret_key():
+    """Display SECRET_KEY warning."""
+    from django.conf import settings
+    print("""
+***********************************************
+Django uses a secret key for internal purposes.
+You *MUST* change the value of the variable SECRET_KEY in the following locations:
+{}
+{}
+{}
+{}
+""".format(
+    os.path.join(settings.BASE_DIR, 'webca', 'settings.py'),
+    os.path.join(settings.BASE_DIR, 'webca', 'ca_admin', 'settings.py'),
+    os.path.join(settings.BASE_DIR, 'webca', 'ca_ocsp', 'settings.py'),
+    os.path.join(settings.BASE_DIR, 'webca', 'ca_service', 'settings.py'),
+))
 
 if __name__ == '__main__':
     try:
