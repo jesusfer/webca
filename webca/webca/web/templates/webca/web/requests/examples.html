@@ -10,10 +10,10 @@
         <p><code>openssl req -out request.csr -new -newkey rsa:2048 -keyout private.key</code></p>
         <p>
             This generates an encrypted private key and a public key in a certificate request. The key size is 2048 bits using the RSA algorithm.
-            <br/>If you don't want to have a passphrase in your private key, use the<code>-nodes</code> parameter:
+            <br/>If you don't want to have a passphrase in your private key, use the <code>-nodes</code> parameter:
         </p>
         <p><code>openssl req -out request.csr -new -newkey rsa:2048 -nodes -keyout private.key</code></p>
-        <p>The full documentation for the above command is:<a href="https://www.openssl.org/docs/manmaster/man1/req.html">OpenSSL req</a></p>
+        <p>The full documentation for the above command is: <a href="https://www.openssl.org/docs/manmaster/man1/req.html">OpenSSL req</a></p>
     </li>
     <li>
         <p>The above command gives you two files:</p>
@@ -26,7 +26,7 @@
 </ol>
 <h4>Remember this</h4>
 <ul>
-    <li>You should store your private key securely. If you lose it or it get's compromised, so does your certificate.</li>
+    <li>You should store your private key securely. If you lose it or it gets compromised, so does your certificate.</li>
     <li>Use a passphrase to store to private key.</li>
 </ul>
 {% endblock content %}

@@ -29,7 +29,6 @@ DEBUG = True
 
 ALLOWED_HOSTS = [
     '127.0.0.1',
-    'www.webca.net',
 ]
 
 
@@ -139,7 +138,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/2.0/howto/static-files/
 
 STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'static_files'),
+STATIC_ROOT = os.path.join(BASE_DIR, 'static_files')
 
 # Logging
 

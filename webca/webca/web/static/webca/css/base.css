@@ -273,6 +273,7 @@ table.details th {
 /* Subject Alt Name */
 #id_san {
     width: auto;
+    min-width: auto;
 }
 
 #id_san td {
@@ -283,6 +284,11 @@ table.details th {
 #id_san input,
 #id_san select {
     width: 100%;
+}
+
+#id_san table {
+    width: auto;
+    min-width: auto;
 }
 
 /* CSR input */

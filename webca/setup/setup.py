@@ -73,10 +73,12 @@ def setup():
     print('\n*** Setup of CA certificates ***')
     setup_certificates()
     setup_crl_publishing()
-    install_templates()
     setup_user_groups()
     setup_super_user()
+    install_templates()
     setup_email()
+    # TODO: Run collectstatic and warn about pointing the web server to that folder at /static/
+    # TODO: Review all settings.py files and generate a new SECRET_KEY
 
 
 """
@@ -175,7 +177,7 @@ The OCSP reponder also needs a hostname. Requests will go to http://<ocsp_host>/
 """)
     web_host = input('Public web host: ').lower()
     admin_host = input('Admin web host: ').lower()
-    ocsp_host = input('OCSP host:').lower()
+    ocsp_host = input('OCSP host: ').lower()
     option = input('\nAre these correct? (Y/n)').lower()
     if option == 'n':
         return get_host_names()
@@ -442,13 +444,14 @@ def setup_crl_publishing():
     crl.save()
 
     config = new_crl_config()
-    config['path'] = settings.STATIC_ROOT
+    config['path'] = os.path.join(settings.STATIC_ROOT, 'ca.crl')
     Config.set_value(p.CRL_CONFIG, json.dumps(config))
     print("Default CRL publishing freq: 15 days")
     print("Default CRL publishing path: %s" % config['path'])
 
 
 def install_templates():
+    """Create default templates."""
     print('\nDo you want some certificate templates to be automatically created?')
     option = input('Continue? (Y/n): ').lower()
     if option == 'n':
