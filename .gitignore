@@ -106,7 +106,3 @@ ENV/
 
 # VS Code
 .vscode
-
-# Django
-*/static_files/**
-!/static_files/delete.txt
