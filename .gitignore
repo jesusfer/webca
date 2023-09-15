@@ -102,10 +102,11 @@ ENV/
 
 # SQLite databases
 *.sqlite3
+*.db
 
 # VS Code
 .vscode
 
 # Django
-*/static_files/*
-!*/static_files/delete.txt
+*/static_files/**
+!/static_files/delete.txt

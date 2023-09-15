@@ -16,10 +16,11 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import get_user_model, login
 from django.contrib.auth.models import Group
-from django.contrib.auth.views import logout
+from django.contrib.auth import logout
 from django.core.mail import send_mail
-from django.shortcuts import render, reverse
+from django.shortcuts import render
 from django.template.loader import render_to_string
+from django.urls import reverse
 
 from webca.web.forms import CodeLoginForm, EmailLoginForm, KeysLoginForm
 from webca.web.views import WebCAAuthView, WebCAView

@@ -148,7 +148,7 @@ def _as_extension(dct):
 
 
 def json_to_extension(json_input):
-    obj = json.loads(json_input, encoding='utf-8', object_hook=_as_extension)
+    obj = json.loads(json_input, object_hook=_as_extension)
     return obj
 
 

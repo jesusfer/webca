@@ -179,3 +179,5 @@ if hasattr(settings_local, 'DATABASES'):
 
 if hasattr(settings_local, 'ALLOWED_HOSTS'):
     ALLOWED_HOSTS.extend(settings_local.ALLOWED_HOSTS)
+
+print(DATABASES)
